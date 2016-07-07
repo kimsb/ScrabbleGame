@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="MDAG">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/dist/lib/MDAG.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
