@@ -10,7 +10,7 @@ public class ComputerAI {
     String rackStringCpy;
     double[] rackAlphaScores;
     String alphaString;
-    ArrayList<ScrabbleGame.Tile> bag;
+    ArrayList<Tile> bag;
     double vowelRatioLeft;
     int playerScore, computerScore;
     int pointlessTurns;
@@ -24,7 +24,7 @@ public class ComputerAI {
     String rackString;
     int onPlayersRack;
 
-    public ComputerAI(String rackStringCpy, double[] rackAlphaScores, String alphaString, ArrayList<ScrabbleGame.Tile> bag, double vowelRatioLeft,
+    public ComputerAI(String rackStringCpy, double[] rackAlphaScores, String alphaString, ArrayList<Tile> bag, double vowelRatioLeft,
                       int playerScore, int computerScore, int pointlessTurns, int[] alphaScores, boolean[][] isAnchor, boolean firstMove,
                       ScrabbleGame.Square[][] squareGrid, char[][] charBoard, MDAG dictionary, HashMap<Character, Integer> bagTiles,
                       String rackString, int onPlayersRack) {
