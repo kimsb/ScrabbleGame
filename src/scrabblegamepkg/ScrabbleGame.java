@@ -8,34 +8,14 @@ package scrabblegamepkg;
 
 import com.BoxOfC.MDAG.MDAG;
 import com.BoxOfC.MDAG.MDAGNode;
-import java.awt.Color;
-import java.awt.ComponentOrientation;
-import java.awt.Dimension;
-import java.awt.Image;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Random;
-import java.util.Scanner;
-import java.util.TreeMap;
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.io.*;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.ImageIcon;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JScrollBar;
-import javax.swing.JScrollPane;
-import javax.swing.SwingWorker;
 
 /**
  *
@@ -349,7 +329,7 @@ public class ScrabbleGame extends javax.swing.JFrame {
         setLocationRelativeTo(null);
     }// </editor-fold>//GEN-END:initComponents
         
-    private void playButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_playButtonActionPerformed
+    private void playButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_playButtonActionPerformed
         if (computersTurn) {
             return;
         }
@@ -424,7 +404,7 @@ public class ScrabbleGame extends javax.swing.JFrame {
                 for (int i = 0; i < 7; i++) {
                     if (rack[i].tile == null) {
                         if (!bag.isEmpty()) {
-                            rack[i].placeTile(pickTile());
+                            rack[i].placeTile(bag.pickTile());
                             hasTiles = true;
                         } else {
                             onPlayersRack--;
@@ -484,7 +464,7 @@ public class ScrabbleGame extends javax.swing.JFrame {
             addedToThisMove.clear();
             newWordsAdded.clear();
         }
-        bagCountLabel.setText("Brikker igjen i posen: " + bag.size());
+        bagCountLabel.setText("Brikker igjen i posen: " + bag.tileCount());
         
     }//GEN-LAST:event_playButtonActionPerformed
 
@@ -558,12 +538,12 @@ public class ScrabbleGame extends javax.swing.JFrame {
     void computerAI() {        
         //calculating vowelRatio in bag + players rack
         double vowelsLeft = 0;
-        for (Tile t : bag) {
+        for (Tile t : bag.getTiles()) {
             if (isVowel(t.letter)) {
                 vowelsLeft++;
             }
         }
-        int lettersLeft = bag.size();
+        int lettersLeft = bag.tileCount();
         for (int i = 0; i < 7; i++) {
             if (rack[i].tile != null) {
                 lettersLeft++;
@@ -624,7 +604,7 @@ public class ScrabbleGame extends javax.swing.JFrame {
             transposeBoard();
 
             //MÅ BYTTE OM MULIG
-            if (bag.size() >= 7) {
+            if (bag.tileCount() >= 7) {
                 //bytter alle
                 computerSwap(rackString);
             } else {
@@ -675,7 +655,7 @@ public class ScrabbleGame extends javax.swing.JFrame {
             //hvis det ikker er første legg
         } else {
             //kriterier for å bytte: negativ score eller kun konsonanter
-            if (bag.size() >= 7 && possibleWords.firstEntry().getKey() < 0) {
+            if (bag.tileCount() >= 7 && possibleWords.firstEntry().getKey() < 0) {
                 System.out.println("bytter pga for dårlig bestelegg");
                 cpuMakeSwap();
                 computersTurn = false;
@@ -742,7 +722,7 @@ public class ScrabbleGame extends javax.swing.JFrame {
         //trekke nye brikker
         cpuNewlyPicked = "";
         while (rackString.length() != 7 && !bag.isEmpty()) {
-            Tile t = pickTile();
+            Tile t = bag.pickTile();
             rackString += t.letter;
             cpuNewlyPicked += t.letter;
         }
@@ -753,7 +733,7 @@ public class ScrabbleGame extends javax.swing.JFrame {
             finishGame();
         }
         newlyAddedToBoard.clear();
-        bagCountLabel.setText("Brikker igjen i posen: " + bag.size());
+        bagCountLabel.setText("Brikker igjen i posen: " + bag.tileCount());
         playerPassed = false;
     }
 
@@ -840,7 +820,6 @@ public class ScrabbleGame extends javax.swing.JFrame {
             //legger tilbake i posen
             for (int i = 0; i < cpuNewlyPicked.length(); i++) {
                 bag.add(new Tile(cpuNewlyPicked.charAt(i), alphaScores[alphaString.indexOf(cpuNewlyPicked.charAt(i))]));
-                bagTiles.put(cpuNewlyPicked.charAt(i), bagTiles.get(cpuNewlyPicked.charAt(i))+1);
             }
             //omgjør rack til forrige rack
             rackString = previousRackString;
@@ -885,7 +864,7 @@ public class ScrabbleGame extends javax.swing.JFrame {
         
     }//GEN-LAST:event_challengeButtonActionPerformed
 
-    private void swapButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_swapButtonActionPerformed
+    private void swapButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_swapButtonActionPerformed
         System.out.println("Bytter");
         
         ArrayList<Square> toSwap = new ArrayList<>();
@@ -898,14 +877,14 @@ public class ScrabbleGame extends javax.swing.JFrame {
             }
         }
         if (!toSwap.isEmpty()) {
-            if (bag.size() < 7) {
+            if (bag.tileCount() < 7) {
                 JOptionPane.showMessageDialog(null, "Det er ikke nok brikker i posen");
             } else {
                 int size = toSwap.size();
                 System.out.println("Bytter " + size + " brikker");
                 for (int i = 0; i < 7; i++) {
                     if (rack[i].tile == null) {
-                        rack[i].placeTile(pickTile());
+                        rack[i].placeTile(bag.pickTile());
                     }
                 }
                 for (Square s : toSwap) {
@@ -1048,12 +1027,12 @@ public class ScrabbleGame extends javax.swing.JFrame {
     void computerSwap(String toSwap) {
         JOptionPane.showMessageDialog(null, "CPU bytter " + toSwap.length() + " brikker");
         System.out.println("CPU kaller swap med " + toSwap + ", rackString er " + rackString + "<-slutt");
-        if (bag.size() < 7) {
+        if (bag.tileCount() < 7) {
             System.out.println("CPU prøver å bytte med for lite i posen");
         } else {
             //trekker brikker 
             for (int i = 0; i < toSwap.length(); i++) {
-                Tile t = pickTile();
+                Tile t = bag.pickTile();
                 rackString += t.letter;
             }
             System.out.println("etter å ha trukket opp: " + rackString);
@@ -1278,7 +1257,7 @@ public class ScrabbleGame extends javax.swing.JFrame {
                // }
                 ComputerAI computerAI = new ComputerAI(rackStringCpy, rackAlphaScores, alphaString, bag, vowelRatioLeft,
                         playerScore, computerScore, pointlessTurns, alphaScores, isAnchor, firstMove,
-                        squareGrid, charBoard, dictionary, bagTiles,
+                        squareGrid, charBoard, dictionary,
                         rackString, onPlayersRack);
 
                 possibleWords.put(computerAI.cpuAIScore(newPos), newPos);
@@ -1620,7 +1599,6 @@ public class ScrabbleGame extends javax.swing.JFrame {
             } else {
                 tilesLeft = tilesLeft.substring(0,tilesLeft.indexOf(c)) + '-' + tilesLeft.substring(tilesLeft.indexOf(c)+1);
             }
-            bagTiles.put(c, bagTiles.get(c)-1);
         }
         remainingLabel.setText(tilesLeft);
     }
@@ -2223,7 +2201,6 @@ public class ScrabbleGame extends javax.swing.JFrame {
     }
     
    void initGame() {
-        rand = new Random();
         rackString = "";
         rackStringCpy = "";
        
@@ -2261,140 +2238,32 @@ public class ScrabbleGame extends javax.swing.JFrame {
         addedToThisMove.clear();
         newWordsAdded.clear();
         
-        bagTiles.clear();
-        bag.clear();
-        
-        //lager brikker og legger dem i posen
-        bagTiles.put('A', 7);
-        for (int i = 0; i < 7; i++) {
-            bag.add(new Tile('A', 1));
-        }
-        bagTiles.put('B', 3);
-        for (int i = 0; i < 3; i++) {
-            bag.add(new Tile('B', 4));
-        }
-        bagTiles.put('C', 1);
-        bag.add(new Tile('C', 10));
-        bagTiles.put('D', 5);
-        for (int i = 0; i < 5; i++) {
-            bag.add(new Tile('D', 1));
-        }
-        bagTiles.put('E', 9);
-         for (int i = 0; i < 9; i++) {
-            bag.add(new Tile('E', 1));
-        }
-         bagTiles.put('F', 4);
-         for (int i = 0; i < 4; i++) {
-            bag.add(new Tile('F', 2));
-        }
-         bagTiles.put('G', 4);
-         for (int i = 0; i < 4; i++) {
-            bag.add(new Tile('G', 2));
-        }
-         bagTiles.put('H', 3);
-         for (int i = 0; i < 3; i++) {
-            bag.add(new Tile('H', 3));
-        }
-         bagTiles.put('I', 5);
-         for (int i = 0; i < 5; i++) {
-            bag.add(new Tile('I', 1));
-        }
-         bagTiles.put('J', 2);
-         for (int i = 0; i < 2; i++) {
-            bag.add(new Tile('J', 4));
-        }
-         bagTiles.put('K', 4);
-         for (int i = 0; i < 4; i++) {
-            bag.add(new Tile('K', 2));
-        }
-         bagTiles.put('L', 5);
-         for (int i = 0; i < 5; i++) {
-            bag.add(new Tile('L', 1));
-        }
-         bagTiles.put('M', 3);
-         for (int i = 0; i < 3; i++) {
-            bag.add(new Tile('M', 2));
-        }
-         bagTiles.put('N', 6);
-         for (int i = 0; i < 6; i++) {
-            bag.add(new Tile('N', 1));
-        }
-         bagTiles.put('O', 4);
-         for (int i = 0; i < 4; i++) {
-            bag.add(new Tile('O', 2));
-        }
-         bagTiles.put('P', 2);
-         for (int i = 0; i < 2; i++) {
-            bag.add(new Tile('P', 4));
-        }
-         bagTiles.put('Q', 0);
-         bagTiles.put('R', 6);
-         for (int i = 0; i < 6; i++) {
-            bag.add(new Tile('R', 1));
-        }
-         bagTiles.put('S', 6);
-         for (int i = 0; i < 6; i++) {
-            bag.add(new Tile('S', 1));
-        }
-         bagTiles.put('T', 6);
-         for (int i = 0; i < 6; i++) {
-            bag.add(new Tile('T', 1));
-        }
-         bagTiles.put('U', 3);
-         for (int i = 0; i < 3; i++) {
-            bag.add(new Tile('U', 4));
-        }
-         bagTiles.put('V', 3);
-         for (int i = 0; i < 3; i++) {
-            bag.add(new Tile('V', 4));
-        }
-         bagTiles.put('W', 1);
-        bag.add(new Tile('W', 8));
-        bagTiles.put('X', 0);
-        bagTiles.put('Y', 1);
-        bag.add(new Tile('Y', 6));
-        bagTiles.put('Z', 0);
-        bagTiles.put('Æ', 1);
-        bag.add(new Tile('Æ', 6));
-        bagTiles.put('Ø', 2);
-         for (int i = 0; i < 2; i++) {
-            bag.add(new Tile('Ø', 5));
-        }
-         bagTiles.put('Å', 2);
-         for (int i = 0; i < 2; i++) {
-            bag.add(new Tile('Å', 4));
-        }
-         bagTiles.put('-', 2);
-         for (int i = 0; i < 2; i++) {
-            bag.add(new Tile('-', 0));
-        }
+        bag = new Bag();
 
-         shuffleBag();  
-         
          //hvis computer starter
-         if(rand.nextInt(2) == 0) {
+         if(new Random().nextInt(2) == 0) {
              
              //TEST
              System.out.println("cpu Starter");
              computersTurn = true;
              for (int i = 0; i < 7; i++) {
-                 Tile t = pickTile();
+                 Tile t = bag.pickTile();
                  rackString += t.letter;
              }
              //placing tiles on rack
             for (int i = 0; i < 7; i++) {
-                 rack[i].placeTile(pickTile());
+                 rack[i].placeTile(bag.pickTile());
             }
          } else { //hvis pl1 starter
             computersTurn = false;
             //placing tiles on rack
             playerRack = "";
             for (int i = 0; i < 7; i++) {
-                rack[i].placeTile(pickTile());
+                rack[i].placeTile(bag.pickTile());
                 playerRack += rack[i].tile.letter;
             }
             for (int i = 0; i < 7; i++) {
-                 Tile t = pickTile();
+                 Tile t = bag.pickTile();
                  rackString += t.letter;
             }
         }
@@ -2402,7 +2271,7 @@ public class ScrabbleGame extends javax.swing.JFrame {
          firstMove = true;
          onPlayersRack = 7;
          alphabetizeRack();
-         bagCountLabel.setText("Brikker igjen i posen: " + bag.size());
+         bagCountLabel.setText("Brikker igjen i posen: " + bag.tileCount());
          playerIsFirst = !computersTurn;
          playerNotes = "<b><u>" + playerName + ":</u></b><br>";
          cpuNotes = "<u><b>CPU:</b></u><br>";
@@ -2578,17 +2447,7 @@ public class ScrabbleGame extends javax.swing.JFrame {
         squareGrid[14][11].setMultiplier("DL"); 
     }
     
-    Tile pickTile() {
-        if (!bag.isEmpty()) {
-            return bag.remove(rand.nextInt(bag.size()));
-        }
-        System.out.println("prøver å trekke brikke fra tom pose");
-        return null;
-    }
-    
-    void shuffleBag() {
-        Collections.shuffle(bag, new Random(System.nanoTime()));
-    }
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel bagCountLabel;
@@ -2612,12 +2471,11 @@ public class ScrabbleGame extends javax.swing.JFrame {
     // My variables
     MDAG dictionary;
     Square[][] squareGrid = new Square[15][15];
-    ArrayList<Tile> bag = new ArrayList<>();
+    Bag bag = new Bag();
     ArrayList<Square> newlyAddedToBoard = new ArrayList<>();
     String alphaString = "ABCDEFGHIJKLMNOPQRSTUVWXYZÆØÅ-";
     int[] alphaScores = new int[30];
     double[] rackAlphaScores = new double[30];
-    Random rand;
     
     CPUThinker cpuThinker;
     NewGame newGame;
@@ -2645,7 +2503,6 @@ public class ScrabbleGame extends javax.swing.JFrame {
     int pointlessTurns;
     int onPlayersRack;
     double vowelRatioLeft;
-    HashMap<Character, Integer> bagTiles = new HashMap<>();
     boolean dictionaryIsCreated = false;
     boolean nameGiven = false;
     int bestTipScore;
