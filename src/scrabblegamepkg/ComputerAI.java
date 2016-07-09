@@ -1361,7 +1361,7 @@ public class ComputerAI {
         return true;
     }
 
-    int vowelCount(String s) {
+    static int vowelCount(String s) {
         int vowels = 0;
         for (int i = 0; i < s.length(); i++) {
             if (isVowel(s.charAt(i))) {
@@ -1371,7 +1371,7 @@ public class ComputerAI {
         return vowels;
     }
 
-    boolean isVowel(char c) {
+    static boolean isVowel(char c) {
         if (c == 'E' || c == 'A' || c == 'I' || c == 'O' || c == 'U' || c == 'Å' ||
                 c == 'Ø' || c == 'Æ' || c == 'Y' || c == '-') {
             return true;

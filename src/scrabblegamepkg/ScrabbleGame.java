@@ -151,8 +151,10 @@ public class ScrabbleGame extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        Frontend frontend = new Frontend();
+
         scrabbleBoardPanel = new javax.swing.JPanel();
-        rackPanel = new javax.swing.JPanel();
+        rackPanel = frontend.getRackPanel(this, rackSquares);
         playButton = new javax.swing.JButton();
         challengeButton = new javax.swing.JButton();
         jPanel1 = new javax.swing.JPanel();
@@ -175,10 +177,6 @@ public class ScrabbleGame extends javax.swing.JFrame {
         scrabbleBoardPanel.setBackground(new java.awt.Color(0, 0, 0));
         scrabbleBoardPanel.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0), 2));
         scrabbleBoardPanel.setLayout(new java.awt.GridLayout(15, 15, 2, 2));
-
-        rackPanel.setBackground(new java.awt.Color(0, 120, 98));
-        rackPanel.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 120, 98), 4));
-        rackPanel.setLayout(new java.awt.GridLayout(1, 7, 2, 2));
 
         playButton.setText("Legg");
         playButton.addActionListener(new java.awt.event.ActionListener() {
@@ -339,7 +337,7 @@ public class ScrabbleGame extends javax.swing.JFrame {
             //hvis ikke, bør turen avsluttes            
             if (wordsAreAllowed()) {    
                 
-                System.out.println("PLAYERRACK: " + playerRack);
+                System.out.println("PLAYERRACK: " + rack.toString());
                 
                 //regne ut score (av alle ord)
                 int moveScore = 0;
@@ -400,20 +398,9 @@ public class ScrabbleGame extends javax.swing.JFrame {
                 updateRemaining(toRemoveFromRemaining);
                 
                 //trekke nye brikker
-                boolean hasTiles = false;
-                for (int i = 0; i < 7; i++) {
-                    if (rack[i].tile == null) {
-                        if (!bag.isEmpty()) {
-                            rack[i].placeTile(bag.pickTile());
-                            hasTiles = true;
-                        } else {
-                            onPlayersRack--;
-                        }
-                    } else {
-                        hasTiles = true;
-                    }
-                }
-                alphabetizeRack();
+
+                rack.fill(bag);
+                rack.alphabetize(alphaString, alphaScores);
                 
                 //brikker har blitt lagt, oppdaterer charBoard
                 updateCharBoard();
@@ -421,7 +408,7 @@ public class ScrabbleGame extends javax.swing.JFrame {
                 addedToThisMove.clear();
                 newWordsAdded.clear();
                 System.out.println("kommer hit 11");
-                if (!hasTiles) {             
+                if (rack.isEmpty()) {
                     System.out.println("kommer hit 22");
                     finishGame();
                 } else {
@@ -434,23 +421,9 @@ public class ScrabbleGame extends javax.swing.JFrame {
                 if (retryIfWordIsNotValid) {
                     newWordsAdded.clear(); 
                 } else {
-                    
-                    //legger brikkene tilbake på racken
-                    for (int i = 0; i < 7; i++) {
-                        if (rack[i].tile == null && !addedToThisMove.isEmpty()) {
-                            Square s = addedToThisMove.remove(0);
-                            if (s.tile.isBlank) {
-                                rack[i].tile = new Tile('-', 0);
-                            } else {
-                                rack[i].tile = s.tile;
-                            }
-                            rack[i].setIcon(s.tile.icon);
-                            s.setIcon(null);
-                            s.tile = null;
-                            
-                        }
-                    }
-                    alphabetizeRack();
+
+                    rack.putBack(addedToThisMove);
+                    rack.alphabetize(alphaString, alphaScores);
                     updatePlayerNotes("(ikke godkjent)", 0);
                     //fjerner fra listen over nylig lagt til brikker
                     addedToThisMove.clear();
@@ -473,13 +446,6 @@ public class ScrabbleGame extends javax.swing.JFrame {
         verticalScrollBar.setValue(verticalScrollBar.getMaximum());
         verticalScrollBar = secondPlayerScrollPane.getVerticalScrollBar();
         verticalScrollBar.setValue(verticalScrollBar.getMaximum());
-        //til bruk for bingosjekk av players rack
-        playerRack = "";
-        for (int i = 0; i < 7; i++) {
-            if (rack[i].tile != null) {
-                playerRack += rack[i].tile.letter;
-            }
-        }
         (cpuThinker = new CPUThinker()).execute();
     }
     
@@ -537,21 +503,9 @@ public class ScrabbleGame extends javax.swing.JFrame {
     
     void computerAI() {        
         //calculating vowelRatio in bag + players rack
-        double vowelsLeft = 0;
-        for (Tile t : bag.getTiles()) {
-            if (isVowel(t.letter)) {
-                vowelsLeft++;
-            }
-        }
-        int lettersLeft = bag.tileCount();
-        for (int i = 0; i < 7; i++) {
-            if (rack[i].tile != null) {
-                lettersLeft++;
-                if (isVowel(rack[i].tile.letter)) {
-                    vowelsLeft++;
-                }
-            }
-        }
+        double vowelsLeft = bag.vowelCount() + ComputerAI.vowelCount(rack.toString());
+        int lettersLeft = bag.tileCount() + rack.tileCount();
+
         vowelRatioLeft = vowelsLeft / lettersLeft;
         
         previousRackString = rackString;
@@ -882,20 +836,10 @@ public class ScrabbleGame extends javax.swing.JFrame {
             } else {
                 int size = toSwap.size();
                 System.out.println("Bytter " + size + " brikker");
-                for (int i = 0; i < 7; i++) {
-                    if (rack[i].tile == null) {
-                        rack[i].placeTile(bag.pickTile());
-                    }
-                }
-                for (Square s : toSwap) {
-                    if (s.tile.isBlank) {
-                        s.tile.letter = '-';
-                    }
-                    bag.add(s.tile);
-                    s.setIcon(null);
-                    s.tile = null;
-                }
-                alphabetizeRack();
+
+                rack.swap(toSwap, bag);
+
+                rack.alphabetize(alphaString, alphaScores);
                 updatePlayerNotes("(bytte)", 0);
                 computersTurn = true;
                 computerMove();
@@ -924,13 +868,13 @@ public class ScrabbleGame extends javax.swing.JFrame {
     }//GEN-LAST:event_newGameButtonActionPerformed
 
     private void calculateTips() {
+        String playerRack = rack.toString();
         playerTips = true;
         bestTipScore = 0;
         if (!firstMove) {
             updateAnchors();
             doCrossChecks();
         }
-        playerRackCpy = playerRack;
         tipsWords.clear();
         
         findAcrossMoves();
@@ -955,8 +899,8 @@ public class ScrabbleGame extends javax.swing.JFrame {
             }
         }
         
-        if (playerRack.length() == 7) {
-            playerExtendRight("", (MDAGNode) dictionary.getSourceNode());
+        if (rack.tileCount() == 7) {
+            playerExtendRight("", (MDAGNode) dictionary.getSourceNode(), playerRack);
         }
         
         if (transposed) {
@@ -999,22 +943,10 @@ public class ScrabbleGame extends javax.swing.JFrame {
         } else {
             System.out.println("kommer hit - pass 1");
             //legger evt brikker tilbake på racken
-            for (int i = 0; i < 7; i++) {
-                if (rack[i].tile == null && !newlyAddedToBoard.isEmpty()) {
-                    System.out.println("kommer hit - pass 2");
-                    Square s = newlyAddedToBoard.remove(0);
-                    if (s.tile.isBlank) {
-                        rack[i].tile = new Tile('-', 0);
-                    } else {
-                        rack[i].tile = s.tile;
-                    }
-                    rack[i].setIcon(s.tile.icon);
-                    s.setIcon(null);
-                    s.tile = null;
-                            
-                }
-            }
-            alphabetizeRack();
+
+            rack.putBack(newlyAddedToBoard);
+            rack.alphabetize(alphaString, alphaScores);
+
             updatePlayerNotes("(pass)", 0);
             //fjerner fra listen over nylig lagt til brikker
             addedToThisMove.clear();
@@ -1039,7 +971,7 @@ public class ScrabbleGame extends javax.swing.JFrame {
             //legger gamle brikker tilbake i posen
             for (int i = 0; i < toSwap.length(); i++) {
                 char c = toSwap.charAt(i);
-                rackString = rackString.substring(0,rackString.indexOf(c)) + rackString.substring(rackString.indexOf(c)+1);    
+                rackString = rackString.substring(0,rackString.indexOf(c)) + rackString.substring(rackString.indexOf(c)+1);
                 bag.add(new Tile(c, alphaScores[alphaString.indexOf(c)]));
             }
             System.out.println("etter å ha lagt tilbake: " + rackString);
@@ -1048,6 +980,7 @@ public class ScrabbleGame extends javax.swing.JFrame {
     }
     
     void findAcrossMoves() {
+        String playerRack = rack.toString();
         //for all anchorSquares
         for (int i = 0; i < 15; i++) {
             for (int j = 0; j < 15; j++) {
@@ -1068,13 +1001,13 @@ public class ScrabbleGame extends javax.swing.JFrame {
                             n = n.transition(charBoard[i][j - (k-l)]);
                         }
                         if (playerTips) {
-                            tipsExtendRight(partialWord, n, j, "");
+                            tipsExtendRight(partialWord, n, j, "", playerRack);
                         } else {
                         extendRight(partialWord, n, j, "");
                         }
                     } else {
                         if (playerTips) {
-                            tipsLeftPart("", (MDAGNode) dictionary.getSourceNode(), k, "");
+                            tipsLeftPart("", (MDAGNode) dictionary.getSourceNode(), k, "", playerRack);
                         } else {
                             leftPart("", (MDAGNode) dictionary.getSourceNode(), k, "");
                         }
@@ -1084,8 +1017,8 @@ public class ScrabbleGame extends javax.swing.JFrame {
         }
    }
     
-    void tipsLeftPart(String partialWord, MDAGNode n, int limit, String usedFromRack) {
-        tipsExtendRight(partialWord, n, currentAnchorJ, usedFromRack);
+    void tipsLeftPart(String partialWord, MDAGNode n, int limit, String usedFromRack, String playerRack) {
+        tipsExtendRight(partialWord, n, currentAnchorJ, usedFromRack, playerRack);
         if (limit > 0) {
             //for each edge E out of N
             TreeMap<Character,MDAGNode> outGoingEdges = n.getOutgoingTransitions();
@@ -1099,7 +1032,7 @@ public class ScrabbleGame extends javax.swing.JFrame {
                     //let N' be the node reached by following edge E
                     MDAGNode nNext = entry.getValue();
                     //leftPart(...)
-                    tipsLeftPart((partialWord + l), nNext, limit-1, usedFromRack + l);
+                    tipsLeftPart((partialWord + l), nNext, limit-1, usedFromRack + l, playerRack);
                     //put the tile back in the rack
                     playerRack += l;
                 } else { //if not on rack, check for blanks
@@ -1110,7 +1043,7 @@ public class ScrabbleGame extends javax.swing.JFrame {
                     //let N' be the node reached by following edge E
                     MDAGNode nNext = entry.getValue();
                     //leftPart(...)
-                    tipsLeftPart((partialWord + l), nNext, limit-1, usedFromRack + '-');
+                    tipsLeftPart((partialWord + l), nNext, limit-1, usedFromRack + '-', playerRack);
                     //put the blank tile back in the rack
                     playerRack += '-';                    
                     }
@@ -1120,7 +1053,7 @@ public class ScrabbleGame extends javax.swing.JFrame {
         }
     }
     
-    void tipsExtendRight(String partialWord, MDAGNode n, int squareJ, String usedFromRack) {
+    void tipsExtendRight(String partialWord, MDAGNode n, int squareJ, String usedFromRack, String playerRack) {
         //if square is vacant
         if (squareJ == 15 || charBoard[currentAnchorI][squareJ] == '-') {
             //if N si a terminal node
@@ -1162,7 +1095,7 @@ public class ScrabbleGame extends javax.swing.JFrame {
                             MDAGNode nNext = entry.getValue();
                             //let next-square be the square to the right of square
                             //if (squareJ != 14) {
-                                tipsExtendRight((partialWord + l), nNext, squareJ+1, usedFromRack + l);
+                                tipsExtendRight((partialWord + l), nNext, squareJ+1, usedFromRack + l, playerRack);
                             //}
                             //put the tile back in the rack
                             playerRack += l;
@@ -1178,7 +1111,7 @@ public class ScrabbleGame extends javax.swing.JFrame {
                                 MDAGNode nNext = entry.getValue();
                                 //let next-square be the square to the right of square
                                 if (squareJ != 14) {
-                                    tipsExtendRight((partialWord + l), nNext, squareJ+1, usedFromRack + '-');
+                                    tipsExtendRight((partialWord + l), nNext, squareJ+1, usedFromRack + '-', playerRack);
                                 }
                                 //put the blank tile back in the rack
                                 playerRack += '-';                    
@@ -1195,7 +1128,7 @@ public class ScrabbleGame extends javax.swing.JFrame {
             if (n.hasOutgoingTransition(l)) {
                 //let next-square be the square to the right of square
                 //if (squareJ != 14) {
-                    tipsExtendRight((partialWord + l), n.transition(l), squareJ+1, usedFromRack);
+                    tipsExtendRight((partialWord + l), n.transition(l), squareJ+1, usedFromRack, playerRack);
                 //}
             } 
         }
@@ -1229,7 +1162,7 @@ public class ScrabbleGame extends javax.swing.JFrame {
                     //leftPart(...)
                     leftPart((partialWord + l), nNext, limit-1, usedFromRack + '-');
                     //put the blank tile back in the rack
-                    rackString += '-';                    
+                    rackString += '-';
                     }
                 }
                 
@@ -1258,7 +1191,7 @@ public class ScrabbleGame extends javax.swing.JFrame {
                 ComputerAI computerAI = new ComputerAI(rackStringCpy, rackAlphaScores, alphaString, bag, vowelRatioLeft,
                         playerScore, computerScore, pointlessTurns, alphaScores, isAnchor, firstMove,
                         squareGrid, charBoard, dictionary,
-                        rackString, onPlayersRack);
+                        rackString, rack.tileCount());
 
                 possibleWords.put(computerAI.cpuAIScore(newPos), newPos);
             }
@@ -1302,7 +1235,7 @@ public class ScrabbleGame extends javax.swing.JFrame {
                                     extendRight((partialWord + l), nNext, squareJ+1, usedFromRack + '-');
                                 }
                                 //put the blank tile back in the rack
-                                rackString += '-';                    
+                                rackString += '-';
                             }
                         }
                     }  
@@ -1322,7 +1255,7 @@ public class ScrabbleGame extends javax.swing.JFrame {
         }
     }
     
-    void playerExtendRight(String partialWord, MDAGNode n) {
+    void playerExtendRight(String partialWord, MDAGNode n, String playerRack) {
         //if terminal node
         if (partialWord.length() == 7 && n.isAcceptNode()) {
             if (!possibleBingos.contains(partialWord)) {
@@ -1341,7 +1274,7 @@ public class ScrabbleGame extends javax.swing.JFrame {
                     //let N' be the node reached by following edge E
                     MDAGNode nNext = entry.getValue();
                     //let next-square be the square to the right of square
-                    playerExtendRight((partialWord + l), nNext);
+                    playerExtendRight((partialWord + l), nNext, playerRack);
                     //put the tile back in the rack
                     playerRack += l;
                 } else { // check for blank
@@ -1352,7 +1285,7 @@ public class ScrabbleGame extends javax.swing.JFrame {
                         //let N' be the node reached by following edge E
                         MDAGNode nNext = entry.getValue();
                         //let next-square be the square to the right of square
-                        playerExtendRight((partialWord + l), nNext);
+                        playerExtendRight((partialWord + l), nNext, playerRack);
                         //put the blank tile back in the rack
                         playerRack += '-';                    
                     }
@@ -1431,24 +1364,6 @@ public class ScrabbleGame extends javax.swing.JFrame {
                     }
                 }
             }
-        }
-    }
-    
-    void alphabetizeRack() {
-        String s = "";
-        for (int i = 0; i < 7; i++) {
-            if (rack[i].tile != null) {
-                s += rack[i].tile.letter;
-            }
-        }
-	char[] sorted = s.toCharArray();
-	Arrays.sort(sorted);
-        for (int i = 0; i < sorted.length; i++) {
-            rack[i].placeTile(new Tile(sorted[i], alphaScores[alphaString.indexOf(sorted[i])]));
-        }
-        for (int i = sorted.length; i < 7; i++) {
-            rack[i].tile = null;
-            rack[i].setIcon(null);
         }
     }
     
@@ -1623,16 +1538,15 @@ public class ScrabbleGame extends javax.swing.JFrame {
         
         //trekker fra score for players rack
         int playerMinus = 0;
-        String playerTiles = "";
-        for (int i = 0; i < 7; i++) {
-            if (rack[i].tile != null) {
-                int letterScore = rack[i].tile.value;
-                playerScore -= letterScore;
-                playerMinus -= letterScore;
-                playerTiles += rack[i].tile.letter;
-                System.out.println("Trekker fra player " + letterScore + " poeng for '" + rack[i].tile.letter + "'");
-            }
+        String playerTiles = rack.toString();
+
+        for (Tile tile : rack.tiles) {
+            int letterScore = tile.value;
+            playerScore -= letterScore;
+            playerMinus -= letterScore;
+            System.out.println("Trekker fra player " + letterScore + " poeng for '" + tile.letter + "'");
         }
+
         if (playerMinus < 0) {
             updatePlayerNotes("(" + playerTiles + ")", playerMinus);
         }
@@ -1941,7 +1855,7 @@ public class ScrabbleGame extends javax.swing.JFrame {
                 }
                 newCPUWords.add(newWord);
                 int tileScore = 0;
-                if (playerRackCpy.indexOf(word.charAt(j-wordStart)) != -1) {
+                if (rack.contains(word.charAt(j-wordStart))) {
                     tileScore = alphaScores[alphaString.indexOf(word.charAt(j-wordStart))];
                     wordScore += tileScore;
                 }
@@ -1968,7 +1882,7 @@ public class ScrabbleGame extends javax.swing.JFrame {
         int newTiles = 0;
         int tileScore = 0;
         char fromRack;
-        String rackCpy = playerRackCpy;
+        String rackCpy = rack.toString();
         for (int i = 0; i < word.length(); i++) {
             int j = wordStart+i;
             //if tile is from rack
@@ -2153,7 +2067,7 @@ public class ScrabbleGame extends javax.swing.JFrame {
         return false;
     }
     
-    boolean isVowel(char c) {
+    static boolean isVowel(char c) {
         if (c == 'E' || c == 'A' || c == 'I' || c == 'O' || c == 'U' || c == 'Å' || 
                 c == 'Ø' || c == 'Æ' || c == 'Y' || c == '-') {
             return true;
@@ -2203,7 +2117,7 @@ public class ScrabbleGame extends javax.swing.JFrame {
    void initGame() {
         rackString = "";
         rackStringCpy = "";
-       
+
         playerScore = 0;
         computerScore = 0;
         
@@ -2240,6 +2154,7 @@ public class ScrabbleGame extends javax.swing.JFrame {
         
         bag = new Bag();
 
+
          //hvis computer starter
          if(new Random().nextInt(2) == 0) {
              
@@ -2250,18 +2165,10 @@ public class ScrabbleGame extends javax.swing.JFrame {
                  Tile t = bag.pickTile();
                  rackString += t.letter;
              }
-             //placing tiles on rack
-            for (int i = 0; i < 7; i++) {
-                 rack[i].placeTile(bag.pickTile());
-            }
+             rack = new Rack(bag, rackSquares);
          } else { //hvis pl1 starter
             computersTurn = false;
-            //placing tiles on rack
-            playerRack = "";
-            for (int i = 0; i < 7; i++) {
-                rack[i].placeTile(bag.pickTile());
-                playerRack += rack[i].tile.letter;
-            }
+            rack = new Rack(bag, rackSquares);
             for (int i = 0; i < 7; i++) {
                  Tile t = bag.pickTile();
                  rackString += t.letter;
@@ -2269,8 +2176,7 @@ public class ScrabbleGame extends javax.swing.JFrame {
         }
          tilesLeftTitleLabel.setText("<html><body><b><u>Gjenværende brikker:</u></b></body></html>");
          firstMove = true;
-         onPlayersRack = 7;
-         alphabetizeRack();
+         rack.alphabetize(alphaString, alphaScores);
          bagCountLabel.setText("Brikker igjen i posen: " + bag.tileCount());
          playerIsFirst = !computersTurn;
          playerNotes = "<b><u>" + playerName + ":</u></b><br>";
@@ -2365,15 +2271,6 @@ public class ScrabbleGame extends javax.swing.JFrame {
                 squareGrid[i][j] = square;
                 scrabbleBoardPanel.add(squareGrid[i][j]);
             }
-        }
-        
-        //lager rack
-        rackPanel.setComponentOrientation(ComponentOrientation.LEFT_TO_RIGHT);
-        for(int i = 0; i < 7; i++) {
-            Square square = new Square(false, this);
-            square.setBackground(new Color(0, 120, 98));
-            rack[i] = square;
-            rackPanel.add(rack[i]);
         }
         
         //setter TW-farger
@@ -2485,8 +2382,9 @@ public class ScrabbleGame extends javax.swing.JFrame {
     
     ArrayList<Square> addedToThisMove = new ArrayList<>();
     ArrayList<Square[]> newWordsAdded = new ArrayList<>();
-    
-    Square[] rack = new Square[7];
+
+    Rack rack;
+    ArrayList<Square> rackSquares = new ArrayList<>(7);
     Square selectedSquare;
     boolean firstMove = true;
     int playerScore, computerScore;
@@ -2501,7 +2399,6 @@ public class ScrabbleGame extends javax.swing.JFrame {
     String tilesLeft;
     String previousTilesLeft;
     int pointlessTurns;
-    int onPlayersRack;
     double vowelRatioLeft;
     boolean dictionaryIsCreated = false;
     boolean nameGiven = false;
@@ -2510,9 +2407,6 @@ public class ScrabbleGame extends javax.swing.JFrame {
     String previousRackString;
     String cpuNewlyPicked;
     String rackStringCpy = "";
-    
-    String playerRack = "";
-    String playerRackCpy = "";
     boolean newWordAdded = false;
     boolean playerTips = false;
     //Solver variables

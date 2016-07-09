@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Random;
 import java.util.stream.Collectors;
 
+import static scrabblegamepkg.ComputerAI.*;
+
 public class Bag {
 
     private final ArrayList<Tile> tiles;
@@ -92,5 +94,14 @@ public class Bag {
 
     public boolean containsLetterOrBlank(char letter) {
         return contains(letter) || contains('-');
+    }
+
+    public int vowelCount() {
+        return tiles
+                .stream()
+                .map(tile -> tile.letter)
+                .filter((c) -> ComputerAI.isVowel(c))
+                .collect(Collectors.toList())
+                .size();
     }
 }

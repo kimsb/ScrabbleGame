@@ -4,7 +4,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.ArrayList;
 
 class Square extends javax.swing.JLabel {
     int row;
@@ -93,12 +92,16 @@ class Square extends javax.swing.JLabel {
         } else {
             if (scrabbleGame.selectedSquare != null) {
                 if (placeTile(scrabbleGame.selectedSquare.tile)) {
-                    scrabbleGame.selectedSquare.setIcon(null);
-                    scrabbleGame.selectedSquare.tile = null;
+                    scrabbleGame.selectedSquare.cleanUp();
                 }
                 scrabbleGame.selectedSquare = null;
             }
         }
+    }
+
+    public void cleanUp() {
+        setIcon(null);
+        tile = null;
     }
 
 }
