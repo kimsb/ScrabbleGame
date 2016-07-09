@@ -2487,7 +2487,7 @@ public class ScrabbleGame extends javax.swing.JFrame {
         for (int i = 0; i < 15; i++) {
             for (int j = 0; j < 15; j++) {
                 //JLabel square = new JLabel("");
-                Square square = new Square(true);
+                Square square = new Square(true, this);
                 square.setBackground(new Color(57, 172, 172));
                 square.row = i;
                 square.column = j;
@@ -2501,7 +2501,7 @@ public class ScrabbleGame extends javax.swing.JFrame {
         //lager rack
         rackPanel.setComponentOrientation(ComponentOrientation.LEFT_TO_RIGHT);
         for(int i = 0; i < 7; i++) {
-            Square square = new Square(false);
+            Square square = new Square(false, this);
             square.setBackground(new Color(0, 120, 98));
             rack[i] = square;
             rackPanel.add(rack[i]);
@@ -2677,98 +2677,6 @@ public class ScrabbleGame extends javax.swing.JFrame {
     boolean retryIfWordIsNotValid = false;
     String playerName = "player";
 
-    class Square extends javax.swing.JLabel {
-        int row;
-        int column;
-        Tile tile;
-        String multiplier = "";
-        boolean onBoard;
-        Square(boolean onBoard) {
-            this.onBoard = onBoard;
-            setPreferredSize(new Dimension(35, 35)); //endre 50, 50 for å endre størrelse
-            setOpaque(true);
-            addMouseListener(new MouseAdapter() {
-                public void mousePressed(MouseEvent e) {
-                    if (!computersTurn) {
-                        squareClicked();
-                    }
-                }
-            });
-        }
-        
-        void setMultiplier(String mult) {
-            multiplier = mult;
-            if (mult.equals("DL")) {
-                setBackground(new Color(153, 221, 255));
-            } else if (mult.equals("TL")) {
-                setBackground(new Color(77, 121, 255));
-            } else if (mult.equals("DW")) {
-                setBackground(new Color(255, 204, 153));
-            } else if (mult.equals("TW")) {
-                setBackground(new Color(255, 0, 0));
-            }
-        }
-        
-        boolean placeTile(Tile t) {
-            if (onBoard) {
-                if (!computersTurn && t.isBlank) {
-                    //brikken er blank å må få verdi
-                    boolean hasValue = false;
-                    while (!hasValue) {
-                        String blankString = JOptionPane.showInputDialog(null, "Velg bokstav for blank brikke");
-                        if (blankString == null) {
-                            return false;
-                        }
-                        blankString = blankString.toUpperCase().replaceAll("\\s","");
-                        char blankLetter = blankString.charAt(0);
-                        if (blankString.length() == 1 && Character.isLetter(blankLetter)) {
-                            System.out.println("blanke er nå " + blankLetter);
-                            t.letter = blankLetter;
-                            hasValue = true;
-                        } else {
-                            JOptionPane.showMessageDialog(null, "Blanke kan bare være en bokstav");
-                        }
-                    }
-                }
-                newlyAddedToBoard.add(this);
-                if (computersTurn) {
-                    addedToThisMove.add(this);
-                }
-            }
-            if (!onBoard && t.isBlank) {
-                t.letter = '-';
-            }
-            tile = t;
-            setIcon(t.icon);
-            return true;
-        }
-        
-        void squareClicked() {
-            if (tile != null) {
-                if (tile.isMovable) {
-                    if (selectedSquare != null) {
-                        Tile temp = tile;
-                        if (placeTile(selectedSquare.tile)) {
-                            selectedSquare.setIcon(temp.icon);
-                            selectedSquare.tile = temp;
-                            selectedSquare = null;
-                        }
-                    } else {
-                        selectedSquare = this; //bør markeres
-                    }
-                }
-            } else {                   
-                if (selectedSquare != null) {
-                    if (placeTile(selectedSquare.tile)) {
-                        selectedSquare.setIcon(null);
-                        selectedSquare.tile = null;
-                    }
-                    selectedSquare = null;
-                }
-            }      
-        }
-
-    }
 
 
 

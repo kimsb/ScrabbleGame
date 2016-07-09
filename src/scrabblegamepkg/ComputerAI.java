@@ -17,7 +17,7 @@ public class ComputerAI {
     int[] alphaScores;
     boolean[][] isAnchor;
     boolean firstMove;
-    ScrabbleGame.Square[][] squareGrid;
+    Square[][] squareGrid;
     char[][] charBoard;
     MDAG dictionary;
     HashMap<Character, Integer> bagTiles;
@@ -26,7 +26,7 @@ public class ComputerAI {
 
     public ComputerAI(String rackStringCpy, double[] rackAlphaScores, String alphaString, ArrayList<Tile> bag, double vowelRatioLeft,
                       int playerScore, int computerScore, int pointlessTurns, int[] alphaScores, boolean[][] isAnchor, boolean firstMove,
-                      ScrabbleGame.Square[][] squareGrid, char[][] charBoard, MDAG dictionary, HashMap<Character, Integer> bagTiles,
+                      Square[][] squareGrid, char[][] charBoard, MDAG dictionary, HashMap<Character, Integer> bagTiles,
                       String rackString, int onPlayersRack) {
         this.rackStringCpy = rackStringCpy;
         this.rackAlphaScores = rackAlphaScores;
