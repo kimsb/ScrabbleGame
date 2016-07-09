@@ -602,9 +602,9 @@ public class ScrabbleGame extends javax.swing.JFrame {
         int count = 0;
         int topSc = 0;
         double topScKey = 0;
-        PossibleWord top = null;
-        for (Map.Entry<Double,PossibleWord> entry : possibleWords.entrySet()) {
-            PossibleWord poss = entry.getValue();
+        PotentialMove top = null;
+        for (Map.Entry<Double,PotentialMove> entry : possibleWords.entrySet()) {
+            PotentialMove poss = entry.getValue();
             if (count < 20) {
                 System.out.println(entry.getKey() + " " + poss.word + " startsAt " + poss.wordStart + " vertical: " + poss.vertical + " bruker: " + poss.usedFromRack + " har igjen: " + poss.leftOnRack + " score: " + poss.wordScore + "  -> " + poss.AIString);
                 count++;
@@ -636,7 +636,7 @@ public class ScrabbleGame extends javax.swing.JFrame {
         }
         
         //velge legg og skrive ut på skjerm + legge til brikkene i charBoard
-        PossibleWord topScoreWord = possibleWords.firstEntry().getValue();
+        PotentialMove topScoreWord = possibleWords.firstEntry().getValue();
         
         //TEST
         if (top != null) {
@@ -967,8 +967,8 @@ public class ScrabbleGame extends javax.swing.JFrame {
         
         possibleBingos.clear();
         impossibleBingos.clear();
-        for (Map.Entry<Double,PossibleWord> entry : tipsWords.entrySet()) {
-            PossibleWord poss = entry.getValue();
+        for (Map.Entry<Double,PotentialMove> entry : tipsWords.entrySet()) {
+            PotentialMove poss = entry.getValue();
             if (poss.usedFromRack.length() == 7) {
                 if (!possibleBingos.contains(poss.word)) {
                     possibleBingos.add(poss.word);
@@ -996,8 +996,8 @@ public class ScrabbleGame extends javax.swing.JFrame {
         } else {
             tipsString += "<b><u>Høyest scorende legg:</u></b>";
         }
-        for (Map.Entry<Double,PossibleWord> entry : tipsWords.entrySet()) {
-            PossibleWord poss = entry.getValue();
+        for (Map.Entry<Double,PotentialMove> entry : tipsWords.entrySet()) {
+            PotentialMove poss = entry.getValue();
             
             if (count < 5) {
                 if (!tipsGiven.contains(poss.word)) {
@@ -1146,13 +1146,13 @@ public class ScrabbleGame extends javax.swing.JFrame {
         if (squareJ == 15 || charBoard[currentAnchorI][squareJ] == '-') {
             //if N si a terminal node
             if (squareJ != currentAnchorJ && n.isAcceptNode()) {
-                PossibleWord newTip;
+                PotentialMove newTip;
                 //if (squareJ == currentAnchorJ) {
                   //  newPos = new PossibleWord(partialWord, currentAnchorI, squareJ);
                 //    //possibleWords.add(new PossibleWord(partialWord, currentAnchorI, squareJ));
                 //} else {
                     newCPUWords = new ArrayList<>();
-                    newTip = new PossibleWord(partialWord, currentAnchorI, squareJ-1, transposed, 
+                    newTip = new PotentialMove(partialWord, currentAnchorI, squareJ-1, transposed,
                             scoreTipsWords(partialWord, currentAnchorI, (squareJ - partialWord.length())),
                             usedFromRack);
                     newTip.words = newCPUWords;
@@ -1263,13 +1263,13 @@ public class ScrabbleGame extends javax.swing.JFrame {
         if (squareJ == 15 || charBoard[currentAnchorI][squareJ] == '-') {
             //if N si a terminal node
             if (squareJ != currentAnchorJ && n.isAcceptNode()) {
-                PossibleWord newPos;
+                PotentialMove newPos;
                 //if (squareJ == currentAnchorJ) {
                   //  newPos = new PossibleWord(partialWord, currentAnchorI, squareJ);
                 //    //possibleWords.add(new PossibleWord(partialWord, currentAnchorI, squareJ));
                 //} else {
                     newCPUWords = new ArrayList<>();
-                    newPos = new PossibleWord(partialWord, currentAnchorI, squareJ-1, transposed, 
+                    newPos = new PotentialMove(partialWord, currentAnchorI, squareJ-1, transposed,
                             scoreCPUWords(partialWord, currentAnchorI, (squareJ - partialWord.length())),
                             usedFromRack);
                     newPos.words = newCPUWords;
@@ -1547,7 +1547,7 @@ public class ScrabbleGame extends javax.swing.JFrame {
             if (score == bestTipScore) {
                 playerNotes += "!";
             }
-            PossibleWord poss = tipsWords.firstEntry().getValue();
+            PotentialMove poss = tipsWords.firstEntry().getValue();
             if (score < bestTipScore) { 
                 String message = "<html><body><u><b>Du kunne lagt:</u></b><br>";
                 message += (poss.wordScore + ", " + poss.word);
@@ -2661,14 +2661,14 @@ public class ScrabbleGame extends javax.swing.JFrame {
     //Solver variables
     char[][] charBoard = new char[15][15];
     char[][] charBoardBeforeLastMove = new char[15][15];
-    PossibleWord cpuLastWord;
+    PotentialMove cpuLastWord;
     boolean[][] isAnchor = new boolean[15][15];
     String[][] crossChecks = new String[15][15];
     int currentAnchorI = 0;
     int currentAnchorJ = 0;
     //ArrayList<PossibleWord> possibleWords = new ArrayList<>();
-    TreeMap<Double, PossibleWord> tipsWords = new TreeMap<>(Collections.reverseOrder());
-    TreeMap<Double, PossibleWord> possibleWords = new TreeMap<>(Collections.reverseOrder());
+    TreeMap<Double, PotentialMove> tipsWords = new TreeMap<>(Collections.reverseOrder());
+    TreeMap<Double, PotentialMove> possibleWords = new TreeMap<>(Collections.reverseOrder());
     ArrayList<String> newCPUWords;
 
     ArrayList<String> possibleBingos = new ArrayList<>();
@@ -2677,29 +2677,4 @@ public class ScrabbleGame extends javax.swing.JFrame {
     boolean retryIfWordIsNotValid = false;
     String playerName = "player";
 
-
-
-
-    class PossibleWord {
-        String word;
-        int row;
-        int wordStart;
-        boolean vertical;
-        int wordScore;
-        String usedFromRack;
-        String leftOnRack;
-        ArrayList<String> words;
-        String AIString = "";
-        //int score;
-        //Square[] wordSquares;
-        PossibleWord(String w, int r, int wordEnd, boolean trans, int wScore, String fromRack) {
-            vertical = trans;
-            word = w;
-            row = r;
-            int wordLen = word.length();
-            wordStart = wordEnd - wordLen + 1;
-            wordScore = wScore;       
-            usedFromRack = fromRack;
-        }
-    }
 }

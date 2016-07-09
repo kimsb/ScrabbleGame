@@ -48,7 +48,7 @@ public class ComputerAI {
     }
 
     //gjøres nå for alle ord, bør det bare gjøres for topp 10, 20, 30?
-    double cpuAIScore(ScrabbleGame.PossibleWord posWord) {
+    double cpuAIScore(PotentialMove posWord) {
         double score = posWord.wordScore;
 
         //hvis blank brukes - trekker fra 20p (straffes for max en)
@@ -237,7 +237,7 @@ public class ComputerAI {
         return score;
     }
 
-    double openingTWPenalty(ScrabbleGame.PossibleWord posWord) {
+    double openingTWPenalty(PotentialMove posWord) {
         if (posWord.row == 0 || posWord.row == 14) {
             return 0;
         }
@@ -1093,7 +1093,7 @@ public class ComputerAI {
         return score;
     }
 
-    double toWayMultiplierSetUpPenalty(ScrabbleGame.PossibleWord posWord) {
+    double toWayMultiplierSetUpPenalty(PotentialMove posWord) {
         double score = 0;
         //foran nye ord
         if (posWord.wordStart != 0 && squareGrid[posWord.row][posWord.wordStart-1].multiplier.length() != 0) {
