@@ -35,6 +35,10 @@ public class Rack {
         alphabetizeSquares();
     }
 
+    public void removeTile(char letter) {
+         tiles.remove(tiles.stream().filter(tile -> tile.letter == letter).findFirst().get());
+    }
+
     public void fill(Bag bag) {
         while (tileCount() < 7 && !bag.isEmpty()) {
             Tile tile = bag.pickTile();

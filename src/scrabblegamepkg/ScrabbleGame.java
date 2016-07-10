@@ -393,14 +393,15 @@ public class ScrabbleGame extends javax.swing.JFrame {
                     s.tile.isMovable = false;
                     if (s.tile.isBlank) {
                         toRemoveFromRemaining += '-';
+                        rack.removeTile('-');
                     } else {
                         toRemoveFromRemaining += s.tile.letter;
+                        rack.removeTile(s.tile.letter);
                     }
                 }
                 updateRemaining(toRemoveFromRemaining);
-                
-                //trekke nye brikker
 
+                //trekke nye brikker
                 rack.fill(bag);
                 rack.alphabetize();
                 
