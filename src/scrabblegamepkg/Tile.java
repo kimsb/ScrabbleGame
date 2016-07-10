@@ -11,12 +11,12 @@ public class Tile {
     boolean isMovable = true;
     boolean isBlank = false;
 
-    Tile(char l, int v) {
+    Tile(char l) {
         letter = l;
         if (l == '-') {
             isBlank = true;
         }
-        value = v;
+        value = ScoreConstants.letterScore(l);
         icon = new javax.swing.ImageIcon(getClass().getResource("/TileImages/" + l + ".png"));
         Image img = icon.getImage();
         Image newimg = img.getScaledInstance(35, 35, java.awt.Image.SCALE_SMOOTH); //endre 50, 50 for å endre størrelse

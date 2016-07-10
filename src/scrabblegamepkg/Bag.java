@@ -5,6 +5,7 @@ import java.util.Random;
 import java.util.stream.Collectors;
 
 import static scrabblegamepkg.ComputerAI.*;
+import static scrabblegamepkg.StringUtil.isVowel;
 
 public class Bag {
 
@@ -41,41 +42,41 @@ public class Bag {
     private ArrayList<Tile> fillBag() {
         ArrayList<Tile> tiles = new ArrayList<>();
 
-        tiles.addAll(createTiles(7, 'A', 1));
-        tiles.addAll(createTiles(3, 'B', 4));
-        tiles.addAll(createTiles(1, 'C', 10));
-        tiles.addAll(createTiles(5, 'D', 1));
-        tiles.addAll(createTiles(9, 'E', 1));
-        tiles.addAll(createTiles(4, 'F', 2));
-        tiles.addAll(createTiles(4, 'G', 2));
-        tiles.addAll(createTiles(3, 'H', 3));
-        tiles.addAll(createTiles(5, 'I', 1));
-        tiles.addAll(createTiles(2, 'J', 4));
-        tiles.addAll(createTiles(4, 'K', 2));
-        tiles.addAll(createTiles(5, 'L', 1));
-        tiles.addAll(createTiles(3, 'M', 2));
-        tiles.addAll(createTiles(6, 'N', 1));
-        tiles.addAll(createTiles(4, 'O', 2));
-        tiles.addAll(createTiles(2, 'P', 4));
-        tiles.addAll(createTiles(6, 'R', 1));
-        tiles.addAll(createTiles(6, 'S', 1));
-        tiles.addAll(createTiles(6, 'T', 1));
-        tiles.addAll(createTiles(3, 'U', 4));
-        tiles.addAll(createTiles(3, 'V', 4));
-        tiles.addAll(createTiles(1, 'W', 8));
-        tiles.addAll(createTiles(1, 'Y', 6));
-        tiles.addAll(createTiles(1, 'Æ', 6));
-        tiles.addAll(createTiles(2, 'Ø', 5));
-        tiles.addAll(createTiles(2, 'Å', 4));
-        tiles.addAll(createTiles(2, '-', 0));
+        tiles.addAll(createTiles(7, 'A'));
+        tiles.addAll(createTiles(3, 'B'));
+        tiles.addAll(createTiles(1, 'C'));
+        tiles.addAll(createTiles(5, 'D'));
+        tiles.addAll(createTiles(9, 'E'));
+        tiles.addAll(createTiles(4, 'F'));
+        tiles.addAll(createTiles(4, 'G'));
+        tiles.addAll(createTiles(3, 'H'));
+        tiles.addAll(createTiles(5, 'I'));
+        tiles.addAll(createTiles(2, 'J'));
+        tiles.addAll(createTiles(4, 'K'));
+        tiles.addAll(createTiles(5, 'L'));
+        tiles.addAll(createTiles(3, 'M'));
+        tiles.addAll(createTiles(6, 'N'));
+        tiles.addAll(createTiles(4, 'O'));
+        tiles.addAll(createTiles(2, 'P'));
+        tiles.addAll(createTiles(6, 'R'));
+        tiles.addAll(createTiles(6, 'S'));
+        tiles.addAll(createTiles(6, 'T'));
+        tiles.addAll(createTiles(3, 'U'));
+        tiles.addAll(createTiles(3, 'V'));
+        tiles.addAll(createTiles(1, 'W'));
+        tiles.addAll(createTiles(1, 'Y'));
+        tiles.addAll(createTiles(1, 'Æ'));
+        tiles.addAll(createTiles(2, 'Ø'));
+        tiles.addAll(createTiles(2, 'Å'));
+        tiles.addAll(createTiles(2, '-'));
 
         return tiles;
     }
 
-    private ArrayList<Tile> createTiles(int count, char letter, int score) {
+    private ArrayList<Tile> createTiles(int count, char letter) {
         ArrayList<Tile> tiles = new ArrayList<>();
         for (int i = 0; i < count; i++) {
-            tiles.add(new Tile(letter, score));
+            tiles.add(new Tile(letter));
         }
         return tiles;
     }
@@ -100,7 +101,7 @@ public class Bag {
         return tiles
                 .stream()
                 .map(tile -> tile.letter)
-                .filter((c) -> ComputerAI.isVowel(c))
+                .filter((c) -> isVowel(c))
                 .collect(Collectors.toList())
                 .size();
     }

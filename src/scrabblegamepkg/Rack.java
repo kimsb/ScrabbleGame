@@ -27,12 +27,12 @@ public class Rack {
         return tiles.size();
     }
 
-    public void alphabetize(String alphaString, int[] alphaScores) {
+    public void alphabetize() {
         tiles
                 .stream()
                 .sorted((tile1, tile2) -> Character.compare(tile1.letter, tile2.letter));
 
-        alphabetizeSquares(alphaString, alphaScores);
+        alphabetizeSquares();
     }
 
     public void fill(Bag bag) {
@@ -54,7 +54,7 @@ public class Rack {
             if (squares.get(i).tile == null && !addedToThisMove.isEmpty()) {
                 Square s = addedToThisMove.remove(0);
                 if (s.tile.isBlank) {
-                    squares.get(i).tile = new Tile('-', 0);
+                    squares.get(i).tile = new Tile('-');
                 } else {
                     squares.get(i).tile = s.tile;
                 }
@@ -68,7 +68,7 @@ public class Rack {
         }
     }
 
-    void alphabetizeSquares(String alphaString, int[] alphaScores) {
+    void alphabetizeSquares() {
         String s = "";
         for (int i = 0; i < 7; i++) {
             if (squares.get(i).tile != null) {
@@ -78,11 +78,10 @@ public class Rack {
         char[] sorted = s.toCharArray();
         Arrays.sort(sorted);
         for (int i = 0; i < sorted.length; i++) {
-            squares.get(i).placeTile(new Tile(sorted[i], alphaScores[alphaString.indexOf(sorted[i])]));
+            squares.get(i).placeTile(new Tile(sorted[i]));
         }
         for (int i = sorted.length; i < 7; i++) {
-            squares.get(i).tile = null;
-            squares.get(i).setIcon(null);
+            squares.get(i).cleanUp();
         }
     }
 

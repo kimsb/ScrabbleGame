@@ -17,6 +17,8 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static scrabblegamepkg.StringUtil.*;
+
 /**
  *
  * @author Kim
@@ -400,7 +402,7 @@ public class ScrabbleGame extends javax.swing.JFrame {
                 //trekke nye brikker
 
                 rack.fill(bag);
-                rack.alphabetize(alphaString, alphaScores);
+                rack.alphabetize();
                 
                 //brikker har blitt lagt, oppdaterer charBoard
                 updateCharBoard();
@@ -423,7 +425,7 @@ public class ScrabbleGame extends javax.swing.JFrame {
                 } else {
 
                     rack.putBack(addedToThisMove);
-                    rack.alphabetize(alphaString, alphaScores);
+                    rack.alphabetize();
                     updatePlayerNotes("(ikke godkjent)", 0);
                     //fjerner fra listen over nylig lagt til brikker
                     addedToThisMove.clear();
@@ -503,7 +505,7 @@ public class ScrabbleGame extends javax.swing.JFrame {
     
     void computerAI() {        
         //calculating vowelRatio in bag + players rack
-        double vowelsLeft = bag.vowelCount() + ComputerAI.vowelCount(rack.toString());
+        double vowelsLeft = bag.vowelCount() + vowelCount(rack.toString());
         int lettersLeft = bag.tileCount() + rack.tileCount();
 
         vowelRatioLeft = vowelsLeft / lettersLeft;
@@ -641,12 +643,12 @@ public class ScrabbleGame extends javax.swing.JFrame {
                 rackString = rackString.substring(0,index) + rackString.substring(index+1);
                 Tile t;
                 if (blank) {
-                    t = new Tile('-', 0);
+                    t = new Tile('-');
                     t.letter = l;
                     JOptionPane.showMessageDialog(null, "Blank er " + l);
                     toRemoveFromRemaining += '-';
                 } else {
-                    t = new Tile(l, alphaScores[alphaString.indexOf(l)]);
+                    t = new Tile(l);
                     toRemoveFromRemaining += l;
                 }
                 squareGrid[topScoreWord.row][topScoreWord.wordStart+i].placeTile(t);
@@ -773,7 +775,7 @@ public class ScrabbleGame extends javax.swing.JFrame {
             
             //legger tilbake i posen
             for (int i = 0; i < cpuNewlyPicked.length(); i++) {
-                bag.add(new Tile(cpuNewlyPicked.charAt(i), alphaScores[alphaString.indexOf(cpuNewlyPicked.charAt(i))]));
+                bag.add(new Tile(cpuNewlyPicked.charAt(i)));
             }
             //omgjør rack til forrige rack
             rackString = previousRackString;
@@ -839,7 +841,7 @@ public class ScrabbleGame extends javax.swing.JFrame {
 
                 rack.swap(toSwap, bag);
 
-                rack.alphabetize(alphaString, alphaScores);
+                rack.alphabetize();
                 updatePlayerNotes("(bytte)", 0);
                 computersTurn = true;
                 computerMove();
@@ -945,7 +947,7 @@ public class ScrabbleGame extends javax.swing.JFrame {
             //legger evt brikker tilbake på racken
 
             rack.putBack(newlyAddedToBoard);
-            rack.alphabetize(alphaString, alphaScores);
+            rack.alphabetize();
 
             updatePlayerNotes("(pass)", 0);
             //fjerner fra listen over nylig lagt til brikker
@@ -972,7 +974,7 @@ public class ScrabbleGame extends javax.swing.JFrame {
             for (int i = 0; i < toSwap.length(); i++) {
                 char c = toSwap.charAt(i);
                 rackString = rackString.substring(0,rackString.indexOf(c)) + rackString.substring(rackString.indexOf(c)+1);
-                bag.add(new Tile(c, alphaScores[alphaString.indexOf(c)]));
+                bag.add(new Tile(c));
             }
             System.out.println("etter å ha lagt tilbake: " + rackString);
         }
@@ -1188,8 +1190,8 @@ public class ScrabbleGame extends javax.swing.JFrame {
                     newCPUWords = null;
                     //possibleWords.add(new PossibleWord(partialWord, currentAnchorI, squareJ-1));
                // }
-                ComputerAI computerAI = new ComputerAI(rackStringCpy, rackAlphaScores, alphaString, bag, vowelRatioLeft,
-                        playerScore, computerScore, pointlessTurns, alphaScores, isAnchor, firstMove,
+                ComputerAI computerAI = new ComputerAI(rackStringCpy, bag, vowelRatioLeft, alphaString,
+                        playerScore, computerScore, pointlessTurns, isAnchor, firstMove,
                         squareGrid, charBoard, dictionary,
                         rackString, rack.tileCount());
 
@@ -1525,7 +1527,7 @@ public class ScrabbleGame extends javax.swing.JFrame {
         for (int i = 0; i < rackString.length(); i++) {
             int letterScore = 0;
             if (rackString.charAt(i) != '-') {
-                letterScore = alphaScores[alphaString.indexOf(rackString.charAt(i))];
+                letterScore = ScoreConstants.letterScore(rackString.charAt(i));
             }
             computerScore -= letterScore;
             cpuMinus -= letterScore;
@@ -1789,21 +1791,21 @@ public class ScrabbleGame extends javax.swing.JFrame {
                 String newWord = "";
                 for (int k = tilesOver; k > 0; k--) {
                     if (!squareGrid[row-k][j].tile.isBlank) {
-                        wordScore += alphaScores[alphaString.indexOf(charBoard[row-k][j])];
+                        wordScore += ScoreConstants.letterScore(charBoard[row-k][j]);
                         newWord += charBoard[row-k][j];
                     }
                 }
                 newWord += word.charAt(j - wordStart);
                 for (int k = 1; k <= tilesUnder; k++) {
                     if (!squareGrid[row+k][j].tile.isBlank) {
-                        wordScore += alphaScores[alphaString.indexOf(charBoard[row+k][j])];
+                        wordScore += ScoreConstants.letterScore(charBoard[row+k][j]);
                         newWord += charBoard[row+k][j];
                     }                    
                 }
                 newCPUWords.add(newWord);
                 int tileScore = 0;
                 if (rackStringCpy.indexOf(word.charAt(j-wordStart)) != -1) {
-                    tileScore = alphaScores[alphaString.indexOf(word.charAt(j-wordStart))];
+                    tileScore = ScoreConstants.letterScore(word.charAt(j-wordStart));
                     wordScore += tileScore;
                 }
                 if (squareGrid[row][j].multiplier.equals("DL")) {
@@ -1842,21 +1844,21 @@ public class ScrabbleGame extends javax.swing.JFrame {
                 String newWord = "";
                 for (int k = tilesOver; k > 0; k--) {
                     if (!squareGrid[row-k][j].tile.isBlank) {
-                        wordScore += alphaScores[alphaString.indexOf(charBoard[row-k][j])];
+                        wordScore += ScoreConstants.letterScore(charBoard[row-k][j]);
                         newWord += charBoard[row-k][j];
                     }
                 }
                 newWord += word.charAt(j - wordStart);
                 for (int k = 1; k <= tilesUnder; k++) {
                     if (!squareGrid[row+k][j].tile.isBlank) {
-                        wordScore += alphaScores[alphaString.indexOf(charBoard[row+k][j])];
+                        wordScore += ScoreConstants.letterScore(charBoard[row+k][j]);
                         newWord += charBoard[row+k][j];
                     }                    
                 }
                 newCPUWords.add(newWord);
                 int tileScore = 0;
                 if (rack.contains(word.charAt(j-wordStart))) {
-                    tileScore = alphaScores[alphaString.indexOf(word.charAt(j-wordStart))];
+                    tileScore = ScoreConstants.letterScore(word.charAt(j-wordStart));
                     wordScore += tileScore;
                 }
                 if (squareGrid[row][j].multiplier.equals("DL")) {
@@ -1895,7 +1897,7 @@ public class ScrabbleGame extends javax.swing.JFrame {
                     fromRack = '-';
                     index = rackCpy.indexOf(fromRack);
                 } else {
-                    tileScore = alphaScores[alphaString.indexOf(fromRack)];
+                    tileScore = ScoreConstants.letterScore(fromRack);
                 }
                 if (squareGrid[row][j].multiplier.equals("DL")) {
                     tempSum += tileScore;
@@ -1908,7 +1910,7 @@ public class ScrabbleGame extends javax.swing.JFrame {
                 }
                 rackCpy = rackCpy.substring(0, index) + rackCpy.substring(index+1);
             } else if (!squareGrid[row][j].tile.isBlank){
-                tileScore = alphaScores[alphaString.indexOf(charBoard[row][j])];
+                tileScore = ScoreConstants.letterScore(charBoard[row][j]);
             }
             tempSum += tileScore;
         }
@@ -1941,7 +1943,7 @@ public class ScrabbleGame extends javax.swing.JFrame {
                     fromRack = '-';
                     index = rackCpy.indexOf(fromRack);
                 } else {
-                    tileScore = alphaScores[alphaString.indexOf(fromRack)];
+                    tileScore = ScoreConstants.letterScore(fromRack);
                 }
                 if (squareGrid[row][j].multiplier.equals("DL")) {
                     tempSum += tileScore;
@@ -1954,7 +1956,7 @@ public class ScrabbleGame extends javax.swing.JFrame {
                 }
                 rackCpy = rackCpy.substring(0, index) + rackCpy.substring(index+1);
             } else if (!squareGrid[row][j].tile.isBlank){
-                tileScore = alphaScores[alphaString.indexOf(charBoard[row][j])];
+                tileScore = ScoreConstants.letterScore(charBoard[row][j]);
             }
             tempSum += tileScore;
         }
@@ -1965,114 +1967,6 @@ public class ScrabbleGame extends javax.swing.JFrame {
             //JOptionPane.showMessageDialog(null, "Bingo!");
         }              
         return tempSum;
-    }       
-
-
- 
-
-    
-    String removeChar(String s, char c) {
-        int index = s.indexOf(c);
-        if (index == -1) {
-            return s;
-        }
-        return s.substring(0, index) + s.substring(index+1);
-    }
-
-    double vowelRatio(String s) {
-        System.out.print("vowelRatio kalles med: " + s);
-        double vowelCount = 0;
-        for (int i = 0; i < s.length(); i++) {
-            if (isVowel(s.charAt(i))) {
-                vowelCount++;
-            }
-        }
-        //velger blank som vokal/kons etter hva som passer best
-        if (s.indexOf('-') != -1) {
-            if (Math.abs((vowelCount-1/s.length()) - 0.38) < Math.abs((vowelCount/s.length()) - 0.38)) {
-                vowelCount--;
-            }
-        }
-        
-        System.out.println(", returnerer med " + (vowelCount / s.length()));
-        return vowelCount / s.length();
-    }
-    
-    //antar at s ikke er tom
-    char lowestScoringVowel(String s) {
-        System.out.print("lowestScoringVowel kalles med: " + s);
-        int index = 0;
-        while (s.length() > 0 && vowelCount(s) < s.length()) {
-            if (!isVowel(s.charAt(index))) {
-                s = removeChar(s, s.charAt(index));
-            } else {
-                index++;
-            }
-        }
-        char c = s.charAt(0);
-        for (int i = 1; i < s.length(); i++) {
-            if (rackAlphaScores[alphaString.indexOf(s.charAt(i))] < rackAlphaScores[alphaString.indexOf(c)]) {
-                c = s.charAt(i);
-            }
-        }
-        System.out.println(", returnerer: " + c);
-        return c;
-    }
-
-    //antar at s ikke er tom
-    char lowestScoringCons(String s) {
-        System.out.print("lowestScoringCons kalles med: " + s);
-        int index = 0;
-        while (s.length() > 0 && vowelCount(s) > 0) {
-            if (isVowel(s.charAt(index))) {
-                s = removeChar(s, s.charAt(index));
-            } else {
-                index++;
-            }
-        }
-        char c = s.charAt(0);
-        for (int i = 1; i < s.length(); i++) {
-            if (rackAlphaScores[alphaString.indexOf(s.charAt(i))] < rackAlphaScores[alphaString.indexOf(c)]) {
-                c = s.charAt(i);
-            }
-        }
-        System.out.println(", returnerer: " + c);
-        return c;
-    }
-    
-    boolean isBingoFriendlyChar(char c) {
-        if (c != 'E' && c != 'R' && c != 'N' && c != 'A' && c != 'T' && c != 'S' && 
-            c != 'L' && c != 'I' && c != '-') {
-                return false;
-            }
-        return true;
-    }
-    
-    int vowelCount(String s) {
-        int vowels = 0;
-        for (int i = 0; i < s.length(); i++) {
-            if (isVowel(s.charAt(i))) {
-                vowels++;
-            }
-        }
-        return vowels;
-    }
-    
-    boolean containsVowel(String s) {
-        for (int i = 0; i < s.length(); i++) {
-            if (isVowel(s.charAt(i))) {
-                return true;
-            }
-        }
-        return false;
-    }
-    
-    static boolean isVowel(char c) {
-        if (c == 'E' || c == 'A' || c == 'I' || c == 'O' || c == 'U' || c == 'Å' || 
-                c == 'Ø' || c == 'Æ' || c == 'Y' || c == '-') {
-            return true;
-        }
-        return false;
     }
     
     /**
@@ -2176,7 +2070,7 @@ public class ScrabbleGame extends javax.swing.JFrame {
         }
          tilesLeftTitleLabel.setText("<html><body><b><u>Gjenværende brikker:</u></b></body></html>");
          firstMove = true;
-         rack.alphabetize(alphaString, alphaScores);
+         rack.alphabetize();
          bagCountLabel.setText("Brikker igjen i posen: " + bag.tileCount());
          playerIsFirst = !computersTurn;
          playerNotes = "<b><u>" + playerName + ":</u></b><br>";
@@ -2192,70 +2086,6 @@ public class ScrabbleGame extends javax.swing.JFrame {
    } 
     
    void initBoard() {
-        //alphaScores
-        alphaScores[0] = 1; //A
-        alphaScores[1] = 4; //B
-        alphaScores[2] = 10; //C
-        alphaScores[3] = 1; //D
-        alphaScores[4] = 1; //E
-        alphaScores[5] = 2; //F
-        alphaScores[6] = 2; //G
-        alphaScores[7] = 3; //H
-        alphaScores[8] = 1; //I
-        alphaScores[9] = 4; //J
-        alphaScores[10] = 2; //K
-        alphaScores[11] = 1; //L
-        alphaScores[12] = 2; //M
-        alphaScores[13] = 1; //N
-        alphaScores[14] = 2; //O
-        alphaScores[15] = 4; //P
-        alphaScores[16] = 0; //Q
-        alphaScores[17] = 1; //R
-        alphaScores[18] = 1; //S
-        alphaScores[19] = 1; //T
-        alphaScores[20] = 4; //U
-        alphaScores[21] = 4; //V
-        alphaScores[22] = 8; //W
-        alphaScores[23] = 0; //X
-        alphaScores[24] = 6; //Y
-        alphaScores[25] = 0; //Z
-        alphaScores[26] = 6; //Æ
-        alphaScores[27] = 5; //Ø
-        alphaScores[28] = 4; //Å
-        alphaScores[29] = 0; //- blank
-        
-        //AIunusedScores 
-        rackAlphaScores[0] =  3.6539; //A
-	rackAlphaScores[1] =  - 1.4739; //B = 0.5739
-	rackAlphaScores[2] =  - 10.4449; //C = 0.0449
-	rackAlphaScores[3] =  - 1.2325; //D = 0.8325
-	rackAlphaScores[4] =  4.6583; //E
-	rackAlphaScores[5] =  - 2.5103; //F = 0.5103
-	rackAlphaScores[6] =  - 1.6526; //G = 0.9526
-	rackAlphaScores[7] =  - 3.0512; //H = 0.3712
-	rackAlphaScores[8] =  2.3689; //I
-	rackAlphaScores[9] =  - 6.2484; //J = 0.2484
-	rackAlphaScores[10] = - 0.3689; //K = 1.3689
-	rackAlphaScores[11] = 0.4722; //L
-	rackAlphaScores[12] = - 2.3348; //M = 0.6648
-	rackAlphaScores[13] = 1.0184; //N
-	rackAlphaScores[14] = 0.1618; //O = 0.9618
-	rackAlphaScores[15] = - 2.5292; //P = 0.5292
-        rackAlphaScores[16] = 0.0000; //Q
-	rackAlphaScores[17] = 1.0918; //R
-	rackAlphaScores[18] = 0.6087; //S
-	rackAlphaScores[19] = 0.6279; //T
-	rackAlphaScores[20] = - 1.1800; //U = 0.8200
-	rackAlphaScores[21] = - 3.3475; //V = 0.6475
-	rackAlphaScores[22] = - 13.9083; //W = 0.0083
-	rackAlphaScores[23] = 0.0000; //X
-        rackAlphaScores[24] = - 2.8938; //Y = 0.3938
-	rackAlphaScores[25] = 0.0000; //Z
-        rackAlphaScores[26] = - 4.3911; //Æ = 0.0911
-	rackAlphaScores[27] = - 2.6567; //Ø = 0.4567
-	rackAlphaScores[28] = - 3.0975; //Å = 0.3175
-	rackAlphaScores[29] = 5.0001; //blank
-        
         
         //lager brettet
         scrabbleBoardPanel.setComponentOrientation(ComponentOrientation.LEFT_TO_RIGHT);
@@ -2371,9 +2201,7 @@ public class ScrabbleGame extends javax.swing.JFrame {
     Bag bag = new Bag();
     ArrayList<Square> newlyAddedToBoard = new ArrayList<>();
     String alphaString = "ABCDEFGHIJKLMNOPQRSTUVWXYZÆØÅ-";
-    int[] alphaScores = new int[30];
-    double[] rackAlphaScores = new double[30];
-    
+
     CPUThinker cpuThinker;
     NewGame newGame;
     DictionaryCreator dictionaryCreator;

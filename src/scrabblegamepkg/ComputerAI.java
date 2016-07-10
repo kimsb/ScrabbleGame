@@ -2,16 +2,16 @@ package scrabblegamepkg;
 
 import com.BoxOfC.MDAG.MDAG;
 
+import static scrabblegamepkg.StringUtil.*;
+
 public class ComputerAI {
 
-    String rackStringCpy;
-    double[] rackAlphaScores;
     String alphaString;
+    String rackStringCpy;
     Bag bag;
     double vowelRatioLeft;
     int playerScore, computerScore;
     int pointlessTurns;
-    int[] alphaScores;
     boolean[][] isAnchor;
     boolean firstMove;
     Square[][] squareGrid;
@@ -20,19 +20,17 @@ public class ComputerAI {
     String rackString;
     int onPlayersRack;
 
-    public ComputerAI(String rackStringCpy, double[] rackAlphaScores, String alphaString, Bag bag, double vowelRatioLeft,
-                      int playerScore, int computerScore, int pointlessTurns, int[] alphaScores, boolean[][] isAnchor, boolean firstMove,
+    public ComputerAI(String rackStringCpy, Bag bag, double vowelRatioLeft, String alphaString,
+                      int playerScore, int computerScore, int pointlessTurns, boolean[][] isAnchor, boolean firstMove,
                       Square[][] squareGrid, char[][] charBoard, MDAG dictionary,
                       String rackString, int onPlayersRack) {
-        this.rackStringCpy = rackStringCpy;
-        this.rackAlphaScores = rackAlphaScores;
         this.alphaString = alphaString;
+        this.rackStringCpy = rackStringCpy;
         this.bag = bag;
         this.vowelRatioLeft = vowelRatioLeft;
         this.playerScore = playerScore;
         this.computerScore = computerScore;
         this.pointlessTurns = pointlessTurns;
-        this.alphaScores = alphaScores;
         this.isAnchor = isAnchor;
         this.firstMove = firstMove;
         this.squareGrid = squareGrid;
@@ -65,9 +63,9 @@ public class ComputerAI {
         }
         posWord.leftOnRack = leftOnRack;
         for (int i = 0; i < leftOnRack.length(); i++) {
-            score += rackAlphaScores[alphaString.indexOf(leftOnRack.charAt(i))];
+            score += ScoreConstants.relativeLetterScore(leftOnRack.charAt(i));
             //stats
-            leftScore += rackAlphaScores[alphaString.indexOf(leftOnRack.charAt(i))];
+            leftScore += ScoreConstants.relativeLetterScore(leftOnRack.charAt(i));
         }
         //stats
         posWord.AIString += "+" + leftScore + " for brikkene som er igjen på racket, ";
@@ -186,7 +184,7 @@ public class ComputerAI {
             //gir ekstra poeng for brikkene som brukes (så ikke motstander får dem som pluss)
             int extraScore = 0;
             for (int i = 0; i < posWord.usedFromRack.length(); i++) {
-                extraScore += alphaScores[alphaString.indexOf(posWord.usedFromRack.charAt(i))] * 2;
+                extraScore += ScoreConstants.relativeLetterScore(posWord.usedFromRack.charAt(i)) * 2;
             }
             score += extraScore;
             posWord.AIString += "+" + extraScore + " for å kvitte seg med bokstaver når posen er tom, ";
@@ -1115,9 +1113,9 @@ public class ComputerAI {
                 if (dictionary.contains(horPrefix + alphaString.charAt(i) + posWord.word)) {
                     if (vertPrefix.length() == 0 && vertSuffix.length() == 0 ||
                             dictionary.contains(vertPrefix + alphaString.charAt(i) + vertSuffix)) {
-                        if (alphaScores[i] != 0) {
-                            char c = alphaString.charAt(i);
-                            openingScore += 2 * alphaScores[i] * alphaScores[i] * ((double)bag.letterCount(c) / (bag.tileCount() + onPlayersRack));
+                        char c = alphaString.charAt(i);
+                        if (ScoreConstants.letterScore(c) != 0) {
+                            openingScore += 2 * ScoreConstants.letterScore(c) * ScoreConstants.letterScore(c) * ((double)bag.letterCount(c) / (bag.tileCount() + onPlayersRack));
                         }
 
                     }
@@ -1167,9 +1165,9 @@ public class ComputerAI {
                 if (dictionary.contains(posWord.word + alphaString.charAt(i) + horSuffix)) {
                     if (vertPrefix.length() == 0 && vertSuffix.length() == 0 ||
                             dictionary.contains(vertPrefix + alphaString.charAt(i) + vertSuffix)) {
-                        if (alphaScores[i] != 0) {
-                            char c = alphaString.charAt(i);
-                            openingScore += 2 * alphaScores[i] * alphaScores[i] * ((double)bag.letterCount(c) / (bag.tileCount() + onPlayersRack));
+                        char c = alphaString.charAt(i);
+                        if (ScoreConstants.letterScore(c) != 0) {
+                            openingScore += 2 * ScoreConstants.letterScore(c) * ScoreConstants.letterScore(c) * ((double)bag.letterCount(c) / (bag.tileCount() + onPlayersRack));
                         }
                     }
                 }
@@ -1234,16 +1232,16 @@ public class ComputerAI {
                         if (dictionary.contains(vertPrefix + alphaString.charAt(i) + vertSuffix)) {
                             if (horPrefix.length() == 0 && horSuffix.length() == 0 ||
                                     dictionary.contains(horPrefix + alphaString.charAt(i) + horSuffix)) {
-                                if (alphaScores[i] != 0) {
-                                    char c = alphaString.charAt(i);
-                                    openingScore += 2 * alphaScores[i] * alphaScores[i] * ((double)bag.letterCount(c) / (bag.tileCount() + onPlayersRack));
+                                char c = alphaString.charAt(i);
+                                if (ScoreConstants.letterScore(c) != 0) {
+                                    openingScore += 2 * ScoreConstants.letterScore(c) * ScoreConstants.letterScore(c) * ((double)bag.letterCount(c) / (bag.tileCount() + onPlayersRack));
                                 }
                             }
                         }
                     }
                     if (openingScore > 0) {
                         if (rackStringCpy.indexOf(posWord.word.charAt(j - posWord.wordStart)) != -1) {
-                            double letterScore = (double) alphaScores[alphaString.indexOf(posWord.word.charAt(j - posWord.wordStart))] / 2;
+                            double letterScore = (double) ScoreConstants.letterScore(posWord.word.charAt(j - posWord.wordStart)) / 2;
                             score -= letterScore;
                             posWord.AIString += "-" + letterScore + " for bokstaven som åpner, ";
                         }
@@ -1308,16 +1306,16 @@ public class ComputerAI {
                         if (dictionary.contains(vertPrefix + alphaString.charAt(i) + vertSuffix)) {
                             if (horPrefix.length() == 0 && horSuffix.length() == 0 ||
                                     dictionary.contains(horPrefix + alphaString.charAt(i) + horSuffix)) {
-                                if (alphaScores[i] != 0) {
-                                    char c = alphaString.charAt(i);
-                                    openingScore += 2 * alphaScores[i] * alphaScores[i] * ((double)bag.letterCount(c) / (bag.tileCount() + onPlayersRack));
+                                char c = alphaString.charAt(i);
+                                if (ScoreConstants.letterScore(c) != 0) {
+                                    openingScore += 2 * ScoreConstants.letterScore(c) * ScoreConstants.letterScore(c) * ((double)bag.letterCount(c) / (bag.tileCount() + onPlayersRack));
                                 }
                             }
                         }
                     }
                     if (openingScore > 0) {
                         if (rackStringCpy.indexOf(posWord.word.charAt(j - posWord.wordStart)) != -1) {
-                            double letterScore = (double) alphaScores[alphaString.indexOf(posWord.word.charAt(j - posWord.wordStart))] / 2;
+                            double letterScore = (double) ScoreConstants.letterScore(posWord.word.charAt(j - posWord.wordStart)) / 2;
                             score -= letterScore;
                             posWord.AIString += "-" + letterScore + " for bokstaven som åpner, ";
                         }
@@ -1343,48 +1341,6 @@ public class ComputerAI {
         }
 
         return score;
-    }
-
-    boolean bingoFriendly(String s) {
-        if (s.length() < 3) {
-            return false;
-        } else if (s.length() < 5 && (vowelCount(s) < 1 || vowelCount(s) > 2)) {
-            return false;
-        } else if (s.length() >= 5 && (vowelCount(s) < 2 || vowelCount(s) > 3)) {
-            return false;
-        }
-        for (int i = 0; i < s.length(); i++) {
-            if (!isBingoFriendlyChar(s.charAt(i))) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    static int vowelCount(String s) {
-        int vowels = 0;
-        for (int i = 0; i < s.length(); i++) {
-            if (isVowel(s.charAt(i))) {
-                vowels++;
-            }
-        }
-        return vowels;
-    }
-
-    static boolean isVowel(char c) {
-        if (c == 'E' || c == 'A' || c == 'I' || c == 'O' || c == 'U' || c == 'Å' ||
-                c == 'Ø' || c == 'Æ' || c == 'Y' || c == '-') {
-            return true;
-        }
-        return false;
-    }
-
-    boolean isBingoFriendlyChar(char c) {
-        if (c != 'E' && c != 'R' && c != 'N' && c != 'A' && c != 'T' && c != 'S' &&
-                c != 'L' && c != 'I' && c != '-') {
-            return false;
-        }
-        return true;
     }
 
 }
