@@ -72,26 +72,32 @@ public class ScrabbleGame extends javax.swing.JFrame {
     }    
     
     void createDictionary() throws IOException {
-        dictionary = new MDAG(new File("src/yeslist.txt"));    
-        //fjerner ikke godkjente ord fra dictionary
         try {
-            Scanner ikkeGodkjent = new Scanner(new File("ikkeGodkjent.txt"));
-            while (ikkeGodkjent.hasNext()) {
-                dictionary.removeString(ikkeGodkjent.next());
-            }    
-            ikkeGodkjent.close();
-        } catch (FileNotFoundException ex) {
-            System.out.println("Finner ikke ikkeGodkjent.txt");
-        }
-        //legger til godkjente ord til dictionary
-        try {
-            Scanner godkjent = new Scanner(new File("godkjent.txt"));
-            while (godkjent.hasNext()) {
-                dictionary.addString(godkjent.next());
-            }    
-            godkjent.close();
-        } catch (FileNotFoundException ex) {
-            System.out.println("Finner ikke godkjent.txt");
+            File file = new File(this.getClass().getResource("/yeslist.txt").toURI());
+            dictionary = new MDAG(file);
+            //fjerner ikke godkjente ord fra dictionary
+            try {
+                Scanner ikkeGodkjent = new Scanner(new File("ikkeGodkjent.txt"));
+                while (ikkeGodkjent.hasNext()) {
+                    dictionary.removeString(ikkeGodkjent.next());
+                }
+                ikkeGodkjent.close();
+            } catch (FileNotFoundException ex) {
+                System.out.println("Finner ikke ikkeGodkjent.txt");
+            }
+            //legger til godkjente ord til dictionary
+            try {
+                Scanner godkjent = new Scanner(new File("godkjent.txt"));
+                while (godkjent.hasNext()) {
+                    dictionary.addString(godkjent.next());
+                }
+                godkjent.close();
+            } catch (FileNotFoundException ex) {
+                System.out.println("Finner ikke godkjent.txt");
+            }
+        } catch (Exception e) {
+            System.out.println("Laging av dictionary feiler");
+            e.printStackTrace();
         }
     }
 
@@ -333,6 +339,7 @@ public class ScrabbleGame extends javax.swing.JFrame {
         if (computersTurn) {
             return;
         }
+        System.out.println("Player kaller play med " + rack.toString() + " på racket.");
         //må sjekke om ordet er lovlig plassert
         if (moveIsAllowed()) {  
             //må sjekke om ordet/ordene er gyldig

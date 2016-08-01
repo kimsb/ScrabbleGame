@@ -6,11 +6,11 @@ import java.util.Arrays;
 public class Rack {
 
     ArrayList<Tile> tiles = new ArrayList<>();
-    ArrayList<Square> squares;
+    private ArrayList<Square> squares;
 
     public Rack(Bag bag, ArrayList<Square> squares) {
         this.squares = squares;
-        squares.stream().forEach(Square::cleanUp);
+        squares.forEach(Square::cleanUp);
 
         fill(bag);
     }
@@ -110,6 +110,7 @@ public class Rack {
             if (s.tile.isBlank) {
                 s.tile.letter = '-';
             }
+            removeTile(s.tile.letter);
             bag.add(s.tile);
             s.setIcon(null);
             s.tile = null;
