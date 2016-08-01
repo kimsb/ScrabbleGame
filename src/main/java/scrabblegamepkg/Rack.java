@@ -2,11 +2,13 @@ package scrabblegamepkg;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.stream.Collectors;
 
 public class Rack {
 
     ArrayList<Tile> tiles = new ArrayList<>();
-    private ArrayList<Square> squares;
+    //TODO: Fjerne squares fra rack - burde bare inneholde tiles...
+    public ArrayList<Square> squares;
 
     public Rack(Bag bag, ArrayList<Square> squares) {
         this.squares = squares;
@@ -20,6 +22,7 @@ public class Rack {
     }
 
     public boolean addTile(Tile tile) {
+        squares.stream().filter(square -> square.tile == null).findFirst().get().placeTile(tile);
         return tiles.add(tile);
     }
 
@@ -28,15 +31,17 @@ public class Rack {
     }
 
     public void alphabetize() {
-        tiles
+        tiles = tiles
                 .stream()
-                .sorted((tile1, tile2) -> Character.compare(tile1.letter, tile2.letter));
+                .sorted(Tile::compareTo)
+                .collect(Collectors.toCollection(ArrayList::new));
 
         alphabetizeSquares();
     }
 
     public void removeTile(char letter) {
-         tiles.remove(tiles.stream().filter(tile -> tile.letter == letter).findFirst().get());
+        System.out.println("prøver å fjerne " + letter + " fra racket");
+        tiles.remove(tiles.stream().filter(tile -> tile.letter == letter).findFirst().get());
     }
 
     public void fill(Bag bag) {
@@ -44,9 +49,6 @@ public class Rack {
             Tile tile = bag.pickTile();
 
             addTile(tile);
-
-            //Denne må jeg få fjerna, men bruker square for å tegne racket nå...
-            squares.stream().filter(square -> square.tile == null).findFirst().get().placeTile(tile);
 
         }
     }
@@ -72,7 +74,7 @@ public class Rack {
         }
     }
 
-    void alphabetizeSquares() {
+    private void alphabetizeSquares() {
         String s = "";
         for (int i = 0; i < 7; i++) {
             if (squares.get(i).tile != null) {

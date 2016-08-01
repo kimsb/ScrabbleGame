@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Random;
 import java.util.stream.Collectors;
 
-import static scrabblegamepkg.ComputerAI.*;
 import static scrabblegamepkg.StringUtil.isVowel;
 
 public class Bag {

@@ -3,7 +3,7 @@ package scrabblegamepkg;
 import javax.swing.*;
 import java.awt.*;
 
-public class Tile {
+public class Tile implements Comparable<Tile>{
 
     char letter;
     int value;
@@ -22,6 +22,11 @@ public class Tile {
         Image newimg = img.getScaledInstance(35, 35, java.awt.Image.SCALE_SMOOTH); //endre 50, 50 for å endre størrelse
         icon = new ImageIcon(newimg);
 
+    }
+
+    @Override
+    public int compareTo(Tile tile) {
+        return Character.compare(letter, tile.letter);
     }
 
 }
