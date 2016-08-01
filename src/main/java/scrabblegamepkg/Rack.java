@@ -67,9 +67,6 @@ public class Rack {
                 squares.get(i).setIcon(s.tile.icon);
                 s.setIcon(null);
                 s.tile = null;
-
-                tiles.add(squares.get(i).tile);
-
             }
         }
     }
