@@ -22,4 +22,31 @@ public class Frontend {
 
         return rackPanel;
     }
+
+    public void putBack(ArrayList<Square> squares, ArrayList<Square> addedToThisMove) {
+
+        //legger brikkene tilbake på racken
+        for (int i = 0; i < 7; i++) {
+            if (squares.get(i).tile == null && !addedToThisMove.isEmpty()) {
+                Square s = addedToThisMove.remove(0);
+                if (s.tile.isBlank()) {
+                    squares.get(i).tile = new Tile('-');
+                } else {
+                    squares.get(i).tile = s.tile;
+                }
+                squares.get(i).setIcon(s.createTileIcon());
+                s.setIcon(null);
+                s.tile = null;
+            }
+        }
+    }
+
+    public void renderRack(ArrayList<Square> squares, Rack rack) {
+        squares.forEach(Square::cleanUp);
+        rack.alphabetize();
+        ArrayList<Tile> tiles = rack.getTiles();
+        for (int i = 0; i < rack.tileCount(); i++) {
+            squares.get(i).placeTile(tiles.get(i));
+        }
+    }
 }

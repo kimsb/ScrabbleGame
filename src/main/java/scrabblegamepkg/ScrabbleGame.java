@@ -16,6 +16,7 @@ import java.io.*;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import static scrabblegamepkg.StringUtil.*;
 
@@ -159,7 +160,7 @@ public class ScrabbleGame extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        Frontend frontend = new Frontend();
+        frontend = new Frontend();
 
         scrabbleBoardPanel = new javax.swing.JPanel();
         rackPanel = frontend.getRackPanel(this, rackSquares);
@@ -398,7 +399,7 @@ public class ScrabbleGame extends javax.swing.JFrame {
                 //låser brikkene til brettet         
                 for (Square s : addedToThisMove) {
                     s.tile.isMovable = false;
-                    if (s.tile.isBlank) {
+                    if (s.tile.isBlank()) {
                         toRemoveFromRemaining += '-';
                         rack.removeTile('-');
                     } else {
@@ -409,8 +410,9 @@ public class ScrabbleGame extends javax.swing.JFrame {
                 updateRemaining(toRemoveFromRemaining);
 
                 //trekke nye brikker
-                rack.fill(bag);
-                rack.alphabetize();
+                rack.addTiles(bag.pickTiles(addedToThisMove.size()));
+                System.out.println("Playerrack etter å ha plukket brikker: " + rack.toString());
+                frontend.renderRack(rackSquares, rack);
                 
                 //brikker har blitt lagt, oppdaterer charBoard
                 updateCharBoard();
@@ -432,8 +434,7 @@ public class ScrabbleGame extends javax.swing.JFrame {
                     newWordsAdded.clear(); 
                 } else {
 
-                    rack.putBack(addedToThisMove);
-                    rack.alphabetize();
+                    frontend.putBack(rackSquares, addedToThisMove);
                     updatePlayerNotes("(ikke godkjent)", 0);
                     //fjerner fra listen over nylig lagt til brikker
                     addedToThisMove.clear();
@@ -847,9 +848,16 @@ public class ScrabbleGame extends javax.swing.JFrame {
                 int size = toSwap.size();
                 System.out.println("Bytter " + size + " brikker");
 
-                rack.swap(toSwap, bag);
+                ArrayList<Tile> tilesToSwap = toSwap.stream().map(square -> square.tile).collect(Collectors.toCollection(ArrayList::new));
+                ArrayList<Tile> newTiles = bag.pickTiles(toSwap.size());
+                tilesToSwap.forEach(tile -> bag.add(tile));
 
-                rack.alphabetize();
+                rack.removeTiles(tilesToSwap);
+                rack.addTiles(newTiles);
+
+                toSwap.forEach(Square::cleanUp);
+                frontend.renderRack(rackSquares, rack);
+
                 updatePlayerNotes("(bytte)", 0);
                 computersTurn = true;
                 computerMove();
@@ -954,7 +962,7 @@ public class ScrabbleGame extends javax.swing.JFrame {
             System.out.println("kommer hit - pass 1");
             //legger evt brikker tilbake på racken
 
-            rack.putBack(newlyAddedToBoard);
+            frontend.putBack(rackSquares, newlyAddedToBoard);
             rack.alphabetize();
 
             updatePlayerNotes("(pass)", 0);
@@ -1400,7 +1408,8 @@ public class ScrabbleGame extends javax.swing.JFrame {
         }
         
     }
-    
+
+    //TODO: her må man jo heller bare slå opp ordene...
     //avslutter med en gang et ord som ikke er godkjent kommer
     boolean wordsAreAllowed() {
         newWordAdded = false;
@@ -1547,24 +1556,18 @@ public class ScrabbleGame extends javax.swing.JFrame {
         }
         
         //trekker fra score for players rack
-        int playerMinus = 0;
+        int playerRackScore = rack.rackScore();
         String playerTiles = rack.toString();
 
-        for (Tile tile : rack.tiles) {
-            int letterScore = tile.value;
-            playerScore -= letterScore;
-            playerMinus -= letterScore;
-            System.out.println("Trekker fra player " + letterScore + " poeng for '" + tile.letter + "'");
-        }
-
-        if (playerMinus < 0) {
-            updatePlayerNotes("(" + playerTiles + ")", playerMinus);
+        if (playerRackScore > 0) {
+            playerScore -= playerRackScore;
+            updatePlayerNotes("(" + playerTiles + ")", -playerRackScore);
         }
         
         //legger til score til den andre spilleren
         if (cpuTiles.compareTo("") == 0) {
-            computerScore += Math.abs(playerMinus);
-            updateCPUNotes("(" + playerTiles + ")", Math.abs(playerMinus));
+            computerScore += Math.abs(playerRackScore);
+            updateCPUNotes("(" + playerTiles + ")", Math.abs(playerRackScore));
         }
         if (playerTiles.compareTo("") == 0) {
             playerScore += Math.abs(cpuMinus);
@@ -1798,14 +1801,14 @@ public class ScrabbleGame extends javax.swing.JFrame {
             if (tilesOver != 0 || tilesUnder != 0) {
                 String newWord = "";
                 for (int k = tilesOver; k > 0; k--) {
-                    if (!squareGrid[row-k][j].tile.isBlank) {
+                    if (!squareGrid[row-k][j].tile.isBlank()) {
                         wordScore += ScoreConstants.letterScore(charBoard[row-k][j]);
                         newWord += charBoard[row-k][j];
                     }
                 }
                 newWord += word.charAt(j - wordStart);
                 for (int k = 1; k <= tilesUnder; k++) {
-                    if (!squareGrid[row+k][j].tile.isBlank) {
+                    if (!squareGrid[row+k][j].tile.isBlank()) {
                         wordScore += ScoreConstants.letterScore(charBoard[row+k][j]);
                         newWord += charBoard[row+k][j];
                     }                    
@@ -1851,14 +1854,14 @@ public class ScrabbleGame extends javax.swing.JFrame {
             if (tilesOver != 0 || tilesUnder != 0) {
                 String newWord = "";
                 for (int k = tilesOver; k > 0; k--) {
-                    if (!squareGrid[row-k][j].tile.isBlank) {
+                    if (!squareGrid[row-k][j].tile.isBlank()) {
                         wordScore += ScoreConstants.letterScore(charBoard[row-k][j]);
                         newWord += charBoard[row-k][j];
                     }
                 }
                 newWord += word.charAt(j - wordStart);
                 for (int k = 1; k <= tilesUnder; k++) {
-                    if (!squareGrid[row+k][j].tile.isBlank) {
+                    if (!squareGrid[row+k][j].tile.isBlank()) {
                         wordScore += ScoreConstants.letterScore(charBoard[row+k][j]);
                         newWord += charBoard[row+k][j];
                     }                    
@@ -1917,7 +1920,7 @@ public class ScrabbleGame extends javax.swing.JFrame {
                     multiplier *= 3;
                 }
                 rackCpy = rackCpy.substring(0, index) + rackCpy.substring(index+1);
-            } else if (!squareGrid[row][j].tile.isBlank){
+            } else if (!squareGrid[row][j].tile.isBlank()){
                 tileScore = ScoreConstants.letterScore(charBoard[row][j]);
             }
             tempSum += tileScore;
@@ -1963,7 +1966,7 @@ public class ScrabbleGame extends javax.swing.JFrame {
                     multiplier *= 3;
                 }
                 rackCpy = rackCpy.substring(0, index) + rackCpy.substring(index+1);
-            } else if (!squareGrid[row][j].tile.isBlank){
+            } else if (!squareGrid[row][j].tile.isBlank()){
                 tileScore = ScoreConstants.letterScore(charBoard[row][j]);
             }
             tempSum += tileScore;
@@ -2067,18 +2070,20 @@ public class ScrabbleGame extends javax.swing.JFrame {
                  Tile t = bag.pickTile();
                  rackString += t.letter;
              }
-             rack = new Rack(bag, rackSquares);
+             rack = new Rack(bag.pickTiles(7));
          } else { //hvis pl1 starter
             computersTurn = false;
-            rack = new Rack(bag, rackSquares);
+            rack = new Rack(bag.pickTiles(7));
             for (int i = 0; i < 7; i++) {
                  Tile t = bag.pickTile();
                  rackString += t.letter;
             }
         }
+
+        frontend.renderRack(rackSquares, rack);
+
          tilesLeftTitleLabel.setText("<html><body><b><u>Gjenværende brikker:</u></b></body></html>");
          firstMove = true;
-         rack.alphabetize();
          bagCountLabel.setText("Brikker igjen i posen: " + bag.tileCount());
          playerIsFirst = !computersTurn;
          playerNotes = "<b><u>" + playerName + ":</u></b><br>";
@@ -2202,6 +2207,8 @@ public class ScrabbleGame extends javax.swing.JFrame {
     private javax.swing.JLabel tilesLeftTitleLabel;
     private javax.swing.JButton tipsButton;
     // End of variables declaration//GEN-END:variables
+
+    Frontend frontend;
 
     // My variables
     MDAG dictionary;

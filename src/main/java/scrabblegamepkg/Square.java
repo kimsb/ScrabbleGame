@@ -28,6 +28,14 @@ class Square extends javax.swing.JLabel {
         });
     }
 
+    public ImageIcon createTileIcon() {
+        ImageIcon imageIcon;
+        imageIcon = new javax.swing.ImageIcon(getClass().getResource("/" + tile.letter + ".png"));
+        Image img = imageIcon.getImage();
+        Image newimg = img.getScaledInstance(35, 35, java.awt.Image.SCALE_SMOOTH); //endre 50, 50 for å endre størrelse
+        return new ImageIcon(newimg);
+    }
+
     void setMultiplier(String mult) {
         multiplier = mult;
         if (mult.equals("DL")) {
@@ -43,7 +51,7 @@ class Square extends javax.swing.JLabel {
 
     boolean placeTile(Tile t) {
         if (onBoard) {
-            if (!scrabbleGame.computersTurn && t.isBlank) {
+            if (!scrabbleGame.computersTurn && t.isBlank()) {
                 //brikken er blank å må få verdi
                 boolean hasValue = false;
                 while (!hasValue) {
@@ -67,11 +75,11 @@ class Square extends javax.swing.JLabel {
                 scrabbleGame.addedToThisMove.add(this);
             }
         }
-        if (!onBoard && t.isBlank) {
+        if (!onBoard && t.isBlank()) {
             t.letter = '-';
         }
         tile = t;
-        setIcon(t.icon);
+        setIcon(createTileIcon());
         return true;
     }
 
@@ -81,7 +89,7 @@ class Square extends javax.swing.JLabel {
                 if (scrabbleGame.selectedSquare != null) {
                     Tile temp = tile;
                     if (placeTile(scrabbleGame.selectedSquare.tile)) {
-                        scrabbleGame.selectedSquare.setIcon(temp.icon);
+                        scrabbleGame.selectedSquare.setIcon(createTileIcon());
                         scrabbleGame.selectedSquare.tile = temp;
                         scrabbleGame.selectedSquare = null;
                     }
