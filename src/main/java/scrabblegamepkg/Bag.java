@@ -22,10 +22,6 @@ public class Bag {
         return tiles.isEmpty();
     }
 
-    public ArrayList<Tile> getTiles() {
-        return tiles;
-    }
-
     public boolean add(Tile tile) {
         return tiles.add(tile);
     }
@@ -104,4 +100,35 @@ public class Bag {
                 .collect(Collectors.toList())
                 .size();
     }
+
+    public ArrayList<Tile> pickTiles(int tileCount) {
+        ArrayList<Tile> tiles = new ArrayList<>();
+        for (int i = 0; i < tileCount; i++) {
+            Tile tile = pickTile();
+            if (tile != null) {
+                tiles.add(tile);
+            }
+        }
+        return tiles;
+    }
+
+//    public void swap(ArrayList<Square> toSwap, Bag bag) {
+//
+//        for (int i = 0; i < 7; i++) {
+//            if (squares.get(i).tile == null) {
+//                squares.get(i).placeTile(bag.pickTile());
+//                tiles.add(squares.get(i).tile);
+//            }
+//        }
+//        for (Square s : toSwap) {
+//            if (s.tile.isBlank) {
+//                s.tile.letter = '-';
+//            }
+//            removeTile(s.tile.letter);
+//            bag.add(s.tile);
+//            s.setIcon(null);
+//            s.tile = null;
+//        }
+//
+//    }
 }
