@@ -403,7 +403,7 @@ public class ScrabbleGame extends javax.swing.JFrame {
                 rackPanel.renderRack(rack);
                 
                 //brikker har blitt lagt, oppdaterer charBoard
-                updateCharBoard();
+                board.updateCharBoard(addedToThisMove);
                 //fjerner fra listen over nylig lagt til brikker
                 addedToThisMove.clear();
                 newWordsAdded.clear();
@@ -445,295 +445,7 @@ public class ScrabbleGame extends javax.swing.JFrame {
         verticalScrollBar.setValue(verticalScrollBar.getMaximum());
         verticalScrollBar = secondPlayerScrollPane.getVerticalScrollBar();
         verticalScrollBar.setValue(verticalScrollBar.getMaximum());
-        (cpuThinker = new CPUThinker()).execute();
-    }
-    
-    private class CPUThinker extends SwingWorker<Void, Void> {
-    
-    public CPUThinker() {
-    }
-    
-    @Override
-    protected Void doInBackground() {
-        challengeButton.setEnabled(false);
-        playButton.setEnabled(false);
-        swapButton.setEnabled(false);
-        passButton.setEnabled(false);
-        newGameButton.setEnabled(false);
-        tipsButton.setEnabled(false);
-        computerAI();
-        return null;
-    }
-    
-    @Override
-    protected void done() {
-        challengeButton.setEnabled(true);
-        playButton.setEnabled(true);
-        swapButton.setEnabled(true);
-        passButton.setEnabled(true);
-        newGameButton.setEnabled(true);
-        (tipsCalculator = new TipsCalculator()).execute();
-        JScrollBar verticalScrollBar = firstPlayerScrollPane.getVerticalScrollBar();
-        verticalScrollBar.setValue(verticalScrollBar.getMaximum());
-        verticalScrollBar = secondPlayerScrollPane.getVerticalScrollBar();
-        verticalScrollBar.setValue(verticalScrollBar.getMaximum());
-        
-    }
-
-    }    
-    
-    private class TipsCalculator extends SwingWorker<Void, Void> {
-    
-    public TipsCalculator() {
-    }
-    
-    @Override
-    protected Void doInBackground() {
-        calculateTips();
-        return null;
-    }
-    
-    @Override
-    protected void done() {
-        tipsButton.setEnabled(true);        
-    }
-
-    } 
-    
-    void computerAI() {        
-        //calculating vowelRatio in bag + players rack
-        double vowelsLeft = bag.vowelCount() + StringUtil.vowelCount(rack.toString());
-        int lettersLeft = bag.tileCount() + rack.tileCount();
-
-        vowelRatioLeft = vowelsLeft / lettersLeft;
-        
-        previousRackString = rackString;
-        System.out.println("ComputerAI starts.. cpuRack: " + rackString);
-        newlyAddedToBoard.clear();
-        if (!computersTurn) {
-            System.out.println("ikke cpus tur");
-            return;
-        } else if (rackString.length() == 0) {
-            System.out.println("FERDIG!");
-            return;
-        }
-        if (!firstMove) {
-            updateAnchors();
-            doCrossChecks();
-        }
-        
-        rackStringCpy = rackString;
-        possibleWords.clear();
-        
-        findAcrossMoves();
-        //TRANSPOSING
-        transposeBoard();
-        doCrossChecks();
-        //down moves
-        findAcrossMoves();
-        
-        int count = 0;
-        int topSc = 0;
-        double topScKey = 0;
-        PotentialMove top = null;
-        for (Map.Entry<Double,PotentialMove> entry : possibleWords.entrySet()) {
-            PotentialMove poss = entry.getValue();
-            if (count < 20) {
-                System.out.println(entry.getKey() + " " + poss.word + " startsAt " + poss.wordStart + " vertical: " + poss.vertical + " bruker: " + poss.usedFromRack + " har igjen: " + poss.leftOnRack + " score: " + poss.wordScore + "  -> " + poss.AIString);
-                count++;
-            }
-            if (poss.wordScore > topSc || (poss.wordScore == topSc && entry.getKey() > topScKey)) {
-                top = poss;
-                topSc = poss.wordScore;
-                topScKey = entry.getKey();
-            }
-        }
-        
-        //kan ikke legge
-        if (possibleWords.isEmpty()) {
-            System.out.println("CPU kan ikke legge");
-            addedToThisMove.clear();
-            newWordsAdded.clear(); 
-            transposeBoard();
-
-            //MÅ BYTTE OM MULIG
-            if (bag.tileCount() >= 7) {
-                //bytter alle
-                computerSwap(rackString);
-            } else {
-                JOptionPane.showMessageDialog(null, "CPU passer");
-                pass();
-            }   
-            computersTurn = false;
-            return;
-        }
-        
-        //velge legg og skrive ut på skjerm + legge til brikkene i charBoard
-        PotentialMove topScoreWord = possibleWords.firstEntry().getValue();
-        
-        //TEST
-        if (top != null) {
-            if (top == topScoreWord) {
-                System.out.println("Velger TOPSCORE-word");
-            } else {
-                System.out.println("TOPSCORE: " + topScKey + " " + top.word + " startsAt " + top.wordStart + " vertical: " + top.vertical + " bruker: " + top.usedFromRack + " har igjen: " + top.leftOnRack + " score: " + top.wordScore + "  -> " + top.AIString);
-            }
-        }
-        
-        //TEST
-        System.out.print(possibleWords.firstEntry().getKey() + " (" + topScoreWord.wordScore + ") Velger " + topScoreWord.word + ": " + topScoreWord.AIString);
-        System.out.println(", row: " + topScoreWord.row + ", column: " + topScoreWord.wordStart);
-        System.out.println("left: " + topScoreWord.leftOnRack);
-        for (String s : topScoreWord.words) {
-            System.out.println("(" + s + ")");
-        }
-        //TEST SLUTT
-        
-        //hvis beste legg ikke er noe godt legg => bytte brikker
-        //har lavere terskel for å bytte om det er første trekk
-        if (firstMove) {
-            //bytter hvis ordets score er negativ, eller gir mindre enn 10 poeng
-            //eller hvis cpu blir sittende igjen med minst tre bokstaver og alle er konsonanter                            
-            if (possibleWords.firstEntry().getKey() < 0 || topScoreWord.wordScore < 10 ||
-                    (topScoreWord.leftOnRack.length() >= 3 && !StringUtil.containsVowel(topScoreWord.leftOnRack)) ||
-                    (topScoreWord.leftOnRack.length() >= 5 && StringUtil.vowelCount(topScoreWord.leftOnRack) == 1)) {
-                System.out.println("bytter ved på første trekk");
-                cpuMakeSwap();
-                computersTurn = false;
-                addedToThisMove.clear();
-                newWordsAdded.clear(); 
-                transposeBoard();
-                return;
-            }
-            //hvis det ikker er første legg
-        } else {
-            //kriterier for å bytte: negativ score eller kun konsonanter
-            if (bag.tileCount() >= 7 && possibleWords.firstEntry().getKey() < 0) {
-                System.out.println("bytter pga for dårlig bestelegg");
-                cpuMakeSwap();
-                computersTurn = false;
-                addedToThisMove.clear();
-                newWordsAdded.clear(); 
-                transposeBoard();
-                return;
-            }
-        }
-        
-        cpuLastWord = topScoreWord;
-        int topScore = topScoreWord.wordScore;
-        if (!topScoreWord.vertical) {
-            transposeBoard();
-        }
-        String toRemoveFromRemaining = "";
-        for (int i = 0; i < topScoreWord.word.length(); i++) {
-      
-            //hvis bokstaven kommer fra racket, plaser på brettet og fjern fra rack
-            if (charBoard[topScoreWord.row][topScoreWord.wordStart+i] == '-') {
-                char l = topScoreWord.word.charAt(i);
-                int index = rackString.indexOf(l);
-                boolean blank = false;
-                if (index == -1) { //blank
-                    index = rackString.indexOf('-');
-                    blank = true;
-                }
-                //fjerner fra rack
-                rackString = rackString.substring(0,index) + rackString.substring(index+1);
-                Tile t;
-                if (blank) {
-                    t = new Tile('-');
-                    t.letter = l;
-                    JOptionPane.showMessageDialog(null, "Blank er " + l);
-                    toRemoveFromRemaining += '-';
-                } else {
-                    t = new Tile(l);
-                    toRemoveFromRemaining += l;
-                }
-                boardPanel.squareGrid[topScoreWord.row][topScoreWord.wordStart+i].placeTile(t);
-            }
-        }
-        
-        if (transposed) {
-            transposeBoard();
-        }
-        
-        updateCharBoard();
-        
-        for (Square s : addedToThisMove) {
-            s.tile.isMovable = false;
-        }
-        updateComputerScore(topScore);
-        if (addedToThisMove.size() == 7) {
-            updateCPUNotes("*" + topScoreWord.word, topScore); 
-        } else {
-            updateCPUNotes(topScoreWord.word, topScore);
-        }
-        updateRemaining(toRemoveFromRemaining);
-        
-        addedToThisMove.clear();
-        newWordsAdded.clear();
-        
-        //trekke nye brikker
-        cpuNewlyPicked = "";
-        while (rackString.length() != 7 && !bag.isEmpty()) {
-            Tile t = bag.pickTile();
-            rackString += t.letter;
-            cpuNewlyPicked += t.letter;
-        }
-        computersTurn = false;
-        //hvis CPU går ut
-        if(rackString.length() == 0) {
-            System.out.println("kaller finishGame fra CPU");
-            finishGame();
-        }
-        newlyAddedToBoard.clear();
-        bagCountLabel.setText("Brikker igjen i posen: " + bag.tileCount());
-        playerPassed = false;
-    }
-
-    //chooses what tiles to swap - antar at denne metoden kun kalles med nok brikker i posen
-    void cpuMakeSwap() {
-        System.out.println("cpuMakeSwap kalles med rackString: " + rackString);
-        String toSwap = "";
-        String tilesKept = "";
-        //bytter alle hvis det bare er konsonanter
-        if (!StringUtil.containsVowel(rackString)) {
-            toSwap = rackString;
-        } else {
-            //sparer på vokaler og bingovennlige brikker (maks en av hver) - burde vært to av E?
-            for (int i = 0; i < 7; i++) {
-                char c = rackString.charAt(i);
-                if (StringUtil.isVowel(c) && tilesKept.indexOf(c) == -1) {
-                    tilesKept += c;
-                } else if (!StringUtil.isBingoFriendlyChar(c)) {
-                    toSwap += c;
-                } else if (tilesKept.indexOf(c) == -1) {
-                    tilesKept += c;
-                } else {
-                    toSwap += c;
-                }
-            }
-            //sjekker konsonant/vokal-ratio på brikkene som skal spares
-            double vowelRatio = StringUtil.vowelRatio(tilesKept);
-            while (tilesKept.length() > 1 && 
-                    (vowelRatio < 0.33 || vowelRatio > 0.67)) {
-                //hvis for mange konsonanter eller vokaler
-                char c;
-                if (vowelRatio < 0.33) {
-                    c = StringUtil.lowestScoringCons(tilesKept);
-                } else {
-                    c = StringUtil.lowestScoringVowel(tilesKept);
-                }
-                toSwap += c;
-                tilesKept = StringUtil.removeChar(tilesKept, c);
-                    
-                vowelRatio = StringUtil.vowelRatio(tilesKept);
-            }
-            if (tilesKept.length() == 1 && !StringUtil.isVowel(tilesKept.charAt(0))) {
-                toSwap += tilesKept;
-            }            
-        }
-        System.out.println(", bytter disse brikkene: " + toSwap);
-        computerSwap(toSwap);
+        (cpuThinker = new CPUThinker(this)).execute();
     }
     
     private void challengeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_challengeButtonActionPerformed
@@ -779,8 +491,8 @@ public class ScrabbleGame extends javax.swing.JFrame {
             //fjerner fra brett og oppdaterer charBoard
             for (int i = 0; i < 15; i++) {
                 for (int j = 0; j < 15; j++) {
-                    if (charBoardBeforeLastMove[i][j] != charBoard[i][j]) {
-                        charBoard[i][j] = charBoardBeforeLastMove[i][j];
+                    if (board.charBoardBeforeLastMove[i][j] != board.charBoard[i][j]) {
+                        board.charBoard[i][j] = board.charBoardBeforeLastMove[i][j];
                         boardPanel.squareGrid[i][j].tile = null;
                         boardPanel.squareGrid[i][j].setIcon(null);
                     }
@@ -806,7 +518,7 @@ public class ScrabbleGame extends javax.swing.JFrame {
             firstMove = true;
             for (int i = 0; i < 15; i++) {
                 for (int j = 0; j < 15; j++) {
-                    if (charBoard[i][j] != '-') {
+                    if (board.charBoard[i][j] != '-') {
                         firstMove = false;
                         break;
                     }
@@ -873,20 +585,20 @@ public class ScrabbleGame extends javax.swing.JFrame {
             }
     }//GEN-LAST:event_newGameButtonActionPerformed
 
-    private void calculateTips() {
+    void calculateTips() {
         String playerRack = rack.toString();
         playerTips = true;
         bestTipScore = 0;
         if (!firstMove) {
-            updateAnchors();
-            doCrossChecks();
+            board.updateAnchors();
+            board.doCrossChecks(dictionary, alphaString);
         }
         tipsWords.clear();
         
         findAcrossMoves();
         //TRANSPOSING
-        transposeBoard();
-        doCrossChecks();
+        board.transposeBoard(boardPanel);
+        board.doCrossChecks(dictionary, alphaString);
         //down moves
         findAcrossMoves();
 
@@ -909,8 +621,8 @@ public class ScrabbleGame extends javax.swing.JFrame {
             playerExtendRight("", (MDAGNode) dictionary.getSourceNode(), playerRack);
         }
         
-        if (transposed) {
-            transposeBoard();
+        if (board.transposed) {
+            board.transposeBoard(boardPanel);
         }
         playerTips = false;
     }
@@ -991,20 +703,20 @@ public class ScrabbleGame extends javax.swing.JFrame {
         for (int i = 0; i < 15; i++) {
             for (int j = 0; j < 15; j++) {
                 
-                if (isAnchor[i][j]) {
+                if (board.isAnchor[i][j]) {
                     currentAnchorI = i;
                     currentAnchorJ = j;
                     String partialWord = "";
                     int k = 0;
-                    while (j - k != 0 && !isAnchor[i][j-(k+1)]) {
+                    while (j - k != 0 && !board.isAnchor[i][j-(k+1)]) {
                         k++;
                     }
                     //hvis left part er fra brettet
-                    if (k != 0 && charBoard[i][j-1] != '-') {
+                    if (k != 0 && board.charBoard[i][j-1] != '-') {
                         MDAGNode n = (MDAGNode) dictionary.getSourceNode();
                         for (int l = 0; l < k; l++) {
-                            partialWord += charBoard[i][j - (k-l)];
-                            n = n.transition(charBoard[i][j - (k-l)]);
+                            partialWord += board.charBoard[i][j - (k-l)];
+                            n = n.transition(board.charBoard[i][j - (k-l)]);
                         }
                         if (playerTips) {
                             tipsExtendRight(partialWord, n, j, "", playerRack);
@@ -1061,7 +773,7 @@ public class ScrabbleGame extends javax.swing.JFrame {
     
     void tipsExtendRight(String partialWord, MDAGNode n, int squareJ, String usedFromRack, String playerRack) {
         //if square is vacant
-        if (squareJ == 15 || charBoard[currentAnchorI][squareJ] == '-') {
+        if (squareJ == 15 || board.charBoard[currentAnchorI][squareJ] == '-') {
             //if N si a terminal node
             if (squareJ != currentAnchorJ && n.isAcceptNode()) {
                 PotentialMove newTip;
@@ -1070,7 +782,7 @@ public class ScrabbleGame extends javax.swing.JFrame {
                 //    //possibleWords.add(new PossibleWord(partialWord, currentAnchorI, squareJ));
                 //} else {
                     newCPUWords = new ArrayList<>();
-                    newTip = new PotentialMove(partialWord, currentAnchorI, squareJ-1, transposed,
+                    newTip = new PotentialMove(partialWord, currentAnchorI, squareJ-1, board.transposed,
                             scoreTipsWords(partialWord, currentAnchorI, (squareJ - partialWord.length())),
                             usedFromRack);
                     newTip.words = newCPUWords;
@@ -1094,7 +806,7 @@ public class ScrabbleGame extends javax.swing.JFrame {
                     int index = playerRack.indexOf(l);
                     if (index != -1) {
                         //and l is in the crossCheck set of square
-                        if (crossChecks[currentAnchorI][squareJ].indexOf(l) != -1) {
+                        if (board.crossChecks[currentAnchorI][squareJ].indexOf(l) != -1) {
                             //then remove a tile labeled l from the rack
                             playerRack = playerRack.substring(0,index) + playerRack.substring(index+1);
                             //let N' be the node reached by following edge E
@@ -1110,7 +822,7 @@ public class ScrabbleGame extends javax.swing.JFrame {
                         index = playerRack.indexOf('-');
                         if (index != -1) {
                             //and l is in the crossCheck set of square
-                            if (crossChecks[currentAnchorI][squareJ].indexOf(l) != -1) {
+                            if (board.crossChecks[currentAnchorI][squareJ].indexOf(l) != -1) {
                                 //then remove blank tile from the rack
                                 playerRack = playerRack.substring(0,index) + playerRack.substring(index+1);
                                 //let N' be the node reached by following edge E
@@ -1129,7 +841,7 @@ public class ScrabbleGame extends javax.swing.JFrame {
             //}
         } else { //if square not vacant
             //let l be the letter occupying square
-            char l = charBoard[currentAnchorI][squareJ];
+            char l = board.charBoard[currentAnchorI][squareJ];
             //if N has an edge labeled by l that leads to some node N'
             if (n.hasOutgoingTransition(l)) {
                 //let next-square be the square to the right of square
@@ -1178,7 +890,7 @@ public class ScrabbleGame extends javax.swing.JFrame {
  
     void extendRight(String partialWord, MDAGNode n, int squareJ, String usedFromRack) {
         //if square is vacant
-        if (squareJ == 15 || charBoard[currentAnchorI][squareJ] == '-') {
+        if (squareJ == 15 || board.charBoard[currentAnchorI][squareJ] == '-') {
             //if N si a terminal node
             if (squareJ != currentAnchorJ && n.isAcceptNode()) {
                 PotentialMove newPos;
@@ -1187,7 +899,7 @@ public class ScrabbleGame extends javax.swing.JFrame {
                 //    //possibleWords.add(new PossibleWord(partialWord, currentAnchorI, squareJ));
                 //} else {
                     newCPUWords = new ArrayList<>();
-                    newPos = new PotentialMove(partialWord, currentAnchorI, squareJ-1, transposed,
+                    newPos = new PotentialMove(partialWord, currentAnchorI, squareJ-1, board.transposed,
                             scoreCPUWords(partialWord, currentAnchorI, (squareJ - partialWord.length())),
                             usedFromRack);
                     newPos.words = newCPUWords;
@@ -1195,8 +907,8 @@ public class ScrabbleGame extends javax.swing.JFrame {
                     //possibleWords.add(new PossibleWord(partialWord, currentAnchorI, squareJ-1));
                // }
                 ComputerAI computerAI = new ComputerAI(rackStringCpy, bag, vowelRatioLeft, alphaString,
-                        playerScore, computerScore, pointlessTurns, isAnchor, firstMove,
-                        boardPanel.squareGrid, charBoard, dictionary,
+                        playerScore, computerScore, pointlessTurns, board.isAnchor, firstMove,
+                        boardPanel.squareGrid, board.charBoard, dictionary,
                         rackString, rack.tileCount());
 
                 possibleWords.put(computerAI.cpuAIScore(newPos), newPos);
@@ -1215,7 +927,7 @@ public class ScrabbleGame extends javax.swing.JFrame {
                     int index = rackString.indexOf(l);
                     if (index != -1) {
                         //and l is in the crossCheck set of square
-                        if (crossChecks[currentAnchorI][squareJ].indexOf(l) != -1) {
+                        if (board.crossChecks[currentAnchorI][squareJ].indexOf(l) != -1) {
                             //then remove a tile labeled l from the rack
                             rackString = rackString.substring(0,index) + rackString.substring(index+1);
                             //let N' be the node reached by following edge E
@@ -1231,7 +943,7 @@ public class ScrabbleGame extends javax.swing.JFrame {
                         index = rackString.indexOf('-');
                         if (index != -1) {
                             //and l is in the crossCheck set of square
-                            if (crossChecks[currentAnchorI][squareJ].indexOf(l) != -1) {
+                            if (board.crossChecks[currentAnchorI][squareJ].indexOf(l) != -1) {
                                 //then remove blank tile from the rack
                                 rackString = rackString.substring(0,index) + rackString.substring(index+1);
                                 //let N' be the node reached by following edge E
@@ -1250,7 +962,7 @@ public class ScrabbleGame extends javax.swing.JFrame {
             //}
         } else { //if square not vacant
             //let l be the letter occupying square
-            char l = charBoard[currentAnchorI][squareJ];
+            char l = board.charBoard[currentAnchorI][squareJ];
             //if N has an edge labeled by l that leads to some node N'
             if (n.hasOutgoingTransition(l)) {
                 //let next-square be the square to the right of square
@@ -1300,102 +1012,7 @@ public class ScrabbleGame extends javax.swing.JFrame {
         }
     }
     
-    void updateCharBoard() {
-        for (int i = 0; i < 15; i++) {
-            System.arraycopy(charBoard[i], 0, charBoardBeforeLastMove[i], 0, 15);
-        }
-        
-        for (Square s : addedToThisMove) {
-            charBoard[s.row][s.column] = s.tile.letter;
-        }
-    }
-    
-    void transposeBoard() {
-        
-        transposed = !transposed;
-        
-        Square[][] tempSquareGrid = new Square[15][15];
-        char[][] tempCharBoard = new char[15][15];
-        String[][] tempCrossChecks = new String[15][15];
-        boolean[][] tempIsAnchor = new boolean[15][15];
-        //copy
-        for (int i = 0; i < 15; i++) {
-            for (int j = 0; j < 15; j++) {
-                tempCharBoard[i][j] = charBoard[i][j];
-                tempCrossChecks[i][j] = crossChecks[i][j];
-                tempIsAnchor[i][j] = isAnchor[i][j];
-                tempSquareGrid[i][j] = boardPanel.squareGrid[i][j];
-            }
-        }
-        //"transpose"
-        for (int i = 0; i < 15; i++) {
-            for (int j = 0; j < 15; j++) {
-                charBoard[i][j] = tempCharBoard[j][i];
-                crossChecks[i][j] = tempCrossChecks[j][i];
-                isAnchor[i][j] = tempIsAnchor[j][i];
-                boardPanel.squareGrid[i][j] = tempSquareGrid[j][i];
-            }
-        }
-    }
-    
-    //denne kan gjøres raskere, nå sjekker jeg alle felter
-    void doCrossChecks() {
-        for (int i = 0; i < 15; i++) {
-            for (int j = 0; j < 15; j++) {
-                if (charBoard[i][j] == '-') {
-                    int tilesOver = 0;
-                    int tilesUnder = 0;
-                    while(i - tilesOver != 0 && charBoard[i-(tilesOver+1)][j] != '-') {
-                        tilesOver++;
-                    }
-                    while(i + tilesUnder != 14 && charBoard[i+(tilesUnder+1)][j] != '-') {
-                        tilesUnder++;
-                    }
-                    if (tilesOver != 0 || tilesUnder != 0) {
-                        crossChecks[i][j] = "";
-                        String lettersOver = "";
-                        String lettersUnder = "";
-                        for (int k = tilesOver; k > 0; k--) {
-                            lettersOver += charBoard[i-k][j];
-                        }
-                        for (int k = 1; k <= tilesUnder; k++) {
-                            lettersUnder += charBoard[i+k][j];
-                        }
-                        //sjekker alle bokstaver i alfabetet
-                        for (int k = 0; k < 29; k++) {
-                            if (dictionary.contains(lettersOver + alphaString.charAt(k) + lettersUnder)) {
-                                crossChecks[i][j] += alphaString.charAt(k);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-    
-    void updateAnchors() {      
-        if (transposed) {
-            System.out.println("Trying to update Anchors, but 'transposed' is true. Swapped?");
-        }
-        
-        for (int i = 0; i < 15; i++) {
-            for (int j = 0; j < 15; j++) {
-                isAnchor[i][j] = false;
-                if (charBoard[i][j] == '-') {
-                    if (i != 0 && charBoard[i-1][j] != '-') {
-                        isAnchor[i][j] = true;
-                    } else if (j != 0 && charBoard[i][j-1] != '-') {
-                        isAnchor[i][j] = true;
-                    } else if (i != 14 && charBoard[i+1][j] != '-') {
-                        isAnchor[i][j] = true;
-                    } else if (j != 14 && charBoard[i][j+1] != '-') {
-                        isAnchor[i][j] = true;
-                    }
-                }
-            }
-        }
-        
-    }
+
 
     //TODO: her må man jo heller bare slå opp ordene...
     //avslutter med en gang et ord som ikke er godkjent kommer
@@ -1775,30 +1392,30 @@ public class ScrabbleGame extends javax.swing.JFrame {
         int totalSum = scoreCPUWord(word, row, wordStart);
         newCPUWords.add(word);
         for (int j = wordStart; j < wordStart+word.length(); j++) {
-        if (charBoard[row][j] == '-') {
+        if (board.charBoard[row][j] == '-') {
             int wordScore = 0;
             int multiplier = 1;
             int tilesOver = 0;
             int tilesUnder = 0;
-            while(row - tilesOver != 0 && charBoard[row-(tilesOver+1)][j] != '-') {
+            while(row - tilesOver != 0 && board.charBoard[row-(tilesOver+1)][j] != '-') {
                 tilesOver++;
             }
-            while(row + tilesUnder != 14 && charBoard[row+(tilesUnder+1)][j] != '-') {
+            while(row + tilesUnder != 14 && board.charBoard[row+(tilesUnder+1)][j] != '-') {
                 tilesUnder++;
             }
             if (tilesOver != 0 || tilesUnder != 0) {
                 String newWord = "";
                 for (int k = tilesOver; k > 0; k--) {
                     if (!boardPanel.squareGrid[row-k][j].tile.isBlank()) {
-                        wordScore += ScoreConstants.letterScore(charBoard[row-k][j]);
-                        newWord += charBoard[row-k][j];
+                        wordScore += ScoreConstants.letterScore(board.charBoard[row-k][j]);
+                        newWord += board.charBoard[row-k][j];
                     }
                 }
                 newWord += word.charAt(j - wordStart);
                 for (int k = 1; k <= tilesUnder; k++) {
                     if (!boardPanel.squareGrid[row+k][j].tile.isBlank()) {
-                        wordScore += ScoreConstants.letterScore(charBoard[row+k][j]);
-                        newWord += charBoard[row+k][j];
+                        wordScore += ScoreConstants.letterScore(board.charBoard[row+k][j]);
+                        newWord += board.charBoard[row+k][j];
                     }                    
                 }
                 newCPUWords.add(newWord);
@@ -1828,30 +1445,30 @@ public class ScrabbleGame extends javax.swing.JFrame {
         int totalSum = scoreTipsWord(word, row, wordStart);
         newCPUWords.add(word);
         for (int j = wordStart; j < wordStart+word.length(); j++) {
-        if (charBoard[row][j] == '-') {
+        if (board.charBoard[row][j] == '-') {
             int wordScore = 0;
             int multiplier = 1;
             int tilesOver = 0;
             int tilesUnder = 0;
-            while(row - tilesOver != 0 && charBoard[row-(tilesOver+1)][j] != '-') {
+            while(row - tilesOver != 0 && board.charBoard[row-(tilesOver+1)][j] != '-') {
                 tilesOver++;
             }
-            while(row + tilesUnder != 14 && charBoard[row+(tilesUnder+1)][j] != '-') {
+            while(row + tilesUnder != 14 && board.charBoard[row+(tilesUnder+1)][j] != '-') {
                 tilesUnder++;
             }
             if (tilesOver != 0 || tilesUnder != 0) {
                 String newWord = "";
                 for (int k = tilesOver; k > 0; k--) {
                     if (!boardPanel.squareGrid[row-k][j].tile.isBlank()) {
-                        wordScore += ScoreConstants.letterScore(charBoard[row-k][j]);
-                        newWord += charBoard[row-k][j];
+                        wordScore += ScoreConstants.letterScore(board.charBoard[row-k][j]);
+                        newWord += board.charBoard[row-k][j];
                     }
                 }
                 newWord += word.charAt(j - wordStart);
                 for (int k = 1; k <= tilesUnder; k++) {
                     if (!boardPanel.squareGrid[row+k][j].tile.isBlank()) {
-                        wordScore += ScoreConstants.letterScore(charBoard[row+k][j]);
-                        newWord += charBoard[row+k][j];
+                        wordScore += ScoreConstants.letterScore(board.charBoard[row+k][j]);
+                        newWord += board.charBoard[row+k][j];
                     }                    
                 }
                 newCPUWords.add(newWord);
@@ -1887,7 +1504,7 @@ public class ScrabbleGame extends javax.swing.JFrame {
         for (int i = 0; i < word.length(); i++) {
             int j = wordStart+i;
             //if tile is from rack
-            if (charBoard[row][j] == '-') {
+            if (board.charBoard[row][j] == '-') {
                 newTiles++;
                 tileScore = 0;
                 fromRack = word.charAt(i);            
@@ -1909,7 +1526,7 @@ public class ScrabbleGame extends javax.swing.JFrame {
                 }
                 rackCpy = rackCpy.substring(0, index) + rackCpy.substring(index+1);
             } else if (!boardPanel.squareGrid[row][j].tile.isBlank()){
-                tileScore = ScoreConstants.letterScore(charBoard[row][j]);
+                tileScore = ScoreConstants.letterScore(board.charBoard[row][j]);
             }
             tempSum += tileScore;
         }
@@ -1933,7 +1550,7 @@ public class ScrabbleGame extends javax.swing.JFrame {
         for (int i = 0; i < word.length(); i++) {
             int j = wordStart+i;
             //if tile is from rack
-            if (charBoard[row][j] == '-') {
+            if (board.charBoard[row][j] == '-') {
                 newTiles++;
                 tileScore = 0;
                 fromRack = word.charAt(i);            
@@ -1955,7 +1572,7 @@ public class ScrabbleGame extends javax.swing.JFrame {
                 }
                 rackCpy = rackCpy.substring(0, index) + rackCpy.substring(index+1);
             } else if (!boardPanel.squareGrid[row][j].tile.isBlank()){
-                tileScore = ScoreConstants.letterScore(charBoard[row][j]);
+                tileScore = ScoreConstants.letterScore(board.charBoard[row][j]);
             }
             tempSum += tileScore;
         }
@@ -2017,18 +1634,18 @@ public class ScrabbleGame extends javax.swing.JFrame {
         //fyller charBoard med '-'
         for (int i = 0; i < 15; i++) {
             for (int j = 0; j < 15; j++) {
-                charBoard[i][j] = '-';
+                board.charBoard[i][j] = '-';
                 //fyller crossChecks med alle bokstaver
-                crossChecks[i][j] = alphaString;
+                board.crossChecks[i][j] = alphaString;
                 //"tømmer" isAnchor
-                isAnchor[i][j] = false;
+                board.isAnchor[i][j] = false;
                 //tømmer brettet
                 boardPanel.squareGrid[i][j].setIcon(null);
                 boardPanel.squareGrid[i][j].tile = null;
                 }
             }
-        isAnchor[7][7] = true;
-        
+        board.isAnchor[7][7] = true;
+
         //for å skrive ut gjenværende brikker        
         tilesLeft = "<html><body>AAAAAAA EEEEEEEEE<br>" + 
                 "IIIII OOOO UUU<br>" + 
@@ -2081,33 +1698,271 @@ public class ScrabbleGame extends javax.swing.JFrame {
          if (computersTurn) {
             computerMove();
          } else {
-            (tipsCalculator = new TipsCalculator()).execute();
+            (tipsCalculator = new TipsCalculator(this)).execute();
          }
          pointlessTurns = 0;         
    } 
     
    void initBoard() {
-        
-         
+       board = new Board();
+    }
+
+    //TODO: dette må ut i CPUThinker,
+    // - selve kalkuleringa må ut i egen metode som også kan brukes av tipslageren.
+    void computerAI() {
+
+        //calculating vowelRatio in bag + players rack
+        double vowelsLeft = bag.vowelCount() + StringUtil.vowelCount(rack.toString());
+        int lettersLeft = bag.tileCount() + rack.tileCount();
+
+        vowelRatioLeft = vowelsLeft / lettersLeft;
+
+        previousRackString = rackString;
+        System.out.println("ComputerAI starts.. cpuRack: " + rackString);
+        newlyAddedToBoard.clear();
+        if (!computersTurn) {
+            System.out.println("ikke cpus tur");
+            return;
+        } else if (rackString.length() == 0) {
+            System.out.println("FERDIG!");
+            return;
+        }
+        if (!firstMove) {
+            board.updateAnchors();
+            board.doCrossChecks(dictionary, alphaString);
+        }
+
+        rackStringCpy = rackString;
+        possibleWords.clear();
+
+        findAcrossMoves();
+        //TRANSPOSING
+        board.transposeBoard(boardPanel);
+        board.doCrossChecks(dictionary, alphaString);
+        //down moves
+        findAcrossMoves();
+
+        int count = 0;
+        int topSc = 0;
+        double topScKey = 0;
+        PotentialMove top = null;
+        for (Map.Entry<Double,PotentialMove> entry : possibleWords.entrySet()) {
+            PotentialMove poss = entry.getValue();
+            if (count < 20) {
+                System.out.println(entry.getKey() + " " + poss.word + " startsAt " + poss.wordStart + " vertical: " + poss.vertical + " bruker: " + poss.usedFromRack + " har igjen: " + poss.leftOnRack + " score: " + poss.wordScore + "  -> " + poss.AIString);
+                count++;
+            }
+            if (poss.wordScore > topSc || (poss.wordScore == topSc && entry.getKey() > topScKey)) {
+                top = poss;
+                topSc = poss.wordScore;
+                topScKey = entry.getKey();
+            }
+        }
+
+        //kan ikke legge
+        if (possibleWords.isEmpty()) {
+            System.out.println("CPU kan ikke legge");
+            addedToThisMove.clear();
+            newWordsAdded.clear();
+            board.transposeBoard(boardPanel);
+
+            //MÅ BYTTE OM MULIG
+            if (bag.tileCount() >= 7) {
+                //bytter alle
+                computerSwap(rackString);
+            } else {
+                JOptionPane.showMessageDialog(null, "CPU passer");
+                pass();
+            }
+            computersTurn = false;
+            return;
+        }
+
+        //velge legg og skrive ut på skjerm + legge til brikkene i charBoard
+        PotentialMove topScoreWord = possibleWords.firstEntry().getValue();
+
+        //TEST
+        if (top != null) {
+            if (top == topScoreWord) {
+                System.out.println("Velger TOPSCORE-word");
+            } else {
+                System.out.println("TOPSCORE: " + topScKey + " " + top.word + " startsAt " + top.wordStart + " vertical: " + top.vertical + " bruker: " + top.usedFromRack + " har igjen: " + top.leftOnRack + " score: " + top.wordScore + "  -> " + top.AIString);
+            }
+        }
+
+        //TEST
+        System.out.print(possibleWords.firstEntry().getKey() + " (" + topScoreWord.wordScore + ") Velger " + topScoreWord.word + ": " + topScoreWord.AIString);
+        System.out.println(", row: " + topScoreWord.row + ", column: " + topScoreWord.wordStart);
+        System.out.println("left: " + topScoreWord.leftOnRack);
+        for (String s : topScoreWord.words) {
+            System.out.println("(" + s + ")");
+        }
+        //TEST SLUTT
+
+        //hvis beste legg ikke er noe godt legg => bytte brikker
+        //har lavere terskel for å bytte om det er første trekk
+        if (firstMove) {
+            //bytter hvis ordets score er negativ, eller gir mindre enn 10 poeng
+            //eller hvis cpu blir sittende igjen med minst tre bokstaver og alle er konsonanter
+            if (possibleWords.firstEntry().getKey() < 0 || topScoreWord.wordScore < 10 ||
+                    (topScoreWord.leftOnRack.length() >= 3 && !StringUtil.containsVowel(topScoreWord.leftOnRack)) ||
+                    (topScoreWord.leftOnRack.length() >= 5 && StringUtil.vowelCount(topScoreWord.leftOnRack) == 1)) {
+                System.out.println("bytter ved på første trekk");
+                cpuMakeSwap();
+                computersTurn = false;
+                addedToThisMove.clear();
+                newWordsAdded.clear();
+                board.transposeBoard(boardPanel);
+                return;
+            }
+            //hvis det ikker er første legg
+        } else {
+            //kriterier for å bytte: negativ score eller kun konsonanter
+            if (bag.tileCount() >= 7 && possibleWords.firstEntry().getKey() < 0) {
+                System.out.println("bytter pga for dårlig bestelegg");
+                cpuMakeSwap();
+                computersTurn = false;
+                addedToThisMove.clear();
+                newWordsAdded.clear();
+                board.transposeBoard(boardPanel);
+                return;
+            }
+        }
+
+        cpuLastWord = topScoreWord;
+        int topScore = topScoreWord.wordScore;
+        if (!topScoreWord.vertical) {
+            board.transposeBoard(boardPanel);
+        }
+        String toRemoveFromRemaining = "";
+        for (int i = 0; i < topScoreWord.word.length(); i++) {
+
+            //hvis bokstaven kommer fra racket, plaser på brettet og fjern fra rack
+            if (board.charBoard[topScoreWord.row][topScoreWord.wordStart+i] == '-') {
+                char l = topScoreWord.word.charAt(i);
+                int index = rackString.indexOf(l);
+                boolean blank = false;
+                if (index == -1) { //blank
+                    index = rackString.indexOf('-');
+                    blank = true;
+                }
+                //fjerner fra rack
+                rackString = rackString.substring(0,index) + rackString.substring(index+1);
+                Tile t;
+                if (blank) {
+                    t = new Tile('-');
+                    t.letter = l;
+                    JOptionPane.showMessageDialog(null, "Blank er " + l);
+                    toRemoveFromRemaining += '-';
+                } else {
+                    t = new Tile(l);
+                    toRemoveFromRemaining += l;
+                }
+                boardPanel.squareGrid[topScoreWord.row][topScoreWord.wordStart+i].placeTile(t);
+            }
+        }
+
+        if (board.transposed) {
+            board.transposeBoard(boardPanel);
+        }
+
+        board.updateCharBoard(addedToThisMove);
+
+        for (Square s : addedToThisMove) {
+            s.tile.isMovable = false;
+        }
+        updateComputerScore(topScore);
+        if (addedToThisMove.size() == 7) {
+            updateCPUNotes("*" + topScoreWord.word, topScore);
+        } else {
+            updateCPUNotes(topScoreWord.word, topScore);
+        }
+        updateRemaining(toRemoveFromRemaining);
+
+        addedToThisMove.clear();
+        newWordsAdded.clear();
+
+        //trekke nye brikker
+        cpuNewlyPicked = "";
+        while (rackString.length() != 7 && !bag.isEmpty()) {
+            Tile t = bag.pickTile();
+            rackString += t.letter;
+            cpuNewlyPicked += t.letter;
+        }
+        computersTurn = false;
+        //hvis CPU går ut
+        if(rackString.length() == 0) {
+            System.out.println("kaller finishGame fra CPU");
+            finishGame();
+        }
+        newlyAddedToBoard.clear();
+        bagCountLabel.setText("Brikker igjen i posen: " + bag.tileCount());
+        playerPassed = false;
+    }
+
+    //chooses what tiles to swap - antar at denne metoden kun kalles med nok brikker i posen
+    void cpuMakeSwap() {
+        System.out.println("cpuMakeSwap kalles med rackString: " + rackString);
+        String toSwap = "";
+        String tilesKept = "";
+        //bytter alle hvis det bare er konsonanter
+        if (!StringUtil.containsVowel(rackString)) {
+            toSwap = rackString;
+        } else {
+            //sparer på vokaler og bingovennlige brikker (maks en av hver) - burde vært to av E?
+            for (int i = 0; i < 7; i++) {
+                char c = rackString.charAt(i);
+                if (StringUtil.isVowel(c) && tilesKept.indexOf(c) == -1) {
+                    tilesKept += c;
+                } else if (!StringUtil.isBingoFriendlyChar(c)) {
+                    toSwap += c;
+                } else if (tilesKept.indexOf(c) == -1) {
+                    tilesKept += c;
+                } else {
+                    toSwap += c;
+                }
+            }
+            //sjekker konsonant/vokal-ratio på brikkene som skal spares
+            double vowelRatio = StringUtil.vowelRatio(tilesKept);
+            while (tilesKept.length() > 1 &&
+                    (vowelRatio < 0.33 || vowelRatio > 0.67)) {
+                //hvis for mange konsonanter eller vokaler
+                char c;
+                if (vowelRatio < 0.33) {
+                    c = StringUtil.lowestScoringCons(tilesKept);
+                } else {
+                    c = StringUtil.lowestScoringVowel(tilesKept);
+                }
+                toSwap += c;
+                tilesKept = StringUtil.removeChar(tilesKept, c);
+
+                vowelRatio = StringUtil.vowelRatio(tilesKept);
+            }
+            if (tilesKept.length() == 1 && !StringUtil.isVowel(tilesKept.charAt(0))) {
+                toSwap += tilesKept;
+            }
+        }
+        System.out.println(", bytter disse brikkene: " + toSwap);
+        computerSwap(toSwap);
     }
     
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel bagCountLabel;
-    private javax.swing.JButton challengeButton;
+    javax.swing.JButton challengeButton;
     private javax.swing.JLabel firstPlayerLabel;
-    private javax.swing.JScrollPane firstPlayerScrollPane;
+    javax.swing.JScrollPane firstPlayerScrollPane;
     private javax.swing.JPanel jPanel1;
-    private javax.swing.JButton newGameButton;
-    private javax.swing.JButton passButton;
-    private javax.swing.JButton playButton;
+    javax.swing.JButton newGameButton;
+    javax.swing.JButton passButton;
+    javax.swing.JButton playButton;
     private javax.swing.JLabel remainingLabel;
     private javax.swing.JLabel secondPlayerLabel;
-    private javax.swing.JScrollPane secondPlayerScrollPane;
-    private javax.swing.JButton swapButton;
+    javax.swing.JScrollPane secondPlayerScrollPane;
+    javax.swing.JButton swapButton;
     private javax.swing.JLabel tilesLeftTitleLabel;
-    private javax.swing.JButton tipsButton;
+    javax.swing.JButton tipsButton;
     // End of variables declaration//GEN-END:variables
 
     private RackPanel rackPanel;
@@ -2128,13 +1983,14 @@ public class ScrabbleGame extends javax.swing.JFrame {
     ArrayList<Square> addedToThisMove = new ArrayList<>();
     ArrayList<Square[]> newWordsAdded = new ArrayList<>();
 
+    Board board;
     Rack rack;
     Square selectedSquare;
     boolean firstMove = true;
     int playerScore, computerScore;
     int previousCPUMoveScore;   // int previousCPUMoveScore;
     boolean computersTurn;
-    boolean transposed = false;
+
     boolean playerIsFirst;
     boolean playerPassed;
     String playerNotes;
@@ -2154,11 +2010,8 @@ public class ScrabbleGame extends javax.swing.JFrame {
     boolean newWordAdded = false;
     boolean playerTips = false;
     //Solver variables
-    char[][] charBoard = new char[15][15];
-    char[][] charBoardBeforeLastMove = new char[15][15];
+
     PotentialMove cpuLastWord;
-    boolean[][] isAnchor = new boolean[15][15];
-    String[][] crossChecks = new String[15][15];
     int currentAnchorI = 0;
     int currentAnchorJ = 0;
     //ArrayList<PossibleWord> possibleWords = new ArrayList<>();
