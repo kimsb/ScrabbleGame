@@ -1974,11 +1974,15 @@ public class ScrabbleGame extends javax.swing.JFrame {
     ArrayList<Square> newlyAddedToBoard = new ArrayList<>();
     String alphaString = "ABCDEFGHIJKLMNOPQRSTUVWXYZÆØÅ-";
 
+    //TODO: CPUThinker og TipsCalculator bør egentlig gjøre det samme...
+    //Må lage en egen klasse som tar inn Board og Rack og kalkulerer de beste trekkene ut fra bare det.
     CPUThinker cpuThinker;
+    TipsCalculator tipsCalculator;
+
     NewGame newGame;
     DictionaryCreator dictionaryCreator;
     PlayerNameCreator playerNameCreator;
-    TipsCalculator tipsCalculator;
+
     
     ArrayList<Square> addedToThisMove = new ArrayList<>();
     ArrayList<Square[]> newWordsAdded = new ArrayList<>();
