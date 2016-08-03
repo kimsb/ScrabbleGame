@@ -8,7 +8,7 @@ package scrabblegamepkg.server;
 
 import com.BoxOfC.MDAG.MDAG;
 import com.BoxOfC.MDAG.MDAGNode;
-import scrabblegamepkg.client.Frontend;
+import scrabblegamepkg.client.RackPanel;
 
 import javax.swing.*;
 import java.awt.*;
@@ -159,10 +159,8 @@ public class ScrabbleGame extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        frontend = new Frontend();
-
         scrabbleBoardPanel = new javax.swing.JPanel();
-        rackPanel = frontend.getRackPanel(this, rackSquares);
+        rackPanel = new RackPanel(this, rackSquares);
         playButton = new javax.swing.JButton();
         challengeButton = new javax.swing.JButton();
         jPanel1 = new javax.swing.JPanel();
@@ -411,7 +409,7 @@ public class ScrabbleGame extends javax.swing.JFrame {
                 //trekke nye brikker
                 rack.addTiles(bag.pickTiles(addedToThisMove.size()));
                 System.out.println("Playerrack etter å ha plukket brikker: " + rack.toString());
-                frontend.renderRack(rackSquares, rack);
+                rackPanel.renderRack(rack);
                 
                 //brikker har blitt lagt, oppdaterer charBoard
                 updateCharBoard();
@@ -433,7 +431,7 @@ public class ScrabbleGame extends javax.swing.JFrame {
                     newWordsAdded.clear(); 
                 } else {
 
-                    frontend.putBack(rackSquares, addedToThisMove);
+                    rackPanel.putBack(addedToThisMove);
                     updatePlayerNotes("(ikke godkjent)", 0);
                     //fjerner fra listen over nylig lagt til brikker
                     addedToThisMove.clear();
@@ -855,7 +853,7 @@ public class ScrabbleGame extends javax.swing.JFrame {
                 rack.addTiles(newTiles);
 
                 toSwap.forEach(Square::cleanUp);
-                frontend.renderRack(rackSquares, rack);
+                rackPanel.renderRack(rack);
 
                 updatePlayerNotes("(bytte)", 0);
                 computersTurn = true;
@@ -961,7 +959,7 @@ public class ScrabbleGame extends javax.swing.JFrame {
             System.out.println("kommer hit - pass 1");
             //legger evt brikker tilbake på racken
 
-            frontend.putBack(rackSquares, newlyAddedToBoard);
+            rackPanel.putBack(newlyAddedToBoard);
             rack.alphabetize();
 
             updatePlayerNotes("(pass)", 0);
@@ -2079,7 +2077,7 @@ public class ScrabbleGame extends javax.swing.JFrame {
             }
         }
 
-        frontend.renderRack(rackSquares, rack);
+        rackPanel.renderRack(rack);
 
          tilesLeftTitleLabel.setText("<html><body><b><u>Gjenværende brikker:</u></b></body></html>");
          firstMove = true;
@@ -2197,7 +2195,6 @@ public class ScrabbleGame extends javax.swing.JFrame {
     private javax.swing.JButton newGameButton;
     private javax.swing.JButton passButton;
     private javax.swing.JButton playButton;
-    private javax.swing.JPanel rackPanel;
     private javax.swing.JLabel remainingLabel;
     private javax.swing.JPanel scrabbleBoardPanel;
     private javax.swing.JLabel secondPlayerLabel;
@@ -2207,7 +2204,7 @@ public class ScrabbleGame extends javax.swing.JFrame {
     private javax.swing.JButton tipsButton;
     // End of variables declaration//GEN-END:variables
 
-    Frontend frontend;
+    private RackPanel rackPanel;
 
     // My variables
     MDAG dictionary;

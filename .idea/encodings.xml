@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="Encoding">
-    <file url="file://$PROJECT_DIR$/src/main/java/scrabblegamepkg/client/Frontend.java" charset="ISO-8859-1" />
+    <file url="file://$PROJECT_DIR$/src/main/java/scrabblegamepkg/client/RackPanel.java" charset="ISO-8859-1" />
     <file url="file://$PROJECT_DIR$/src/main/java/scrabblegamepkg/server/ScrabbleGame.java" charset="ISO-8859-1" />
     <file url="file://$PROJECT_DIR$/src/main/java/scrabblegamepkg/server/Square.java" charset="ISO-8859-1" />
     <file url="file://$PROJECT_DIR$/src/main/resources/yeslist.txt" charset="ISO-8859-1" />

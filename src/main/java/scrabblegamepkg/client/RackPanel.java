@@ -9,26 +9,27 @@ import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
 
-public class Frontend {
+public class RackPanel extends JPanel {
 
-    public JPanel getRackPanel(ScrabbleGame scrabbleGame, ArrayList<Square> squares) {
-        JPanel rackPanel = new JPanel();
-        rackPanel.setBackground(new java.awt.Color(0, 120, 98));
-        rackPanel.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 120, 98), 4));
-        rackPanel.setLayout(new java.awt.GridLayout(1, 7, 2, 2));
-        rackPanel.setComponentOrientation(ComponentOrientation.LEFT_TO_RIGHT);
+    ArrayList<Square> squares;
+
+    public RackPanel(ScrabbleGame scrabbleGame, ArrayList<Square> squares) {
+        this.squares = squares;
+
+        setBackground(new java.awt.Color(0, 120, 98));
+        setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 120, 98), 4));
+        setLayout(new java.awt.GridLayout(1, 7, 2, 2));
+        setComponentOrientation(ComponentOrientation.LEFT_TO_RIGHT);
 
         for(int i = 0; i < 7; i++) {
             Square square = new Square(false, scrabbleGame);
             square.setBackground(new Color(0, 120, 98));
             squares.add(i, square);
-            rackPanel.add(squares.get(i));
+            add(squares.get(i));
         }
-
-        return rackPanel;
     }
 
-    public void putBack(ArrayList<Square> squares, ArrayList<Square> addedToThisMove) {
+    public void putBack(ArrayList<Square> addedToThisMove) {
 
         //legger brikkene tilbake på racken
         for (int i = 0; i < 7; i++) {
@@ -46,7 +47,7 @@ public class Frontend {
         }
     }
 
-    public void renderRack(ArrayList<Square> squares, Rack rack) {
+    public void renderRack(Rack rack) {
         squares.forEach(Square::cleanUp);
         rack.alphabetize();
         ArrayList<Tile> tiles = rack.getTiles();
