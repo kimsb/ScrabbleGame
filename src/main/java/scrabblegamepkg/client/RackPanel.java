@@ -11,11 +11,9 @@ import java.util.ArrayList;
 
 public class RackPanel extends JPanel {
 
-    ArrayList<Square> squares;
+    private ArrayList<Square> squares = new ArrayList<>(7);
 
-    public RackPanel(ScrabbleGame scrabbleGame, ArrayList<Square> squares) {
-        this.squares = squares;
-
+    public RackPanel(ScrabbleGame scrabbleGame) {
         setBackground(new java.awt.Color(0, 120, 98));
         setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 120, 98), 4));
         setLayout(new java.awt.GridLayout(1, 7, 2, 2));

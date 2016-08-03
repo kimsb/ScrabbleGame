@@ -6,8 +6,8 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
 public class Square extends javax.swing.JLabel {
-    int row;
-    int column;
+    public int row;
+    public int column;
     public Tile tile;
     String multiplier = "";
     boolean onBoard;
@@ -36,7 +36,7 @@ public class Square extends javax.swing.JLabel {
         return new ImageIcon(newimg);
     }
 
-    void setMultiplier(String mult) {
+    public void setMultiplier(String mult) {
         multiplier = mult;
         if (mult.equals("DL")) {
             setBackground(new Color(153, 221, 255));
@@ -83,6 +83,8 @@ public class Square extends javax.swing.JLabel {
         return true;
     }
 
+    //TODO: kan refaktorere denne,
+    //men burde uansett heller bruke en form form GUI for Tile som kan trykkes på og flyttes
     void squareClicked() {
         if (tile != null) {
             if (tile.isMovable) {
