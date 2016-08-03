@@ -1,8 +1,6 @@
-package scrabblegamepkg;
+package scrabblegamepkg.server;
 
 import com.BoxOfC.MDAG.MDAG;
-
-import static scrabblegamepkg.StringUtil.*;
 
 public class ComputerAI {
 
@@ -71,7 +69,7 @@ public class ComputerAI {
         posWord.AIString += "+" + leftScore + " for brikkene som er igjen på racket, ";
 
         //gir poeng for å bruke mange bokstaver om man har få vokaler
-        if(vowelCount(posWord.leftOnRack) + vowelCount(posWord.usedFromRack) <= 1 &&
+        if(StringUtil.vowelCount(posWord.leftOnRack) + StringUtil.vowelCount(posWord.usedFromRack) <= 1 &&
                 posWord.usedFromRack.length() >= 4) {
             score += 5;
             posWord.AIString += "+5 for bruk av mange brikker når man har få vokaler, ";
@@ -84,7 +82,7 @@ public class ComputerAI {
         }
 
         //trekk for mange brikker igjen, men få vokaler
-        if (leftOnRack.length() >= 5 && vowelCount(leftOnRack) <= 1) {
+        if (leftOnRack.length() >= 5 && StringUtil.vowelCount(leftOnRack) <= 1) {
             score -= 7.5;
             posWord.AIString += "-7.5 for mange brikker, men få vokaler, ";
         }
@@ -138,7 +136,7 @@ public class ComputerAI {
 
         //plusspoeng for bingovennlige brikker igjen på rack
         if (!doubles) {
-            if (bingoFriendly(leftOnRack)) {
+            if (StringUtil.bingoFriendly(leftOnRack)) {
                 score += 7;
                 posWord.AIString += "+7 for bingovennlige brikker igjen, ";
             }
@@ -153,7 +151,7 @@ public class ComputerAI {
                 if (leftOnRack.charAt(i) == '-') {
                     hasBlank = true;
                     vowelCount += 0.5;
-                } else if (isVowel(leftOnRack.charAt(i))) {
+                } else if (StringUtil.isVowel(leftOnRack.charAt(i))) {
                     vowelCount += 1;
                 }
             }
@@ -1014,7 +1012,7 @@ public class ComputerAI {
             if (charBoard[4][4] == '-' && charBoard[5][4] == '-' && charBoard[6][4] == '-' &&
                     charBoard[7][4] == '-' && charBoard[8][4] == '-' && charBoard[9][4] == '-' &&
                     charBoard[10][4] == '-') {
-                if (isBingoFriendlyChar(posWord.word.charAt(4 - posWord.wordStart))) {
+                if (StringUtil.isBingoFriendlyChar(posWord.word.charAt(4 - posWord.wordStart))) {
                     score -= 10;
                     posWord.AIString += "-10 for åpning av DW * DW, ";
                 }
@@ -1034,7 +1032,7 @@ public class ComputerAI {
                 for (int i = 0; i < 29; i++) {
                     if (dictionary.contains(horPrefix + alphaString.charAt(i) + posWord.word) &&
                             bag.contains(alphaString.charAt(i))) {
-                        if (isBingoFriendlyChar(alphaString.charAt(i))) {
+                        if (StringUtil.isBingoFriendlyChar(alphaString.charAt(i))) {
                             hasWord = true;
                             break;
                         }
@@ -1051,7 +1049,7 @@ public class ComputerAI {
             if (charBoard[4][10] == '-' && charBoard[5][10] == '-' && charBoard[6][10] == '-' &&
                     charBoard[7][10] == '-' && charBoard[8][10] == '-' && charBoard[9][10] == '-' &&
                     charBoard[10][10] == '-') {
-                if (isBingoFriendlyChar(posWord.word.charAt(10 - posWord.wordStart))) {
+                if (StringUtil.isBingoFriendlyChar(posWord.word.charAt(10 - posWord.wordStart))) {
                     score -= 10;
                     posWord.AIString += "-10 for åpning av DW * DW, ";
                 }
@@ -1071,7 +1069,7 @@ public class ComputerAI {
                 for (int i = 0; i < 29; i++) {
                     if (dictionary.contains(posWord.word + alphaString.charAt(i) + horSuffix) &&
                             bag.contains(alphaString.charAt(i))) {
-                        if (isBingoFriendlyChar(alphaString.charAt(i))) {
+                        if (StringUtil.isBingoFriendlyChar(alphaString.charAt(i))) {
                             hasWord = true;
                             break;
                         }

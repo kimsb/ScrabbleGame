@@ -1,4 +1,9 @@
-package scrabblegamepkg;
+package scrabblegamepkg.client;
+
+import scrabblegamepkg.server.Rack;
+import scrabblegamepkg.server.ScrabbleGame;
+import scrabblegamepkg.server.Square;
+import scrabblegamepkg.server.Tile;
 
 import javax.swing.*;
 import java.awt.*;

@@ -1,9 +1,6 @@
 package scrabblegamepkg;
 
-import org.junit.Test;
-
-import java.awt.*;
-import java.util.ArrayList;
+import scrabblegamepkg.server.ScrabbleGame;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;

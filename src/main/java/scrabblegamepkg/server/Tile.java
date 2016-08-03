@@ -1,4 +1,4 @@
-package scrabblegamepkg;
+package scrabblegamepkg.server;
 
 public class Tile implements Comparable<Tile>{
 
@@ -6,7 +6,7 @@ public class Tile implements Comparable<Tile>{
     int value;
     boolean isMovable = true;
 
-    Tile(char l) {
+    public Tile(char l) {
         letter = l;
         value = ScoreConstants.letterScore(l);
     }

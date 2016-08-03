@@ -4,10 +4,11 @@
  * and open the template in the editor.
  */
 
-package scrabblegamepkg;
+package scrabblegamepkg.server;
 
 import com.BoxOfC.MDAG.MDAG;
 import com.BoxOfC.MDAG.MDAGNode;
+import scrabblegamepkg.client.Frontend;
 
 import javax.swing.*;
 import java.awt.*;
@@ -17,8 +18,6 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-
-import static scrabblegamepkg.StringUtil.*;
 
 /**
  *
@@ -514,7 +513,7 @@ public class ScrabbleGame extends javax.swing.JFrame {
     
     void computerAI() {        
         //calculating vowelRatio in bag + players rack
-        double vowelsLeft = bag.vowelCount() + vowelCount(rack.toString());
+        double vowelsLeft = bag.vowelCount() + StringUtil.vowelCount(rack.toString());
         int lettersLeft = bag.tileCount() + rack.tileCount();
 
         vowelRatioLeft = vowelsLeft / lettersLeft;
@@ -607,8 +606,8 @@ public class ScrabbleGame extends javax.swing.JFrame {
             //bytter hvis ordets score er negativ, eller gir mindre enn 10 poeng
             //eller hvis cpu blir sittende igjen med minst tre bokstaver og alle er konsonanter                            
             if (possibleWords.firstEntry().getKey() < 0 || topScoreWord.wordScore < 10 ||
-                    (topScoreWord.leftOnRack.length() >= 3 && !containsVowel(topScoreWord.leftOnRack)) ||
-                    (topScoreWord.leftOnRack.length() >= 5 && vowelCount(topScoreWord.leftOnRack) == 1)) {
+                    (topScoreWord.leftOnRack.length() >= 3 && !StringUtil.containsVowel(topScoreWord.leftOnRack)) ||
+                    (topScoreWord.leftOnRack.length() >= 5 && StringUtil.vowelCount(topScoreWord.leftOnRack) == 1)) {
                 System.out.println("bytter ved på første trekk");
                 cpuMakeSwap();
                 computersTurn = false;
@@ -708,15 +707,15 @@ public class ScrabbleGame extends javax.swing.JFrame {
         String toSwap = "";
         String tilesKept = "";
         //bytter alle hvis det bare er konsonanter
-        if (!containsVowel(rackString)) {
+        if (!StringUtil.containsVowel(rackString)) {
             toSwap = rackString;
         } else {
             //sparer på vokaler og bingovennlige brikker (maks en av hver) - burde vært to av E?
             for (int i = 0; i < 7; i++) {
                 char c = rackString.charAt(i);
-                if (isVowel(c) && tilesKept.indexOf(c) == -1) {
+                if (StringUtil.isVowel(c) && tilesKept.indexOf(c) == -1) {
                     tilesKept += c;
-                } else if (!isBingoFriendlyChar(c)) {
+                } else if (!StringUtil.isBingoFriendlyChar(c)) {
                     toSwap += c;
                 } else if (tilesKept.indexOf(c) == -1) {
                     tilesKept += c;
@@ -725,22 +724,22 @@ public class ScrabbleGame extends javax.swing.JFrame {
                 }
             }
             //sjekker konsonant/vokal-ratio på brikkene som skal spares
-            double vowelRatio = vowelRatio(tilesKept);
+            double vowelRatio = StringUtil.vowelRatio(tilesKept);
             while (tilesKept.length() > 1 && 
                     (vowelRatio < 0.33 || vowelRatio > 0.67)) {
                 //hvis for mange konsonanter eller vokaler
                 char c;
                 if (vowelRatio < 0.33) {
-                    c = lowestScoringCons(tilesKept);
+                    c = StringUtil.lowestScoringCons(tilesKept);
                 } else {
-                    c = lowestScoringVowel(tilesKept);
+                    c = StringUtil.lowestScoringVowel(tilesKept);
                 }
                 toSwap += c;
-                tilesKept = removeChar(tilesKept, c);
+                tilesKept = StringUtil.removeChar(tilesKept, c);
                     
-                vowelRatio = vowelRatio(tilesKept);
+                vowelRatio = StringUtil.vowelRatio(tilesKept);
             }
-            if (tilesKept.length() == 1 && !isVowel(tilesKept.charAt(0))) {
+            if (tilesKept.length() == 1 && !StringUtil.isVowel(tilesKept.charAt(0))) {
                 toSwap += tilesKept;
             }            
         }

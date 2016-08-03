@@ -1,19 +1,19 @@
-package scrabblegamepkg;
+package scrabblegamepkg.server;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
-class Square extends javax.swing.JLabel {
+public class Square extends javax.swing.JLabel {
     int row;
     int column;
-    Tile tile;
+    public Tile tile;
     String multiplier = "";
     boolean onBoard;
     ScrabbleGame scrabbleGame;
 
-    Square(boolean onBoard, ScrabbleGame scrabbleGame) {
+    public Square(boolean onBoard, ScrabbleGame scrabbleGame) {
         this.onBoard = onBoard;
         this.scrabbleGame = scrabbleGame;
 
@@ -49,7 +49,7 @@ class Square extends javax.swing.JLabel {
         }
     }
 
-    boolean placeTile(Tile t) {
+    public boolean placeTile(Tile t) {
         if (onBoard) {
             if (!scrabbleGame.computersTurn && t.isBlank()) {
                 //brikken er blank å må få verdi

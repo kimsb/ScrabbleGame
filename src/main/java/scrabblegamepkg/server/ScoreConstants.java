@@ -1,4 +1,4 @@
-package scrabblegamepkg;
+package scrabblegamepkg.server;
 
 import java.util.HashMap;
 

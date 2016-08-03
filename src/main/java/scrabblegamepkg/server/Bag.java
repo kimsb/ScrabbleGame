@@ -1,10 +1,8 @@
-package scrabblegamepkg;
+package scrabblegamepkg.server;
 
 import java.util.ArrayList;
 import java.util.Random;
 import java.util.stream.Collectors;
-
-import static scrabblegamepkg.StringUtil.isVowel;
 
 public class Bag {
 
@@ -96,7 +94,7 @@ public class Bag {
         return tiles
                 .stream()
                 .map(tile -> tile.letter)
-                .filter((c) -> isVowel(c))
+                .filter((c) -> StringUtil.isVowel(c))
                 .collect(Collectors.toList())
                 .size();
     }
