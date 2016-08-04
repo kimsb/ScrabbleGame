@@ -11,7 +11,7 @@ public class PotentialMove {
     int wordScore;
     String usedFromRack;
     String leftOnRack;
-    ArrayList<String> words;
+    ArrayList<String> words = new ArrayList<>();
     String AIString = "";
 
     //int score;

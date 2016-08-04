@@ -12,7 +12,6 @@ import scrabblegamepkg.client.BoardPanel;
 import scrabblegamepkg.client.RackPanel;
 
 import javax.swing.*;
-import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.io.*;
 import java.util.*;
@@ -1741,6 +1740,20 @@ public class ScrabbleGame extends javax.swing.JFrame {
         board.doCrossChecks(dictionary, alphaString);
         //down moves
         findAcrossMoves();
+
+        //TODO: henter nå alle ord også med ny metode, men har ikke fjernet gammel ennå
+        //bruker nye metoden for å finne ord
+        MoveFinder moveFinder = new MoveFinder();
+        ArrayList<PotentialMove> allMoves = moveFinder.findAllMoves(dictionary, board, rackString);
+
+        TreeMap<Double, PotentialMove> newPossibleWords = new TreeMap<>(Collections.reverseOrder());
+
+        ComputerAI computerAI = new ComputerAI(rackStringCpy, bag, vowelRatioLeft, alphaString,
+                playerScore, computerScore, pointlessTurns, board.isAnchor, firstMove,
+                boardPanel.squareGrid, board.charBoard, dictionary,
+                rackString, rack.tileCount());
+
+        allMoves.forEach(potentialMove -> newPossibleWords.put(computerAI.cpuAIScore(potentialMove), potentialMove));
 
         int count = 0;
         int topSc = 0;
