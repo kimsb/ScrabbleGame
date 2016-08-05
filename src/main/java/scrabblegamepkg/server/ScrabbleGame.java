@@ -255,7 +255,7 @@ public class ScrabbleGame {
         verticalScrollBar.setValue(verticalScrollBar.getMaximum());
         verticalScrollBar = scrabbleGameFrame.secondPlayerScrollPane.getVerticalScrollBar();
         verticalScrollBar.setValue(verticalScrollBar.getMaximum());
-        (cpuThinker = new CPUThinker(this)).execute();
+        new CPUThinker(this).execute();
     }
 
     public void challengeAction() {
@@ -841,13 +841,11 @@ public class ScrabbleGame {
      */
     public static void main(String args[]) {
         /* Create and display the form */
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                try {
-                    new ScrabbleGame().scrabbleGameFrame.setVisible(true);
-                } catch (IOException ex) {
-                    Logger.getLogger(ScrabbleGame.class.getName()).log(Level.SEVERE, null, ex);
-                }
+        java.awt.EventQueue.invokeLater(() -> {
+            try {
+                new ScrabbleGame().scrabbleGameFrame.setVisible(true);
+            } catch (IOException ex) {
+                Logger.getLogger(ScrabbleGame.class.getName()).log(Level.SEVERE, null, ex);
             }
         });
     }
@@ -926,7 +924,7 @@ public class ScrabbleGame {
          if (computersTurn) {
             computerMove();
          } else {
-            (tipsCalculator = new TipsCalculator(this)).execute();
+            new TipsCalculator(this).execute();
          }
          pointlessTurns = 0;         
    }
@@ -937,9 +935,6 @@ public class ScrabbleGame {
     MDAG dictionary;
     Bag bag = new Bag();
     ArrayList<Square> newlyAddedToBoard = new ArrayList<>();
-
-    CPUThinker cpuThinker;
-    TipsCalculator tipsCalculator;
 
     NewGame newGame;
     DictionaryCreator dictionaryCreator;

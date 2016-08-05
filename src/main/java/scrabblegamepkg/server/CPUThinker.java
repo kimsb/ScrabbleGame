@@ -33,7 +33,7 @@ public class CPUThinker extends SwingWorker<Void, Void> {
     protected void done() {
         scrabbleGame.scrabbleGameFrame.enableButtons(true);
         scrabbleGame.scrabbleGameFrame.tipsButton.setEnabled(false);
-        (scrabbleGame.tipsCalculator = new TipsCalculator(scrabbleGame)).execute();
+        new TipsCalculator(scrabbleGame).execute();
         JScrollBar verticalScrollBar = scrabbleGame.scrabbleGameFrame.firstPlayerScrollPane.getVerticalScrollBar();
         verticalScrollBar.setValue(verticalScrollBar.getMaximum());
         verticalScrollBar = scrabbleGame.scrabbleGameFrame.secondPlayerScrollPane.getVerticalScrollBar();
