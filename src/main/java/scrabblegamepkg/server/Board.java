@@ -16,6 +16,17 @@ public class Board {
     String [][] multipliers;
 
     Board() {
+        for (int i = 0; i < 15; i++) {
+            for (int j = 0; j < 15; j++) {
+                //fyller charBoard med '-'
+                charBoard[i][j] = '-';
+                //fyller crossChecks med alle bokstaver
+                crossChecks[i][j] = StringUtil.alphaString();
+                //"tømmer" isAnchor
+                isAnchor[i][j] = false;
+            }
+        }
+        isAnchor[7][7] = true;
         multipliers = setMultipliers();
     }
 

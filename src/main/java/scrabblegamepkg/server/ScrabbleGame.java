@@ -30,8 +30,6 @@ public class ScrabbleGame {
 
         scrabbleGameFrame = new ScrabbleGameFrame(this);
 
-        board = new Board();
-
         (dictionaryCreator = new DictionaryCreator()).execute();
         (playerNameCreator = new PlayerNameCreator()).execute();
     }
@@ -851,26 +849,14 @@ public class ScrabbleGame {
     }
     
    void initGame() {
+       board = new Board();
+       scrabbleGameFrame.boardPanel.cleanUp();
+
         rackString = "";
         rackStringCpy = "";
 
         playerScore = 0;
         computerScore = 0;
-        
-        //fyller charBoard med '-'
-        for (int i = 0; i < 15; i++) {
-            for (int j = 0; j < 15; j++) {
-                board.charBoard[i][j] = '-';
-                //fyller crossChecks med alle bokstaver
-                board.crossChecks[i][j] = StringUtil.alphaString();
-                //"tømmer" isAnchor
-                board.isAnchor[i][j] = false;
-                //tømmer brettet
-                scrabbleGameFrame.boardPanel.squareGrid[i][j].setIcon(null);
-                scrabbleGameFrame.boardPanel.squareGrid[i][j].tile = null;
-                }
-            }
-        board.isAnchor[7][7] = true;
 
         //for å skrive ut gjenværende brikker        
         tilesLeft = "<html><body>AAAAAAA EEEEEEEEE<br>" + 
