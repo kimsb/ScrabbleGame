@@ -18,7 +18,7 @@ public class TipsCalculator extends SwingWorker<Void, Void> {
 
     @Override
     protected void done() {
-        scrabbleGame.tipsButton.setEnabled(true);
+        scrabbleGame.scrabbleGameFrame.tipsButton.setEnabled(true);
     }
 
 }

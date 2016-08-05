@@ -56,39 +56,31 @@ public class CPUThinker extends SwingWorker<Void, Void> {
         this.computerScore = scrabbleGame.computerScore;
         this.pointlessTurns = scrabbleGame.pointlessTurns;
         this.firstMove = scrabbleGame.firstMove;
-        this.boardPanel = scrabbleGame.boardPanel;
+        this.boardPanel = scrabbleGame.scrabbleGameFrame.boardPanel;
         this.addedToThisMove = scrabbleGame.addedToThisMove;
         this.newWordsAdded = scrabbleGame.newWordsAdded;
         this.cpuLastWord = scrabbleGame.cpuLastWord;
         this.cpuNewlyPicked = scrabbleGame.cpuNewlyPicked;
-        this.bagCountLabel = scrabbleGame.bagCountLabel;
+        this.bagCountLabel = scrabbleGame.scrabbleGameFrame.bagCountLabel;
         this.playerPassed = scrabbleGame.playerPassed;
         this.previousCPUMoveScore = scrabbleGame.previousCPUMoveScore;
     }
 
     @Override
     protected Void doInBackground() {
-        scrabbleGame.challengeButton.setEnabled(false);
-        scrabbleGame.playButton.setEnabled(false);
-        scrabbleGame.swapButton.setEnabled(false);
-        scrabbleGame.passButton.setEnabled(false);
-        scrabbleGame.newGameButton.setEnabled(false);
-        scrabbleGame.tipsButton.setEnabled(false);
+        scrabbleGame.scrabbleGameFrame.enableButtons(false);
         computerAI();
         return null;
     }
 
     @Override
     protected void done() {
-        scrabbleGame.challengeButton.setEnabled(true);
-        scrabbleGame.playButton.setEnabled(true);
-        scrabbleGame.swapButton.setEnabled(true);
-        scrabbleGame.passButton.setEnabled(true);
-        scrabbleGame.newGameButton.setEnabled(true);
+        scrabbleGame.scrabbleGameFrame.enableButtons(true);
+        scrabbleGame.scrabbleGameFrame.tipsButton.setEnabled(false);
         (scrabbleGame.tipsCalculator = new TipsCalculator(scrabbleGame)).execute();
-        JScrollBar verticalScrollBar = scrabbleGame.firstPlayerScrollPane.getVerticalScrollBar();
+        JScrollBar verticalScrollBar = scrabbleGame.scrabbleGameFrame.firstPlayerScrollPane.getVerticalScrollBar();
         verticalScrollBar.setValue(verticalScrollBar.getMaximum());
-        verticalScrollBar = scrabbleGame.secondPlayerScrollPane.getVerticalScrollBar();
+        verticalScrollBar = scrabbleGame.scrabbleGameFrame.secondPlayerScrollPane.getVerticalScrollBar();
         verticalScrollBar.setValue(verticalScrollBar.getMaximum());
 
     }

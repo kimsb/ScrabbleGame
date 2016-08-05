@@ -10,6 +10,7 @@ import com.BoxOfC.MDAG.MDAG;
 import com.BoxOfC.MDAG.MDAGNode;
 import scrabblegamepkg.client.BoardPanel;
 import scrabblegamepkg.client.RackPanel;
+import scrabblegamepkg.client.ScrabbleGameFrame;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -23,26 +24,132 @@ import java.util.stream.Collectors;
  *
  * @author Kim
  */
-public class ScrabbleGame extends javax.swing.JFrame {
+public class ScrabbleGame {
 
-    /**
-     * Creates new form ScrabbleGame
-     */
     public ScrabbleGame() throws IOException {
-        
 
-                
-        initComponents();
-        challengeButton.setEnabled(false);
-        playButton.setEnabled(false);
-        swapButton.setEnabled(false);
-        passButton.setEnabled(false);
-        newGameButton.setEnabled(false); 
-        tipsButton.setEnabled(false);
-        
-        initBoard();
+        scrabbleGameFrame = new ScrabbleGameFrame(this);
+
+        board = new Board();
+
         (dictionaryCreator = new DictionaryCreator()).execute();
         (playerNameCreator = new PlayerNameCreator()).execute();
+    }
+
+    public void playAction() {
+        if (computersTurn) {
+            return;
+        }
+        System.out.println("Player kaller play med " + rack.toString() + " på racket.");
+        //må sjekke om ordet er lovlig plassert
+        if (moveIsAllowed()) {
+            //må sjekke om ordet/ordene er gyldig
+            //hvis ikke, bør turen avsluttes
+            if (wordsAreAllowed()) {
+
+                System.out.println("PLAYERRACK: " + rack.toString());
+
+                //regne ut score (av alle ord)
+                int moveScore = 0;
+                String newWord = "<MISTAKE>";
+                for (Square[] sA : newWordsAdded) {
+                    moveScore += scoreSingleWord(sA);
+                    String word = "";
+                    int tileCount = 0;
+                    for (Square s : sA) {
+                        word += s.tile.letter;
+                        if (s.tile.isMovable) {
+                            tileCount++;
+                        }
+                    }
+                    if (tileCount == addedToThisMove.size()) {
+                        newWord = word;
+                    }
+                }
+                updatePlayerScore(moveScore);
+                if (addedToThisMove.size() == 7) {
+                    updatePlayerNotes("*" + newWord, moveScore);
+                } else {
+                    updatePlayerNotes(newWord, moveScore);
+                    //sjekker om player hadde bingo på hånda
+                    if (!possibleBingos.isEmpty() || !impossibleBingos.isEmpty()) {
+                        String bingoMessage = "<html><body>";
+                        if (!possibleBingos.isEmpty()) {
+                            bingoMessage += "<b><u>Du kunne lagt bingo:</u></b>";
+                            for (String s : possibleBingos) {
+                                bingoMessage += ("<br>" + s);
+                            }
+                        }
+                        if (!impossibleBingos.isEmpty()) {
+                            if (!possibleBingos.isEmpty()) {
+                                bingoMessage += "<br><br>";
+                            }
+                            bingoMessage += "<b><u>Du hadde bingo som ikke kunne legges:</u></b>";
+                            for (String s : impossibleBingos) {
+                                bingoMessage += ("<br>" + s);
+                            }
+                        }
+                        bingoMessage += "</body></html>";
+                        JOptionPane.showMessageDialog(null, bingoMessage);
+                    }
+                }
+
+                String toRemoveFromRemaining = "";
+                //fjerne fra newlyAdded
+                //låser brikkene til brettet
+                for (Square s : addedToThisMove) {
+                    s.tile.isMovable = false;
+                    if (s.tile.isBlank()) {
+                        toRemoveFromRemaining += '-';
+                        rack.removeTile('-');
+                    } else {
+                        toRemoveFromRemaining += s.tile.letter;
+                        rack.removeTile(s.tile.letter);
+                    }
+                }
+                updateRemaining(toRemoveFromRemaining);
+
+                //trekke nye brikker
+                rack.addTiles(bag.pickTiles(addedToThisMove.size()));
+                System.out.println("Playerrack etter å ha plukket brikker: " + rack.toString());
+
+                //TODO: generell programflyt -> rendering skal ikke styres fra server, men fra returverdier til klienten (gjelder flere steder)
+                scrabbleGameFrame.renderRack(rack);
+
+                //brikker har blitt lagt, oppdaterer charBoard
+                board.updateCharBoard(addedToThisMove);
+                //fjerner fra listen over nylig lagt til brikker
+                addedToThisMove.clear();
+                newWordsAdded.clear();
+                System.out.println("kommer hit 11");
+                if (rack.isEmpty()) {
+                    System.out.println("kommer hit 22");
+                    finishGame();
+                } else {
+                    System.out.println("kommer hit 33");
+                    computersTurn = true;
+                    computerMove();
+                }
+            } else {
+                //turen avsluttes
+                if (retryIfWordIsNotValid) {
+                    newWordsAdded.clear();
+                } else {
+                    scrabbleGameFrame.rackPanel.putBack(addedToThisMove);
+                    updatePlayerNotes("(ikke godkjent)", 0);
+                    //fjerner fra listen over nylig lagt til brikker
+                    addedToThisMove.clear();
+                    newWordsAdded.clear();
+                    computersTurn = true;
+                    computerMove();
+                }
+            }
+        } else { //hvis ikke lovlig plassert
+            JOptionPane.showMessageDialog(null, "Ikke godkjent plassering");
+            addedToThisMove.clear();
+            newWordsAdded.clear();
+        }
+        scrabbleGameFrame.bagCountLabel.setText("Brikker igjen i posen: " + bag.tileCount());
     }
 
     private class PlayerNameCreator extends SwingWorker<Void, Void> {
@@ -129,358 +236,62 @@ public class ScrabbleGame extends javax.swing.JFrame {
     
     @Override
     protected Void doInBackground() {
-        challengeButton.setEnabled(false);
-        playButton.setEnabled(false);
-        swapButton.setEnabled(false);
-        passButton.setEnabled(false);
-        newGameButton.setEnabled(false);
-        tipsButton.setEnabled(false);
+        scrabbleGameFrame.enableButtons(false);
         initGame();
         return null;
     }
     
     @Override
     protected void done() {
-        challengeButton.setEnabled(true);
-        playButton.setEnabled(true);
-        swapButton.setEnabled(true);
-        passButton.setEnabled(true);
-        newGameButton.setEnabled(true);
-        tipsButton.setEnabled(true);
+        scrabbleGameFrame.enableButtons(true);
     } 
     }
-    
-    
-    private void initComponents() {
 
-        boardPanel = new BoardPanel(this);
-        rackPanel = new RackPanel(this);
-        playButton = new javax.swing.JButton();
-        challengeButton = new javax.swing.JButton();
-        jPanel1 = new javax.swing.JPanel();
-        tilesLeftTitleLabel = new javax.swing.JLabel();
-        remainingLabel = new javax.swing.JLabel();
-        bagCountLabel = new javax.swing.JLabel();
-        firstPlayerScrollPane = new javax.swing.JScrollPane();
-        firstPlayerLabel = new javax.swing.JLabel();
-        secondPlayerScrollPane = new javax.swing.JScrollPane();
-        secondPlayerLabel = new javax.swing.JLabel();
-        swapButton = new javax.swing.JButton();
-        passButton = new javax.swing.JButton();
-        newGameButton = new javax.swing.JButton();
-        tipsButton = new javax.swing.JButton();
-
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        setPreferredSize(new java.awt.Dimension(800, 650));
-        setResizable(false);
-
-        playButton.setText("Legg");
-        playButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                playButtonActionPerformed(evt);
-            }
-        });
-
-        challengeButton.setText("Utfordre ord");
-        challengeButton.setEnabled(false);
-        challengeButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                challengeButtonActionPerformed(evt);
-            }
-        });
-
-        remainingLabel.setFont(new java.awt.Font("Courier New", 0, 18)); // NOI18N
-        remainingLabel.setVerticalAlignment(javax.swing.SwingConstants.TOP);
-
-        bagCountLabel.setFont(new java.awt.Font("Tahoma", 1, 11)); // NOI18N
-
-        firstPlayerScrollPane.setPreferredSize(new java.awt.Dimension(105, 280));
-
-        firstPlayerLabel.setVerticalAlignment(javax.swing.SwingConstants.TOP);
-        firstPlayerScrollPane.setViewportView(firstPlayerLabel);
-
-        secondPlayerScrollPane.setPreferredSize(new java.awt.Dimension(105, 280));
-
-        secondPlayerLabel.setVerticalAlignment(javax.swing.SwingConstants.TOP);
-        secondPlayerScrollPane.setViewportView(secondPlayerLabel);
-
-        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(remainingLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGap(2, 2, 2)
-                        .addComponent(firstPlayerScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(secondPlayerScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGap(25, 25, 25)
-                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(bagCountLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(tilesLeftTitleLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 135, Short.MAX_VALUE))))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-        jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(bagCountLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(tilesLeftTitleLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(remainingLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 206, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(firstPlayerScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(secondPlayerScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(3, 3, 3))
-        );
-
-        swapButton.setText("Bytt");
-        swapButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                swapButtonActionPerformed(evt);
-            }
-        });
-
-        passButton.setText("Pass");
-        passButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                passButtonActionPerformed(evt);
-            }
-        });
-
-        newGameButton.setText("Nytt spill");
-        newGameButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                newGameButtonActionPerformed(evt);
-            }
-        });
-
-        tipsButton.setText("Tips");
-        tipsButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                tipsButtonActionPerformed(evt);
-            }
-        });
-
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
-        getContentPane().setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(0, 22, Short.MAX_VALUE)
-                        .addComponent(challengeButton)
-                        .addGap(18, 18, 18)
-                        .addComponent(rackPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(38, 38, 38)
-                        .addComponent(playButton)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(swapButton)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(passButton)
-                        .addGap(26, 26, 26)
-                        .addComponent(tipsButton)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(newGameButton)
-                        .addGap(152, 152, 152))
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(boardPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(141, 141, 141))))
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(boardPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(rackPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                .addComponent(swapButton)
-                                .addComponent(passButton)
-                                .addComponent(playButton)
-                                .addComponent(challengeButton)
-                                .addComponent(newGameButton)
-                                .addComponent(tipsButton)))))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-
-        pack();
-        setLocationRelativeTo(null);
-    }// </editor-fold>//GEN-END:initComponents
         
-    private void playButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_playButtonActionPerformed
-        if (computersTurn) {
-            return;
-        }
-        System.out.println("Player kaller play med " + rack.toString() + " på racket.");
-        //må sjekke om ordet er lovlig plassert
-        if (moveIsAllowed()) {  
-            //må sjekke om ordet/ordene er gyldig
-            //hvis ikke, bør turen avsluttes            
-            if (wordsAreAllowed()) {    
-                
-                System.out.println("PLAYERRACK: " + rack.toString());
-                
-                //regne ut score (av alle ord)
-                int moveScore = 0;
-                String newWord = "<MISTAKE>";
-                for (Square[] sA : newWordsAdded) {
-                    moveScore += scoreSingleWord(sA);
-                    String word = "";
-                    int tileCount = 0;
-                    for (Square s : sA) {
-                        word += s.tile.letter;
-                        if (s.tile.isMovable) {
-                            tileCount++;
-                        }
-                    }
-                    if (tileCount == addedToThisMove.size()) {
-                        newWord = word;
-                    }
-                }
-                updatePlayerScore(moveScore);
-                if (addedToThisMove.size() == 7) {
-                    updatePlayerNotes("*" + newWord, moveScore);
-                } else {
-                    updatePlayerNotes(newWord, moveScore);
-                    //sjekker om player hadde bingo på hånda
-                    if (!possibleBingos.isEmpty() || !impossibleBingos.isEmpty()) {
-                        String bingoMessage = "<html><body>";
-                        if (!possibleBingos.isEmpty()) {
-                            bingoMessage += "<b><u>Du kunne lagt bingo:</u></b>";
-                            for (String s : possibleBingos) {
-                                bingoMessage += ("<br>" + s);
-                            }
-                        }
-                        if (!impossibleBingos.isEmpty()) {
-                            if (!possibleBingos.isEmpty()) {
-                                bingoMessage += "<br><br>";
-                            }
-                            bingoMessage += "<b><u>Du hadde bingo som ikke kunne legges:</u></b>";
-                            for (String s : impossibleBingos) {
-                                bingoMessage += ("<br>" + s);
-                            }
-                        }
-                        bingoMessage += "</body></html>";
-                        JOptionPane.showMessageDialog(null, bingoMessage);
-                    }
-                }               
-        
-                String toRemoveFromRemaining = "";
-                //fjerne fra newlyAdded
-                //låser brikkene til brettet         
-                for (Square s : addedToThisMove) {
-                    s.tile.isMovable = false;
-                    if (s.tile.isBlank()) {
-                        toRemoveFromRemaining += '-';
-                        rack.removeTile('-');
-                    } else {
-                        toRemoveFromRemaining += s.tile.letter;
-                        rack.removeTile(s.tile.letter);
-                    }
-                }
-                updateRemaining(toRemoveFromRemaining);
 
-                //trekke nye brikker
-                rack.addTiles(bag.pickTiles(addedToThisMove.size()));
-                System.out.println("Playerrack etter å ha plukket brikker: " + rack.toString());
-                rackPanel.renderRack(rack);
-                
-                //brikker har blitt lagt, oppdaterer charBoard
-                board.updateCharBoard(addedToThisMove);
-                //fjerner fra listen over nylig lagt til brikker
-                addedToThisMove.clear();
-                newWordsAdded.clear();
-                System.out.println("kommer hit 11");
-                if (rack.isEmpty()) {
-                    System.out.println("kommer hit 22");
-                    finishGame();
-                } else {
-                    System.out.println("kommer hit 33");
-                    computersTurn = true;
-                    computerMove();
-                }
-            } else {
-                //turen avsluttes
-                if (retryIfWordIsNotValid) {
-                    newWordsAdded.clear(); 
-                } else {
-
-                    rackPanel.putBack(addedToThisMove);
-                    updatePlayerNotes("(ikke godkjent)", 0);
-                    //fjerner fra listen over nylig lagt til brikker
-                    addedToThisMove.clear();
-                    newWordsAdded.clear();
-                    computersTurn = true;
-                    computerMove();
-                }
-            } 
-        } else { //hvis ikke lovlig plassert
-            JOptionPane.showMessageDialog(null, "Ikke godkjent plassering");
-            addedToThisMove.clear();
-            newWordsAdded.clear();
-        }
-        bagCountLabel.setText("Brikker igjen i posen: " + bag.tileCount());
-        
-    }//GEN-LAST:event_playButtonActionPerformed
 
     void computerMove() {
-        JScrollBar verticalScrollBar = firstPlayerScrollPane.getVerticalScrollBar();
+        JScrollBar verticalScrollBar = scrabbleGameFrame.firstPlayerScrollPane.getVerticalScrollBar();
         verticalScrollBar.setValue(verticalScrollBar.getMaximum());
-        verticalScrollBar = secondPlayerScrollPane.getVerticalScrollBar();
+        verticalScrollBar = scrabbleGameFrame.secondPlayerScrollPane.getVerticalScrollBar();
         verticalScrollBar.setValue(verticalScrollBar.getMaximum());
         (cpuThinker = new CPUThinker(this)).execute();
     }
-    
-    private void challengeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_challengeButtonActionPerformed
-        boolean wordRemoved = false;   
+
+    public void challengeAction() {
+        boolean wordRemoved = false;
         for (String s : cpuLastWord.words) {
             Object[] options = {"Ja", "Nei"};
-            int n = JOptionPane.showOptionDialog(this,
-            "Fjerne " + s + " fra ordlisten?",
-            "Message",
-            JOptionPane.YES_NO_OPTION,
-            JOptionPane.QUESTION_MESSAGE,
-            null,     //do not use a custom Icon
-            options,  //the titles of buttons
-            options[1]); //default button title
+            int n = JOptionPane.showOptionDialog(scrabbleGameFrame,
+                    "Fjerne " + s + " fra ordlisten?",
+                    "Message",
+                    JOptionPane.YES_NO_OPTION,
+                    JOptionPane.QUESTION_MESSAGE,
+                    null,     //do not use a custom Icon
+                    options,  //the titles of buttons
+                    options[1]); //default button title
             if (n == 0) { //skal fjernes
                 //fjerner ordet fra dictionary
                 //TEST
                 System.out.println("kommer til fjerning");
                 wordRemoved = true;
                 try {
-                PrintWriter ikkeGodkjent = new PrintWriter(new BufferedWriter(new FileWriter("ikkeGodkjent.txt", true)));
-                ikkeGodkjent.println(s);
-                ikkeGodkjent.close();
-                dictionary.removeString(s);
+                    PrintWriter ikkeGodkjent = new PrintWriter(new BufferedWriter(new FileWriter("ikkeGodkjent.txt", true)));
+                    ikkeGodkjent.println(s);
+                    ikkeGodkjent.close();
+                    dictionary.removeString(s);
                 } catch (IOException ex) {
                     System.out.println("fjerne ord fra dictionary - exception!");
                     Logger.getLogger(ScrabbleGame.class.getName()).log(Level.SEVERE, null, ex);
-                }                
-                        
+                }
+
             }
         }
         if (wordRemoved) {
-            
+
             //TEST
             System.out.println("kommer til wordRemoved");
-            
+
             //legger tilbake i posen
             for (int i = 0; i < cpuNewlyPicked.length(); i++) {
                 bag.add(new Tile(cpuNewlyPicked.charAt(i)));
@@ -492,8 +303,8 @@ public class ScrabbleGame extends javax.swing.JFrame {
                 for (int j = 0; j < 15; j++) {
                     if (board.charBoardBeforeLastMove[i][j] != board.charBoard[i][j]) {
                         board.charBoard[i][j] = board.charBoardBeforeLastMove[i][j];
-                        boardPanel.squareGrid[i][j].tile = null;
-                        boardPanel.squareGrid[i][j].setIcon(null);
+                        scrabbleGameFrame.boardPanel.squareGrid[i][j].tile = null;
+                        scrabbleGameFrame.boardPanel.squareGrid[i][j].setIcon(null);
                     }
                 }
             }
@@ -501,14 +312,14 @@ public class ScrabbleGame extends javax.swing.JFrame {
             computerScore -= previousCPUMoveScore;
             //oppdaterer gjenværende brikker
             tilesLeft = previousTilesLeft;
-            remainingLabel.setText(tilesLeft);
+            scrabbleGameFrame.remainingLabel.setText(tilesLeft);
             //oppdaterer cpuNotes
             cpuNotes = previousCPUNotes;
-            JLabel noteLabel = firstPlayerLabel;
-            JScrollPane scrollPane = firstPlayerScrollPane;
+            JLabel noteLabel = scrabbleGameFrame.firstPlayerLabel;
+            JScrollPane scrollPane = scrabbleGameFrame.firstPlayerScrollPane;
             if (playerIsFirst) {
-                noteLabel = secondPlayerLabel;
-                scrollPane = secondPlayerScrollPane;
+                noteLabel = scrabbleGameFrame.secondPlayerLabel;
+                scrollPane = scrabbleGameFrame.secondPlayerScrollPane;
             }
             noteLabel.setText("<html><body>" + cpuNotes + "<b>" + computerScore + "</b></body></html>");
             JScrollBar verticalScrollBar = scrollPane.getVerticalScrollBar();
@@ -525,18 +336,18 @@ public class ScrabbleGame extends javax.swing.JFrame {
             }
             computerMove();
         }
-        
-    }//GEN-LAST:event_challengeButtonActionPerformed
 
-    private void swapButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_swapButtonActionPerformed
+    }
+
+    public void swapAction() {
         System.out.println("Bytter");
-        
+
         ArrayList<Square> toSwap = new ArrayList<>();
         for (int i = 0; i < 15; i++) {
             for (int j = 0; j < 15; j++) {
-                Tile t = boardPanel.squareGrid[i][j].tile;
+                Tile t = scrabbleGameFrame.boardPanel.squareGrid[i][j].tile;
                 if (t != null && t.isMovable) {
-                    toSwap.add(boardPanel.squareGrid[i][j]);
+                    toSwap.add(scrabbleGameFrame.boardPanel.squareGrid[i][j]);
                 }
             }
         }
@@ -555,34 +366,29 @@ public class ScrabbleGame extends javax.swing.JFrame {
                 rack.addTiles(newTiles);
 
                 toSwap.forEach(Square::cleanUp);
-                rackPanel.renderRack(rack);
+                scrabbleGameFrame.rackPanel.renderRack(rack);
 
                 updatePlayerNotes("(bytte)", 0);
                 computersTurn = true;
                 computerMove();
             }
         }
-    }//GEN-LAST:event_swapButtonActionPerformed
+    }
 
-    private void passButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_passButtonActionPerformed
-        pass();
-        playerPassed = true;        
-    }//GEN-LAST:event_passButtonActionPerformed
-
-    private void newGameButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newGameButtonActionPerformed
-            Object[] options = {"Ja", "Nei"};
-            int n = JOptionPane.showOptionDialog(this,
-            "Vil du avslutte dette spillet og starte et nytt?",
-            "Message",
-            JOptionPane.YES_NO_OPTION,
-            JOptionPane.QUESTION_MESSAGE,
-            null,     //do not use a custom Icon
-            options,  //the titles of buttons
-            options[1]); //default button title
-            if (n == 0) { //skal fjernes
-        (newGame = new NewGame()).execute();
-            }
-    }//GEN-LAST:event_newGameButtonActionPerformed
+    public void newGameAction() {
+        Object[] options = {"Ja", "Nei"};
+        int n = JOptionPane.showOptionDialog(scrabbleGameFrame,
+                "Vil du avslutte dette spillet og starte et nytt?",
+                "Message",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.QUESTION_MESSAGE,
+                null,     //do not use a custom Icon
+                options,  //the titles of buttons
+                options[1]); //default button title
+        if (n == 0) { //skal fjernes
+            (newGame = new NewGame()).execute();
+        }
+    }
 
     //TODO: denne må ut i tipscalculator
     void calculateTips() {
@@ -613,9 +419,8 @@ public class ScrabbleGame extends javax.swing.JFrame {
         }
 
     }
-    
-    private void tipsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tipsButtonActionPerformed
 
+    public void tipsAction() {
         int count = 0;
         String tipsString = "<html><body>";
         ArrayList<String> tipsGiven = new ArrayList<>();
@@ -626,7 +431,7 @@ public class ScrabbleGame extends javax.swing.JFrame {
         }
         for (Map.Entry<Double,Move> entry : tipsWords.entrySet()) {
             Move poss = entry.getValue();
-            
+
             if (count < 5) {
                 if (!tipsGiven.contains(poss.word)) {
                     tipsString += ("<br>" + poss.wordScore + ", " + poss.word);
@@ -637,9 +442,9 @@ public class ScrabbleGame extends javax.swing.JFrame {
         }
         tipsString += "</body></html>";
         JOptionPane.showMessageDialog(null, tipsString);
-    }//GEN-LAST:event_tipsButtonActionPerformed
+    }
 
-    void pass() {
+    public void pass() {
         if (computersTurn) {
             computersTurn = false;
             updateCPUNotes("(pass)", 0);
@@ -649,7 +454,7 @@ public class ScrabbleGame extends javax.swing.JFrame {
             System.out.println("kommer hit - pass 1");
             //legger evt brikker tilbake på racken
 
-            rackPanel.putBack(newlyAddedToBoard);
+            scrabbleGameFrame.rackPanel.putBack(newlyAddedToBoard);
             rack.alphabetize();
 
             updatePlayerNotes("(pass)", 0);
@@ -658,6 +463,7 @@ public class ScrabbleGame extends javax.swing.JFrame {
             newWordsAdded.clear();
             computersTurn = true;
             computerMove();
+            playerPassed = true;
         }
     }
     
@@ -674,7 +480,7 @@ public class ScrabbleGame extends javax.swing.JFrame {
             }
             if (! dictionary.contains(word)) {
                 Object[] options = {"OK", "Legg til ord"};
-                int n = JOptionPane.showOptionDialog(this,
+                int n = JOptionPane.showOptionDialog(scrabbleGameFrame,
                 word + " står ikke i ordlisten",
                 "Message",
                 JOptionPane.YES_NO_OPTION,
@@ -704,9 +510,9 @@ public class ScrabbleGame extends javax.swing.JFrame {
     }
     
     void updatePlayerNotes(String word, int score) {
-        JLabel noteLabel = firstPlayerLabel;
+        JLabel noteLabel = scrabbleGameFrame.firstPlayerLabel;
         if (!playerIsFirst) {
-            noteLabel = secondPlayerLabel;
+            noteLabel = scrabbleGameFrame.secondPlayerLabel;
         }
         playerNotes += word + " ";
         if (score != 0) {
@@ -715,12 +521,12 @@ public class ScrabbleGame extends javax.swing.JFrame {
                 playerNotes += "!";
             }
             Move poss = tipsWords.firstEntry().getValue();
-            if (score < bestTipScore) { 
+            if (score < bestTipScore) {
                 String message = "<html><body><u><b>Du kunne lagt:</u></b><br>";
                 message += (poss.wordScore + ", " + poss.word);
                 JOptionPane.showMessageDialog(null, message);
             } else if (score > bestTipScore && !newWordAdded) {
-                String message = ("BUG - høyeste CPU fant var: " + 
+                String message = ("BUG - høyeste CPU fant var: " +
                         poss.wordScore + ", " + poss.word);
                 JOptionPane.showMessageDialog(null, message);
                 playerNotes += "!";
@@ -737,24 +543,24 @@ public class ScrabbleGame extends javax.swing.JFrame {
             pointlessTurns = 0;
             if (firstMove) {
                 firstMove = false;
-                challengeButton.setEnabled(true);
+                scrabbleGameFrame.challengeButton.setEnabled(true);
             }
         }
     }
-    
+
     void updateCPUNotes(String word, int score) {
         previousCPUNotes = cpuNotes;
-        JLabel noteLabel = firstPlayerLabel;
+        JLabel noteLabel = scrabbleGameFrame.firstPlayerLabel;
         if (playerIsFirst) {
-            noteLabel = secondPlayerLabel;
+            noteLabel = scrabbleGameFrame.secondPlayerLabel;
         }
         cpuNotes += word + " ";
         if (score != 0) {
             cpuNotes += score;
         }
         cpuNotes += "<br>";
-        noteLabel.setText("<html><body>" + cpuNotes + "<b>" + computerScore + "</b></body></html>");        
-        
+        noteLabel.setText("<html><body>" + cpuNotes + "<b>" + computerScore + "</b></body></html>");
+
         if (score == 0) {
             if (++pointlessTurns == 6) {
                 JOptionPane.showMessageDialog(null, "<html><body>Det har gått 6 runder uten poeng,<br>kampen avsluttes</body></html>");
@@ -764,7 +570,7 @@ public class ScrabbleGame extends javax.swing.JFrame {
             pointlessTurns = 0;
             if (firstMove) {
                 firstMove = false;
-                challengeButton.setEnabled(true);
+                scrabbleGameFrame.challengeButton.setEnabled(true);
             }
         }
     }
@@ -772,7 +578,7 @@ public class ScrabbleGame extends javax.swing.JFrame {
     void updatePlayerScore(int moveScore) {
         playerScore += moveScore;
     }
-    
+
     void updateRemaining(String toRemoveString) {
         previousTilesLeft = tilesLeft;
         for (int i = 0; i < toRemoveString.length(); i++) {
@@ -783,9 +589,9 @@ public class ScrabbleGame extends javax.swing.JFrame {
                 tilesLeft = tilesLeft.substring(0,tilesLeft.indexOf(c)) + '-' + tilesLeft.substring(tilesLeft.indexOf(c)+1);
             }
         }
-        remainingLabel.setText(tilesLeft);
+        scrabbleGameFrame.remainingLabel.setText(tilesLeft);
     }
-    
+
     void finishGame() {
         //trekker fra score for CPUs rack
         int cpuMinus = 0;
@@ -831,12 +637,9 @@ public class ScrabbleGame extends javax.swing.JFrame {
         } else { //player won
             JOptionPane.showMessageDialog(null, "DU VANT!");
         }
-        
-        challengeButton.setEnabled(false);
-        playButton.setEnabled(false);
-        swapButton.setEnabled(false);
-        passButton.setEnabled(false);
-        tipsButton.setEnabled(false);
+
+        scrabbleGameFrame.enableButtons(false);
+        scrabbleGameFrame.newGameButton.setEnabled(true);
     }
     
     boolean moveIsAllowed() {
@@ -848,10 +651,10 @@ public class ScrabbleGame extends javax.swing.JFrame {
             
         for (int i = 0; i < 15; i++) {
             for (int j = 0; j < 15; j++) {
-                Tile t = boardPanel.squareGrid[i][j].tile;
+                Tile t = scrabbleGameFrame.boardPanel.squareGrid[i][j].tile;
                 //leter etter første nye brikke
                 if (t != null && t.isMovable) {
-                    addedToThisMove.add(boardPanel.squareGrid[i][j]);
+                    addedToThisMove.add(scrabbleGameFrame.boardPanel.squareGrid[i][j]);
                     if (firstNewTile) {
                         rowStart = i;
                         rowEnd = i;
@@ -861,7 +664,7 @@ public class ScrabbleGame extends javax.swing.JFrame {
                         boolean gapExists = false;
                         //sjekker videre på samme rad
                         for (int k = i+1; k < 15; k++) {
-                            Tile nextTile = boardPanel.squareGrid[k][j].tile;
+                            Tile nextTile = scrabbleGameFrame.boardPanel.squareGrid[k][j].tile;
                             if (nextTile != null) {
                                 if (nextTile.isMovable) {
                                     if (gapExists) {
@@ -878,7 +681,7 @@ public class ScrabbleGame extends javax.swing.JFrame {
                         //sjekker videre på samme kolonne
                         gapExists = false;
                         for (int k = j+1; k < 15; k++) {
-                           Tile nextTile = boardPanel.squareGrid[i][k].tile;
+                           Tile nextTile = scrabbleGameFrame.boardPanel.squareGrid[i][k].tile;
                            if (nextTile != null) {
                                if (nextTile.isMovable) {
                                    if (gapExists) {
@@ -913,10 +716,10 @@ public class ScrabbleGame extends javax.swing.JFrame {
             for (int i = rowStart; i <= rowEnd; i++) {
                 wordStart = columnStart;
                 wordEnd = columnEnd;
-                while(wordStart > 0 && boardPanel.squareGrid[i][wordStart - 1].tile != null) {
+                while(wordStart > 0 && scrabbleGameFrame.boardPanel.squareGrid[i][wordStart - 1].tile != null) {
                     wordStart--;
                 }
-                while(wordEnd < 14 && boardPanel.squareGrid[i][wordEnd + 1].tile != null) {
+                while(wordEnd < 14 && scrabbleGameFrame.boardPanel.squareGrid[i][wordEnd + 1].tile != null) {
                     wordEnd++;
                 }
                     
@@ -925,7 +728,7 @@ public class ScrabbleGame extends javax.swing.JFrame {
                     Square[] newWord = new Square[(wordEnd - wordStart) + 1];
                     int index = 0;
                     for (int j = wordStart; j <= wordEnd; j++) {
-                        newWord[index++] = boardPanel.squareGrid[i][j];
+                        newWord[index++] = scrabbleGameFrame.boardPanel.squareGrid[i][j];
                     }
                     //burde kunne løses på annen måte, men sjekker om ord har ny bokstav
                     for (Square s : newWord) {
@@ -945,10 +748,10 @@ public class ScrabbleGame extends javax.swing.JFrame {
             for (int j = columnStart; j <= columnEnd; j++) {
                 wordStart = rowStart;
                 wordEnd = rowEnd;
-                while(wordStart > 0 && boardPanel.squareGrid[wordStart - 1][j].tile != null) {
+                while(wordStart > 0 && scrabbleGameFrame.boardPanel.squareGrid[wordStart - 1][j].tile != null) {
                     wordStart--;
                 }
-                while(wordEnd < 14 && boardPanel.squareGrid[wordEnd + 1][j].tile != null) {
+                while(wordEnd < 14 && scrabbleGameFrame.boardPanel.squareGrid[wordEnd + 1][j].tile != null) {
                     wordEnd++;
                 }
                     
@@ -957,7 +760,7 @@ public class ScrabbleGame extends javax.swing.JFrame {
                     Square[] newWord = new Square[(wordEnd - wordStart) + 1];
                     int index = 0;
                     for (int i = wordStart; i <= wordEnd; i++) {
-                        newWord[index++] = boardPanel.squareGrid[i][j];
+                        newWord[index++] = scrabbleGameFrame.boardPanel.squareGrid[i][j];
                     }
                     //burde kunne løses på annen måte, men sjekker om ord har ny bokstav
                     for (Square s : newWord) {
@@ -976,7 +779,7 @@ public class ScrabbleGame extends javax.swing.JFrame {
             }
             if (newWordsAdded.size() < 2) {
                 if (firstMove) {
-                    if (boardPanel.squareGrid[7][7].tile == null) {
+                    if (scrabbleGameFrame.boardPanel.squareGrid[7][7].tile == null) {
                         System.out.println("not allowed 5");
                         return false;
                     } else if (addedToThisMove.size() == 1) {
@@ -1036,34 +839,11 @@ public class ScrabbleGame extends javax.swing.JFrame {
      * @param args the command line arguments
      */
     public static void main(String args[]) {
-        /* Set the Nimbus look and feel */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-         */
-        try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(ScrabbleGame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(ScrabbleGame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(ScrabbleGame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(ScrabbleGame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        }
-        //</editor-fold>
-
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
                 try {
-                    new ScrabbleGame().setVisible(true);
+                    new ScrabbleGame().scrabbleGameFrame.setVisible(true);
                 } catch (IOException ex) {
                     Logger.getLogger(ScrabbleGame.class.getName()).log(Level.SEVERE, null, ex);
                 }
@@ -1087,8 +867,8 @@ public class ScrabbleGame extends javax.swing.JFrame {
                 //"tømmer" isAnchor
                 board.isAnchor[i][j] = false;
                 //tømmer brettet
-                boardPanel.squareGrid[i][j].setIcon(null);
-                boardPanel.squareGrid[i][j].tile = null;
+                scrabbleGameFrame.boardPanel.squareGrid[i][j].setIcon(null);
+                scrabbleGameFrame.boardPanel.squareGrid[i][j].tile = null;
                 }
             }
         board.isAnchor[7][7] = true;
@@ -1103,7 +883,7 @@ public class ScrabbleGame extends javax.swing.JFrame {
                 "PP RRRRRR SSSSSS<br>" +
                 "TTTTTT VVV W<br>" +
                 "[][]</body></html>";
-        remainingLabel.setText(tilesLeft);
+        scrabbleGameFrame.remainingLabel.setText(tilesLeft);
         
         newlyAddedToBoard.clear();
         addedToThisMove.clear();
@@ -1132,11 +912,11 @@ public class ScrabbleGame extends javax.swing.JFrame {
             }
         }
 
-        rackPanel.renderRack(rack);
+        scrabbleGameFrame.rackPanel.renderRack(rack);
 
-         tilesLeftTitleLabel.setText("<html><body><b><u>Gjenværende brikker:</u></b></body></html>");
+         scrabbleGameFrame.tilesLeftTitleLabel.setText("<html><body><b><u>Gjenværende brikker:</u></b></body></html>");
          firstMove = true;
-         bagCountLabel.setText("Brikker igjen i posen: " + bag.tileCount());
+         scrabbleGameFrame.bagCountLabel.setText("Brikker igjen i posen: " + bag.tileCount());
          playerIsFirst = !computersTurn;
          playerNotes = "<b><u>" + playerName + ":</u></b><br>";
          cpuNotes = "<u><b>CPU:</b></u><br>";
@@ -1148,39 +928,11 @@ public class ScrabbleGame extends javax.swing.JFrame {
             (tipsCalculator = new TipsCalculator(this)).execute();
          }
          pointlessTurns = 0;         
-   } 
-    
-   void initBoard() {
-       board = new Board();
-    }
-
-
-
-
-    
-
-
-    // Variables declaration - do not modify//GEN-BEGIN:variables
-    javax.swing.JLabel bagCountLabel;
-    javax.swing.JButton challengeButton;
-    private javax.swing.JLabel firstPlayerLabel;
-    javax.swing.JScrollPane firstPlayerScrollPane;
-    private javax.swing.JPanel jPanel1;
-    javax.swing.JButton newGameButton;
-    javax.swing.JButton passButton;
-    javax.swing.JButton playButton;
-    private javax.swing.JLabel remainingLabel;
-    private javax.swing.JLabel secondPlayerLabel;
-    javax.swing.JScrollPane secondPlayerScrollPane;
-    javax.swing.JButton swapButton;
-    private javax.swing.JLabel tilesLeftTitleLabel;
-    javax.swing.JButton tipsButton;
-    // End of variables declaration//GEN-END:variables
-
-    private RackPanel rackPanel;
-    BoardPanel boardPanel;
+   }
 
     // My variables
+
+    ScrabbleGameFrame scrabbleGameFrame;
     MDAG dictionary;
     Bag bag = new Bag();
     ArrayList<Square> newlyAddedToBoard = new ArrayList<>();
