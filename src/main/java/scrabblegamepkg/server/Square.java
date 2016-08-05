@@ -28,10 +28,9 @@ public class Square extends javax.swing.JLabel {
         });
     }
 
-    //TODO: tegner blank sin bokstav når den har blitt satt
     public ImageIcon createTileIcon() {
         ImageIcon imageIcon;
-        imageIcon = new javax.swing.ImageIcon(getClass().getResource("/" + tile.letter + ".png"));
+        imageIcon = new javax.swing.ImageIcon(getClass().getResource("/" + (tile.isBlank() ? '-' : tile.letter) + ".png"));
         Image img = imageIcon.getImage();
         Image newimg = img.getScaledInstance(35, 35, java.awt.Image.SCALE_SMOOTH); //endre 50, 50 for å endre størrelse
         return new ImageIcon(newimg);

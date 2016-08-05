@@ -12,7 +12,7 @@ public class Tile implements Comparable<Tile>{
     }
 
     public boolean isBlank() {
-        return letter == '-';
+        return letter == '-' || Character.isLowerCase(letter);
     }
 
     @Override
