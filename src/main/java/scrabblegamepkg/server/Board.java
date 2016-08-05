@@ -3,6 +3,7 @@ package scrabblegamepkg.server;
 import com.BoxOfC.MDAG.MDAG;
 import scrabblegamepkg.client.BoardPanel;
 
+import javax.swing.*;
 import java.util.ArrayList;
 
 public class Board {
@@ -226,6 +227,20 @@ public class Board {
             case "DW": return 2;
             case "TW": return 3;
             default: return 1;
+        }
+    }
+
+    public void addToCharBoard(Move move) {
+        for (int i = 0; i < move.word.length(); i++) {
+            if (move.vertical) {
+                if (charBoard[move.wordStart + i][move.row] == '-') {
+                    charBoard[move.wordStart + i][move.row] = move.word.charAt(i);
+                }
+            } else {
+                if (charBoard[move.row][move.wordStart + i] == '-') {
+                    charBoard[move.row][move.wordStart + i] = move.word.charAt(i);
+                }
+            }
         }
     }
 }

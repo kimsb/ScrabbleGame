@@ -2,9 +2,9 @@ package scrabblegamepkg.server;
 
 public class Tile implements Comparable<Tile>{
 
-    char letter;
+    public char letter;
     int value;
-    boolean isMovable = true;
+    public boolean isMovable = true;
 
     public Tile(char l) {
         letter = l;

@@ -4,10 +4,10 @@ import java.util.ArrayList;
 
 public class Move {
 
-    String word;
-    int row;
-    int wordStart;
-    boolean vertical;
+    public String word;
+    public int row;
+    public int wordStart;
+    public boolean vertical;
     int wordScore;
     int moveScore;
     String usedFromRack;

@@ -584,22 +584,18 @@ public class ScrabbleGame extends javax.swing.JFrame {
             }
     }//GEN-LAST:event_newGameButtonActionPerformed
 
+    //TODO: denne må ut i tipscalculator
     void calculateTips() {
         String playerRack = rack.toString();
-        playerTips = true;
         bestTipScore = 0;
-        if (!firstMove) {
-            board.updateAnchors();
-            board.doCrossChecks(dictionary, alphaString);
-        }
         tipsWords.clear();
-        
-        findAcrossMoves();
-        //TRANSPOSING
-        board.transposeBoard(boardPanel);
-        board.doCrossChecks(dictionary, alphaString);
-        //down moves
-        findAcrossMoves();
+
+        //bruker nye metoden for å finne ord
+        MoveFinder moveFinder = new MoveFinder();
+        ArrayList<Move> allMoves = moveFinder.findAllMoves(dictionary, board, playerRack);
+
+        int wordCount = 1;
+        allMoves.forEach(potentialMove -> tipsWords.put(potentialMove.moveScore + wordCount * 0.00000001, potentialMove));
 
         if (!tipsWords.isEmpty()) {
             bestTipScore = tipsWords.firstEntry().getValue().wordScore;
@@ -615,15 +611,7 @@ public class ScrabbleGame extends javax.swing.JFrame {
                 }
             }
         }
-        
-        if (rack.tileCount() == 7) {
-            playerExtendRight("", (MDAGNode) dictionary.getSourceNode(), playerRack);
-        }
-        
-        if (board.transposed) {
-            board.transposeBoard(boardPanel);
-        }
-        playerTips = false;
+
     }
     
     private void tipsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tipsButtonActionPerformed
@@ -694,321 +682,6 @@ public class ScrabbleGame extends javax.swing.JFrame {
             System.out.println("etter å ha lagt tilbake: " + rackString);
         }
         updateCPUNotes("(bytte)", 0);
-    }
-    
-    void findAcrossMoves() {
-        String playerRack = rack.toString();
-        //for all anchorSquares
-        for (int i = 0; i < 15; i++) {
-            for (int j = 0; j < 15; j++) {
-                
-                if (board.isAnchor[i][j]) {
-                    currentAnchorI = i;
-                    currentAnchorJ = j;
-                    String partialWord = "";
-                    int k = 0;
-                    while (j - k != 0 && !board.isAnchor[i][j-(k+1)]) {
-                        k++;
-                    }
-                    //hvis left part er fra brettet
-                    if (k != 0 && board.charBoard[i][j-1] != '-') {
-                        MDAGNode n = (MDAGNode) dictionary.getSourceNode();
-                        for (int l = 0; l < k; l++) {
-                            partialWord += board.charBoard[i][j - (k-l)];
-                            n = n.transition(board.charBoard[i][j - (k-l)]);
-                        }
-                        if (playerTips) {
-                            tipsExtendRight(partialWord, n, j, "", playerRack);
-                        } else {
-                        extendRight(partialWord, n, j, "");
-                        }
-                    } else {
-                        if (playerTips) {
-                            tipsLeftPart("", (MDAGNode) dictionary.getSourceNode(), k, "", playerRack);
-                        } else {
-                            leftPart("", (MDAGNode) dictionary.getSourceNode(), k, "");
-                        }
-                    }
-                }
-            }
-        }
-   }
-    
-    void tipsLeftPart(String partialWord, MDAGNode n, int limit, String usedFromRack, String playerRack) {
-        tipsExtendRight(partialWord, n, currentAnchorJ, usedFromRack, playerRack);
-        if (limit > 0) {
-            //for each edge E out of N
-            TreeMap<Character,MDAGNode> outGoingEdges = n.getOutgoingTransitions();
-            for (Map.Entry<Character,MDAGNode> entry : outGoingEdges.entrySet()) {
-                //if the letter l labeling edge e is in our rack
-                char l = entry.getKey();
-                int index = playerRack.indexOf(l);
-                if (index != -1) {
-                    //then remove a tile labeled l from the rack
-                    playerRack = playerRack.substring(0,index) + playerRack.substring(index+1);
-                    //let N' be the node reached by following edge E
-                    MDAGNode nNext = entry.getValue();
-                    //leftPart(...)
-                    tipsLeftPart((partialWord + l), nNext, limit-1, usedFromRack + l, playerRack);
-                    //put the tile back in the rack
-                    playerRack += l;
-                } else { //if not on rack, check for blanks
-                    index = playerRack.indexOf('-');
-                    if (index != -1) {
-                    //then remove blank tile from the rack
-                    playerRack = playerRack.substring(0,index) + playerRack.substring(index+1);
-                    //let N' be the node reached by following edge E
-                    MDAGNode nNext = entry.getValue();
-                    //leftPart(...)
-                    tipsLeftPart((partialWord + l), nNext, limit-1, usedFromRack + '-', playerRack);
-                    //put the blank tile back in the rack
-                    playerRack += '-';                    
-                    }
-                }
-                
-            }
-        }
-    }
-    
-    void tipsExtendRight(String partialWord, MDAGNode n, int squareJ, String usedFromRack, String playerRack) {
-        //if square is vacant
-        if (squareJ == 15 || board.charBoard[currentAnchorI][squareJ] == '-') {
-            //if N si a terminal node
-            if (squareJ != currentAnchorJ && n.isAcceptNode()) {
-                Move newTip;
-                //if (squareJ == currentAnchorJ) {
-                  //  newPos = new PossibleWord(partialWord, currentAnchorI, squareJ);
-                //    //possibleWords.add(new PossibleWord(partialWord, currentAnchorI, squareJ));
-                //} else {
-                    newCPUWords = new ArrayList<>();
-                    newTip = new Move(partialWord, currentAnchorI, squareJ-1, board.transposed,
-                            scoreTipsWords(partialWord, currentAnchorI, (squareJ - partialWord.length())),
-                            usedFromRack, null, playerRack);
-                    newTip.words = newCPUWords;
-                    newCPUWords = null;
-                    //possibleWords.add(new PossibleWord(partialWord, currentAnchorI, squareJ-1));
-               // }
-                    //tipsWords.put(cpuAIScore(newTip), newTip);
-                    tipsWords.put((double)newTip.wordScore + (0.0000001*(double) tipsWords.size()), newTip);
-            }
-            if (squareJ < 15) {
-            //if rack isn't empty
-            //if (rackString.length() != 0) {
-            //    System.out.println("rackString is EMPTY");
-            //}
-            
-                //for each edge E out of N
-                TreeMap<Character,MDAGNode> outGoingEdges = n.getOutgoingTransitions();
-                for (Map.Entry<Character,MDAGNode> entry : outGoingEdges.entrySet()) {
-                    //if the letter l labeling edge e is in our rack
-                    char l = entry.getKey();
-                    int index = playerRack.indexOf(l);
-                    if (index != -1) {
-                        //and l is in the crossCheck set of square
-                        if (board.crossChecks[currentAnchorI][squareJ].indexOf(l) != -1) {
-                            //then remove a tile labeled l from the rack
-                            playerRack = playerRack.substring(0,index) + playerRack.substring(index+1);
-                            //let N' be the node reached by following edge E
-                            MDAGNode nNext = entry.getValue();
-                            //let next-square be the square to the right of square
-                            //if (squareJ != 14) {
-                                tipsExtendRight((partialWord + l), nNext, squareJ+1, usedFromRack + l, playerRack);
-                            //}
-                            //put the tile back in the rack
-                            playerRack += l;
-                        }
-                    } else { // check for blank
-                        index = playerRack.indexOf('-');
-                        if (index != -1) {
-                            //and l is in the crossCheck set of square
-                            if (board.crossChecks[currentAnchorI][squareJ].indexOf(l) != -1) {
-                                //then remove blank tile from the rack
-                                playerRack = playerRack.substring(0,index) + playerRack.substring(index+1);
-                                //let N' be the node reached by following edge E
-                                MDAGNode nNext = entry.getValue();
-                                //let next-square be the square to the right of square
-                                if (squareJ != 14) {
-                                    tipsExtendRight((partialWord + l), nNext, squareJ+1, usedFromRack + '-', playerRack);
-                                }
-                                //put the blank tile back in the rack
-                                playerRack += '-';                    
-                            }
-                        }
-                    }  
-                }
-            }
-            //}
-        } else { //if square not vacant
-            //let l be the letter occupying square
-            char l = board.charBoard[currentAnchorI][squareJ];
-            //if N has an edge labeled by l that leads to some node N'
-            if (n.hasOutgoingTransition(l)) {
-                //let next-square be the square to the right of square
-                //if (squareJ != 14) {
-                    tipsExtendRight((partialWord + l), n.transition(l), squareJ+1, usedFromRack, playerRack);
-                //}
-            } 
-        }
-    }
-    
-    void leftPart(String partialWord, MDAGNode n, int limit, String usedFromRack) {
-        extendRight(partialWord, n, currentAnchorJ, usedFromRack);
-        if (limit > 0) {
-            //for each edge E out of N
-            TreeMap<Character,MDAGNode> outGoingEdges = n.getOutgoingTransitions();
-            for (Map.Entry<Character,MDAGNode> entry : outGoingEdges.entrySet()) {
-                //if the letter l labeling edge e is in our rack
-                char l = entry.getKey();
-                int index = rackString.indexOf(l);
-                if (index != -1) {
-                    //then remove a tile labeled l from the rack
-                    rackString = rackString.substring(0,index) + rackString.substring(index+1);
-                    //let N' be the node reached by following edge E
-                    MDAGNode nNext = entry.getValue();
-                    //leftPart(...)
-                    leftPart((partialWord + l), nNext, limit-1, usedFromRack + l);
-                    //put the tile back in the rack
-                    rackString += l;
-                } else { //if not on rack, check for blanks
-                    index = rackString.indexOf('-');
-                    if (index != -1) {
-                    //then remove blank tile from the rack
-                    rackString = rackString.substring(0,index) + rackString.substring(index+1);
-                    //let N' be the node reached by following edge E
-                    MDAGNode nNext = entry.getValue();
-                    //leftPart(...)
-                    leftPart((partialWord + l), nNext, limit-1, usedFromRack + '-');
-                    //put the blank tile back in the rack
-                    rackString += '-';
-                    }
-                }
-                
-            }
-        }
-    }
- 
-    void extendRight(String partialWord, MDAGNode n, int squareJ, String usedFromRack) {
-        //if square is vacant
-        if (squareJ == 15 || board.charBoard[currentAnchorI][squareJ] == '-') {
-            //if N si a terminal node
-            if (squareJ != currentAnchorJ && n.isAcceptNode()) {
-                Move newPos;
-                //if (squareJ == currentAnchorJ) {
-                  //  newPos = new PossibleWord(partialWord, currentAnchorI, squareJ);
-                //    //possibleWords.add(new PossibleWord(partialWord, currentAnchorI, squareJ));
-                //} else {
-                    newCPUWords = new ArrayList<>();
-                    newPos = new Move(partialWord, currentAnchorI, squareJ-1, board.transposed,
-                            scoreCPUWords(partialWord, currentAnchorI, (squareJ - partialWord.length())),
-                            usedFromRack, null, rackString);
-                    newPos.words = newCPUWords;
-                    newCPUWords = null;
-                    //possibleWords.add(new PossibleWord(partialWord, currentAnchorI, squareJ-1));
-               // }
-                ComputerAI computerAI = new ComputerAI(rackStringCpy, bag, vowelRatioLeft, alphaString,
-                        playerScore, computerScore, pointlessTurns, board.isAnchor, firstMove,
-                        boardPanel.squareGrid, board.charBoard, dictionary,
-                        rackString, rack.tileCount());
-
-                possibleWords.put(computerAI.cpuAIScore(newPos), newPos);
-            }
-            if (squareJ < 15) {
-            //if rack isn't empty
-            //if (rackString.length() != 0) {
-            //    System.out.println("rackString is EMPTY");
-            //}
-            
-                //for each edge E out of N
-                TreeMap<Character,MDAGNode> outGoingEdges = n.getOutgoingTransitions();
-                for (Map.Entry<Character,MDAGNode> entry : outGoingEdges.entrySet()) {
-                    //if the letter l labeling edge e is in our rack
-                    char l = entry.getKey();
-                    int index = rackString.indexOf(l);
-                    if (index != -1) {
-                        //and l is in the crossCheck set of square
-                        if (board.crossChecks[currentAnchorI][squareJ].indexOf(l) != -1) {
-                            //then remove a tile labeled l from the rack
-                            rackString = rackString.substring(0,index) + rackString.substring(index+1);
-                            //let N' be the node reached by following edge E
-                            MDAGNode nNext = entry.getValue();
-                            //let next-square be the square to the right of square
-                            //if (squareJ != 14) {
-                                extendRight((partialWord + l), nNext, squareJ+1, usedFromRack + l);
-                            //}
-                            //put the tile back in the rack
-                            rackString += l;
-                        }
-                    } else { // check for blank
-                        index = rackString.indexOf('-');
-                        if (index != -1) {
-                            //and l is in the crossCheck set of square
-                            if (board.crossChecks[currentAnchorI][squareJ].indexOf(l) != -1) {
-                                //then remove blank tile from the rack
-                                rackString = rackString.substring(0,index) + rackString.substring(index+1);
-                                //let N' be the node reached by following edge E
-                                MDAGNode nNext = entry.getValue();
-                                //let next-square be the square to the right of square
-                                if (squareJ != 14) {
-                                    extendRight((partialWord + l), nNext, squareJ+1, usedFromRack + '-');
-                                }
-                                //put the blank tile back in the rack
-                                rackString += '-';
-                            }
-                        }
-                    }  
-                }
-            }
-            //}
-        } else { //if square not vacant
-            //let l be the letter occupying square
-            char l = board.charBoard[currentAnchorI][squareJ];
-            //if N has an edge labeled by l that leads to some node N'
-            if (n.hasOutgoingTransition(l)) {
-                //let next-square be the square to the right of square
-                //if (squareJ != 14) {
-                    extendRight((partialWord + l), n.transition(l), squareJ+1, usedFromRack);
-                //}
-            } 
-        }
-    }
-    
-    void playerExtendRight(String partialWord, MDAGNode n, String playerRack) {
-        //if terminal node
-        if (partialWord.length() == 7 && n.isAcceptNode()) {
-            if (!possibleBingos.contains(partialWord)) {
-                impossibleBingos.add(partialWord);
-            }
-        } else {
-            //for each edge E out of N
-            TreeMap<Character,MDAGNode> outGoingEdges = n.getOutgoingTransitions();
-            for (Map.Entry<Character,MDAGNode> entry : outGoingEdges.entrySet()) {
-                //if the letter l labeling edge e is in players rack
-                char l = entry.getKey();
-                int index = playerRack.indexOf(l);
-                if (index != -1) {
-                    //then remove a tile labeled l from the rack
-                    playerRack = playerRack.substring(0,index) + playerRack.substring(index+1);
-                    //let N' be the node reached by following edge E
-                    MDAGNode nNext = entry.getValue();
-                    //let next-square be the square to the right of square
-                    playerExtendRight((partialWord + l), nNext, playerRack);
-                    //put the tile back in the rack
-                    playerRack += l;
-                } else { // check for blank
-                    index = playerRack.indexOf('-');
-                    if (index != -1) {
-                        //then remove blank tile from the rack
-                        playerRack = playerRack.substring(0,index) + playerRack.substring(index+1);
-                        //let N' be the node reached by following edge E
-                        MDAGNode nNext = entry.getValue();
-                        //let next-square be the square to the right of square
-                        playerExtendRight((partialWord + l), nNext, playerRack);
-                        //put the blank tile back in the rack
-                        playerRack += '-';                    
-                    }
-                }  
-            }
-        }
     }
     
 
@@ -1386,203 +1059,6 @@ public class ScrabbleGame extends javax.swing.JFrame {
         }           
         return tempSum;
     }
-
-    int scoreCPUWords(String word, int row, int wordStart) {
-        int totalSum = scoreCPUWord(word, row, wordStart);
-        newCPUWords.add(word);
-        for (int j = wordStart; j < wordStart+word.length(); j++) {
-        if (board.charBoard[row][j] == '-') {
-            int wordScore = 0;
-            int multiplier = 1;
-            int tilesOver = 0;
-            int tilesUnder = 0;
-            while(row - tilesOver != 0 && board.charBoard[row-(tilesOver+1)][j] != '-') {
-                tilesOver++;
-            }
-            while(row + tilesUnder != 14 && board.charBoard[row+(tilesUnder+1)][j] != '-') {
-                tilesUnder++;
-            }
-            if (tilesOver != 0 || tilesUnder != 0) {
-                String newWord = "";
-                for (int k = tilesOver; k > 0; k--) {
-                    if (!boardPanel.squareGrid[row-k][j].tile.isBlank()) {
-                        wordScore += ScoreConstants.letterScore(board.charBoard[row-k][j]);
-                        newWord += board.charBoard[row-k][j];
-                    }
-                }
-                newWord += word.charAt(j - wordStart);
-                for (int k = 1; k <= tilesUnder; k++) {
-                    if (!boardPanel.squareGrid[row+k][j].tile.isBlank()) {
-                        wordScore += ScoreConstants.letterScore(board.charBoard[row+k][j]);
-                        newWord += board.charBoard[row+k][j];
-                    }                    
-                }
-                newCPUWords.add(newWord);
-                int tileScore = 0;
-                if (rackStringCpy.indexOf(word.charAt(j-wordStart)) != -1) {
-                    tileScore = ScoreConstants.letterScore(word.charAt(j-wordStart));
-                    wordScore += tileScore;
-                }
-                if (boardPanel.squareGrid[row][j].multiplier.equals("DL")) {
-                    wordScore += tileScore;
-                } else if (boardPanel.squareGrid[row][j].multiplier.equals("TL")) {
-                    wordScore += (tileScore * 2);
-                } else if (boardPanel.squareGrid[row][j].multiplier.equals("DW")) {
-                    multiplier *= 2;
-                } else if (boardPanel.squareGrid[row][j].multiplier.equals("TW")) {
-                    multiplier *= 3;
-                }
-                wordScore *= multiplier;
-                totalSum += wordScore;
-                }
-            }
-        }
-        return totalSum;
-    }
-    
-    int scoreTipsWords(String word, int row, int wordStart) {
-        int totalSum = scoreTipsWord(word, row, wordStart);
-        newCPUWords.add(word);
-        for (int j = wordStart; j < wordStart+word.length(); j++) {
-        if (board.charBoard[row][j] == '-') {
-            int wordScore = 0;
-            int multiplier = 1;
-            int tilesOver = 0;
-            int tilesUnder = 0;
-            while(row - tilesOver != 0 && board.charBoard[row-(tilesOver+1)][j] != '-') {
-                tilesOver++;
-            }
-            while(row + tilesUnder != 14 && board.charBoard[row+(tilesUnder+1)][j] != '-') {
-                tilesUnder++;
-            }
-            if (tilesOver != 0 || tilesUnder != 0) {
-                String newWord = "";
-                for (int k = tilesOver; k > 0; k--) {
-                    if (!boardPanel.squareGrid[row-k][j].tile.isBlank()) {
-                        wordScore += ScoreConstants.letterScore(board.charBoard[row-k][j]);
-                        newWord += board.charBoard[row-k][j];
-                    }
-                }
-                newWord += word.charAt(j - wordStart);
-                for (int k = 1; k <= tilesUnder; k++) {
-                    if (!boardPanel.squareGrid[row+k][j].tile.isBlank()) {
-                        wordScore += ScoreConstants.letterScore(board.charBoard[row+k][j]);
-                        newWord += board.charBoard[row+k][j];
-                    }                    
-                }
-                newCPUWords.add(newWord);
-                int tileScore = 0;
-                if (rack.contains(word.charAt(j-wordStart))) {
-                    tileScore = ScoreConstants.letterScore(word.charAt(j-wordStart));
-                    wordScore += tileScore;
-                }
-                if (boardPanel.squareGrid[row][j].multiplier.equals("DL")) {
-                    wordScore += tileScore;
-                } else if (boardPanel.squareGrid[row][j].multiplier.equals("TL")) {
-                    wordScore += (tileScore * 2);
-                } else if (boardPanel.squareGrid[row][j].multiplier.equals("DW")) {
-                    multiplier *= 2;
-                } else if (boardPanel.squareGrid[row][j].multiplier.equals("TW")) {
-                    multiplier *= 3;
-                }
-                wordScore *= multiplier;
-                totalSum += wordScore;
-                }
-            }
-        }
-        return totalSum;
-    }
-    
-    int scoreTipsWord(String word, int row, int wordStart) {
-        int multiplier = 1;
-        int tempSum = 0;
-        int newTiles = 0;
-        int tileScore = 0;
-        char fromRack;
-        String rackCpy = rack.toString();
-        for (int i = 0; i < word.length(); i++) {
-            int j = wordStart+i;
-            //if tile is from rack
-            if (board.charBoard[row][j] == '-') {
-                newTiles++;
-                tileScore = 0;
-                fromRack = word.charAt(i);            
-                int index = rackCpy.indexOf(fromRack);
-                if (index == -1) {
-                    fromRack = '-';
-                    index = rackCpy.indexOf(fromRack);
-                } else {
-                    tileScore = ScoreConstants.letterScore(fromRack);
-                }
-                if (boardPanel.squareGrid[row][j].multiplier.equals("DL")) {
-                    tempSum += tileScore;
-                } else if (boardPanel.squareGrid[row][j].multiplier.equals("TL")) {
-                    tempSum += (tileScore * 2);
-                } else if (boardPanel.squareGrid[row][j].multiplier.equals("DW")) {
-                    multiplier *= 2;
-                } else if (boardPanel.squareGrid[row][j].multiplier.equals("TW")) {
-                    multiplier *= 3;
-                }
-                rackCpy = rackCpy.substring(0, index) + rackCpy.substring(index+1);
-            } else if (!boardPanel.squareGrid[row][j].tile.isBlank()){
-                tileScore = ScoreConstants.letterScore(board.charBoard[row][j]);
-            }
-            tempSum += tileScore;
-        }
-        tempSum *= multiplier;
-        if (newTiles == 7) { //bingo!
-            tempSum += 50;
-            //System.out.println("kaller på bingoMessage");
-            //JOptionPane.showMessageDialog(null, "Bingo!");
-        }              
-        return tempSum;
-    }       
-
-    
-    int scoreCPUWord(String word, int row, int wordStart) {
-        int multiplier = 1;
-        int tempSum = 0;
-        int newTiles = 0;
-        int tileScore = 0;
-        char fromRack;
-        String rackCpy = rackStringCpy;
-        for (int i = 0; i < word.length(); i++) {
-            int j = wordStart+i;
-            //if tile is from rack
-            if (board.charBoard[row][j] == '-') {
-                newTiles++;
-                tileScore = 0;
-                fromRack = word.charAt(i);            
-                int index = rackCpy.indexOf(fromRack);
-                if (index == -1) {
-                    fromRack = '-';
-                    index = rackCpy.indexOf(fromRack);
-                } else {
-                    tileScore = ScoreConstants.letterScore(fromRack);
-                }
-                if (boardPanel.squareGrid[row][j].multiplier.equals("DL")) {
-                    tempSum += tileScore;
-                } else if (boardPanel.squareGrid[row][j].multiplier.equals("TL")) {
-                    tempSum += (tileScore * 2);
-                } else if (boardPanel.squareGrid[row][j].multiplier.equals("DW")) {
-                    multiplier *= 2;
-                } else if (boardPanel.squareGrid[row][j].multiplier.equals("TW")) {
-                    multiplier *= 3;
-                }
-                rackCpy = rackCpy.substring(0, index) + rackCpy.substring(index+1);
-            } else if (!boardPanel.squareGrid[row][j].tile.isBlank()){
-                tileScore = ScoreConstants.letterScore(board.charBoard[row][j]);
-            }
-            tempSum += tileScore;
-        }
-        tempSum *= multiplier;
-        if (newTiles == 7) { //bingo!
-            tempSum += 50;
-            //System.out.println("kaller på bingoMessage");
-            //JOptionPane.showMessageDialog(null, "Bingo!");
-        }              
-        return tempSum;
-    }
     
     /**
      * @param args the command line arguments
@@ -1710,213 +1186,204 @@ public class ScrabbleGame extends javax.swing.JFrame {
     // - selve kalkuleringa må ut i egen metode som også kan brukes av tipslageren.
     void computerAI() {
 
-        //calculating vowelRatio in bag + players rack
-        double vowelsLeft = bag.vowelCount() + StringUtil.vowelCount(rack.toString());
-        int lettersLeft = bag.tileCount() + rack.tileCount();
+        try {
+            System.out.println("STARET COMPUTERAI()");
 
-        vowelRatioLeft = vowelsLeft / lettersLeft;
+            //calculating vowelRatio in bag + players rack
+            double vowelsLeft = bag.vowelCount() + StringUtil.vowelCount(rack.toString());
+            int lettersLeft = bag.tileCount() + rack.tileCount();
 
-        previousRackString = rackString;
-        System.out.println("ComputerAI starts.. cpuRack: " + rackString);
-        newlyAddedToBoard.clear();
-        if (!computersTurn) {
-            System.out.println("ikke cpus tur");
-            return;
-        } else if (rackString.length() == 0) {
-            System.out.println("FERDIG!");
-            return;
-        }
-        if (!firstMove) {
-            board.updateAnchors();
-            board.doCrossChecks(dictionary, alphaString);
-        }
+            vowelRatioLeft = vowelsLeft / lettersLeft;
 
-        rackStringCpy = rackString;
-        possibleWords.clear();
-
-        findAcrossMoves();
-        //TRANSPOSING
-        board.transposeBoard(boardPanel);
-        board.doCrossChecks(dictionary, alphaString);
-        //down moves
-        findAcrossMoves();
-
-        //for å fungere sammen med gammel kode
-        board.charBoard = board.getTransposedCharBoard();
-
-        //TODO: henter nå alle ord også med ny metode, men har ikke fjernet gammel ennå
-        //bruker nye metoden for å finne ord
-        MoveFinder moveFinder = new MoveFinder();
-        ArrayList<Move> allMoves = moveFinder.findAllMoves(dictionary, board, rackString);
-
-        TreeMap<Double, Move> newPossibleWords = new TreeMap<>(Collections.reverseOrder());
-
-        ComputerAI computerAI = new ComputerAI(rackStringCpy, bag, vowelRatioLeft, alphaString,
-                playerScore, computerScore, pointlessTurns, board.isAnchor, firstMove,
-                boardPanel.squareGrid, board.charBoard, dictionary,
-                rackString, rack.tileCount());
-
-        allMoves.forEach(potentialMove -> newPossibleWords.put(computerAI.cpuAIScore(potentialMove), potentialMove));
-
-        //for å fungere sammen med gammel kode
-        board.charBoard = board.getTransposedCharBoard();
-
-        int count = 0;
-        int topSc = 0;
-        double topScKey = 0;
-        Move top = null;
-        for (Map.Entry<Double,Move> entry : possibleWords.entrySet()) {
-            Move poss = entry.getValue();
-            if (count < 20) {
-                System.out.println(entry.getKey() + " " + poss.word + " startsAt " + poss.wordStart + " vertical: " + poss.vertical + " bruker: " + poss.usedFromRack + " har igjen: " + poss.leftOnRack + " score: " + poss.wordScore + "  -> " + poss.AIString);
-                count++;
+            previousRackString = rackString;
+            System.out.println("ComputerAI starts.. cpuRack: " + rackString);
+            newlyAddedToBoard.clear();
+            if (!computersTurn) {
+                System.out.println("ikke cpus tur");
+                return;
+            } else if (rackString.length() == 0) {
+                System.out.println("FERDIG!");
+                return;
             }
-            if (poss.wordScore > topSc || (poss.wordScore == topSc && entry.getKey() > topScKey)) {
-                top = poss;
-                topSc = poss.wordScore;
-                topScKey = entry.getKey();
-            }
-        }
 
-        //kan ikke legge
-        if (possibleWords.isEmpty()) {
-            System.out.println("CPU kan ikke legge");
+            rackStringCpy = rackString;
+
+            //TEST - skal fjernes
+            sjekkAtBoardErOK();
+
+
+            //bruker nye metoden for å finne ord
+            MoveFinder moveFinder = new MoveFinder();
+            ArrayList<Move> allMoves = moveFinder.findAllMoves(dictionary, board, rackString);
+
+            TreeMap<Double, Move> newPossibleWords = new TreeMap<>(Collections.reverseOrder());
+
+            ComputerAI computerAI = new ComputerAI(rackStringCpy, bag, vowelRatioLeft, alphaString,
+                    playerScore, computerScore, pointlessTurns, board.isAnchor, firstMove,
+                    boardPanel.squareGrid, board.charBoard, dictionary,
+                    rackString, rack.tileCount());
+
+            allMoves.forEach(potentialMove -> newPossibleWords.put(computerAI.cpuAIScore(potentialMove), potentialMove));
+
+            int count = 0;
+            int topSc = 0;
+            double topScKey = 0;
+            Move top = null;
+            for (Map.Entry<Double, Move> entry : newPossibleWords.entrySet()) {
+                Move poss = entry.getValue();
+                if (count < 20) {
+                    System.out.println(entry.getKey() + " " + poss.word + " startsAt " + poss.wordStart + " vertical: " + poss.vertical + " bruker: " + poss.usedFromRack + " har igjen: " + poss.leftOnRack + " score: " + poss.wordScore + "  -> " + poss.AIString);
+                    count++;
+                }
+                if (poss.wordScore > topSc || (poss.wordScore == topSc && entry.getKey() > topScKey)) {
+                    top = poss;
+                    topSc = poss.wordScore;
+                    topScKey = entry.getKey();
+                }
+            }
+
+            //kan ikke legge
+            if (newPossibleWords.isEmpty()) {
+                System.out.println("CPU kan ikke legge");
+                addedToThisMove.clear();
+                newWordsAdded.clear();
+                board.transposeBoard(boardPanel);
+
+                //MÅ BYTTE OM MULIG
+                if (bag.tileCount() >= 7) {
+                    //bytter alle
+                    computerSwap(rackString);
+                } else {
+                    JOptionPane.showMessageDialog(null, "CPU passer");
+                    pass();
+                }
+                computersTurn = false;
+                return;
+            }
+
+            //velge legg og skrive ut på skjerm + legge til brikkene i charBoard
+            Move topScoreWord = newPossibleWords.firstEntry().getValue();
+
+            //TEST
+            if (top != null) {
+                if (top == topScoreWord) {
+                    System.out.println("Velger TOPSCORE-word");
+                } else {
+                    System.out.println("TOPSCORE: " + topScKey + " " + top.word + " startsAt " + top.wordStart + " vertical: " + top.vertical + " bruker: " + top.usedFromRack + " har igjen: " + top.leftOnRack + " score: " + top.wordScore + "  -> " + top.AIString);
+                }
+            }
+
+            //TEST
+            System.out.print(newPossibleWords.firstEntry().getKey() + " (" + topScoreWord.wordScore + ") Velger " + topScoreWord.word + ": " + topScoreWord.AIString);
+            System.out.println(", row: " + topScoreWord.row + ", column: " + topScoreWord.wordStart);
+            System.out.println("left: " + topScoreWord.leftOnRack);
+            for (String s : topScoreWord.words) {
+                System.out.println("(" + s + ")");
+            }
+            //TEST SLUTT
+
+            //hvis beste legg ikke er noe godt legg => bytte brikker
+            //har lavere terskel for å bytte om det er første trekk
+            if (firstMove) {
+                //bytter hvis ordets score er negativ, eller gir mindre enn 10 poeng
+                //eller hvis cpu blir sittende igjen med minst tre bokstaver og alle er konsonanter
+                if (newPossibleWords.firstEntry().getKey() < 0 || topScoreWord.wordScore < 10 ||
+                        (topScoreWord.leftOnRack.length() >= 3 && !StringUtil.containsVowel(topScoreWord.leftOnRack)) ||
+                        (topScoreWord.leftOnRack.length() >= 5 && StringUtil.vowelCount(topScoreWord.leftOnRack) == 1)) {
+                    System.out.println("bytter ved på første trekk");
+                    cpuMakeSwap();
+                    computersTurn = false;
+                    addedToThisMove.clear();
+                    newWordsAdded.clear();
+                    board.transposeBoard(boardPanel);
+                    return;
+                }
+                //hvis det ikker er første legg
+            } else {
+                //kriterier for å bytte: negativ score eller kun konsonanter
+                if (bag.tileCount() >= 7 && newPossibleWords.firstEntry().getKey() < 0) {
+                    System.out.println("bytter pga for dårlig bestelegg");
+                    cpuMakeSwap();
+                    computersTurn = false;
+                    addedToThisMove.clear();
+                    newWordsAdded.clear();
+                    board.transposeBoard(boardPanel);
+                    return;
+                }
+            }
+
+            cpuLastWord = topScoreWord;
+            int topScore = topScoreWord.wordScore;
+
+            //legg brikker på brettet
+            //TODO: Move burde ha være en bedre representasjon av et trekk -> "disse brikkene på disse feltene"
+            boardPanel.placeMove(topScoreWord);
+            removeFromCPURack(topScoreWord);
+            board.addToCharBoard(topScoreWord);
+
+            updateComputerScore(topScore);
+            if (addedToThisMove.size() == 7) {
+                updateCPUNotes("*" + topScoreWord.word, topScore);
+            } else {
+                updateCPUNotes(topScoreWord.word, topScore);
+            }
+            updateRemaining(topScoreWord.usedFromRack);
+
             addedToThisMove.clear();
             newWordsAdded.clear();
-            board.transposeBoard(boardPanel);
 
-            //MÅ BYTTE OM MULIG
-            if (bag.tileCount() >= 7) {
-                //bytter alle
-                computerSwap(rackString);
-            } else {
-                JOptionPane.showMessageDialog(null, "CPU passer");
-                pass();
+            //trekke nye brikker
+            cpuNewlyPicked = "";
+            while (rackString.length() != 7 && !bag.isEmpty()) {
+                Tile t = bag.pickTile();
+                rackString += t.letter;
+                cpuNewlyPicked += t.letter;
             }
             computersTurn = false;
-            return;
-        }
-
-        //velge legg og skrive ut på skjerm + legge til brikkene i charBoard
-        Move topScoreWord = possibleWords.firstEntry().getValue();
-
-        //TEST
-        if (top != null) {
-            if (top == topScoreWord) {
-                System.out.println("Velger TOPSCORE-word");
-            } else {
-                System.out.println("TOPSCORE: " + topScKey + " " + top.word + " startsAt " + top.wordStart + " vertical: " + top.vertical + " bruker: " + top.usedFromRack + " har igjen: " + top.leftOnRack + " score: " + top.wordScore + "  -> " + top.AIString);
+            //hvis CPU går ut
+            if (rackString.length() == 0) {
+                System.out.println("kaller finishGame fra CPU");
+                finishGame();
             }
-        }
+            newlyAddedToBoard.clear();
+            bagCountLabel.setText("Brikker igjen i posen: " + bag.tileCount());
+            playerPassed = false;
 
-        //TEST
-        System.out.print(possibleWords.firstEntry().getKey() + " (" + topScoreWord.wordScore + ") Velger " + topScoreWord.word + ": " + topScoreWord.AIString);
-        System.out.println(", row: " + topScoreWord.row + ", column: " + topScoreWord.wordStart);
-        System.out.println("left: " + topScoreWord.leftOnRack);
-        for (String s : topScoreWord.words) {
-            System.out.println("(" + s + ")");
+            System.out.println("AVSLUTTER COMPUTERAI()");
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        //TEST SLUTT
+    }
 
-        //hvis beste legg ikke er noe godt legg => bytte brikker
-        //har lavere terskel for å bytte om det er første trekk
-        if (firstMove) {
-            //bytter hvis ordets score er negativ, eller gir mindre enn 10 poeng
-            //eller hvis cpu blir sittende igjen med minst tre bokstaver og alle er konsonanter
-            if (possibleWords.firstEntry().getKey() < 0 || topScoreWord.wordScore < 10 ||
-                    (topScoreWord.leftOnRack.length() >= 3 && !StringUtil.containsVowel(topScoreWord.leftOnRack)) ||
-                    (topScoreWord.leftOnRack.length() >= 5 && StringUtil.vowelCount(topScoreWord.leftOnRack) == 1)) {
-                System.out.println("bytter ved på første trekk");
-                cpuMakeSwap();
-                computersTurn = false;
-                addedToThisMove.clear();
-                newWordsAdded.clear();
-                board.transposeBoard(boardPanel);
-                return;
-            }
-            //hvis det ikker er første legg
-        } else {
-            //kriterier for å bytte: negativ score eller kun konsonanter
-            if (bag.tileCount() >= 7 && possibleWords.firstEntry().getKey() < 0) {
-                System.out.println("bytter pga for dårlig bestelegg");
-                cpuMakeSwap();
-                computersTurn = false;
-                addedToThisMove.clear();
-                newWordsAdded.clear();
-                board.transposeBoard(boardPanel);
-                return;
-            }
+    private void removeFromCPURack(Move move) {
+        String toRemove = move.usedFromRack;
+        for (int i = 0; i < toRemove.length(); i++) {
+            rackString = StringUtil.removeChar(rackString, toRemove.charAt(i));
         }
+    }
 
-        cpuLastWord = topScoreWord;
-        int topScore = topScoreWord.wordScore;
-        if (!topScoreWord.vertical) {
-            board.transposeBoard(boardPanel);
-        }
-        String toRemoveFromRemaining = "";
-        for (int i = 0; i < topScoreWord.word.length(); i++) {
+    private void sjekkAtBoardErOK() {
+        char[][] charBoard = board.charBoard;
+        Square[][] squareGrid = boardPanel.squareGrid;
 
-            //hvis bokstaven kommer fra racket, plaser på brettet og fjern fra rack
-            if (board.charBoard[topScoreWord.row][topScoreWord.wordStart+i] == '-') {
-                char l = topScoreWord.word.charAt(i);
-                int index = rackString.indexOf(l);
-                boolean blank = false;
-                if (index == -1) { //blank
-                    index = rackString.indexOf('-');
-                    blank = true;
+        for (int i = 0; i < 15; i++) {
+            for (int j = 0; j < 15; j++ ) {
+                if(charBoard[i][j] == '-' && squareGrid[i][j].tile != null) {
+                    try {
+                        throw new Exception("charBoardtrouble");
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                 }
-                //fjerner fra rack
-                rackString = rackString.substring(0,index) + rackString.substring(index+1);
-                Tile t;
-                if (blank) {
-                    t = new Tile('-');
-                    t.letter = l;
-                    JOptionPane.showMessageDialog(null, "Blank er " + l);
-                    toRemoveFromRemaining += '-';
-                } else {
-                    t = new Tile(l);
-                    toRemoveFromRemaining += l;
+                if(charBoard[i][j] != '-' && charBoard[i][j] != squareGrid[i][j].tile.letter) {
+                    try {
+                        throw new Exception("charBoardtrouble - 2");
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                 }
-                boardPanel.squareGrid[topScoreWord.row][topScoreWord.wordStart+i].placeTile(t);
             }
         }
-
-        if (board.transposed) {
-            board.transposeBoard(boardPanel);
-        }
-
-        board.updateCharBoard(addedToThisMove);
-
-        for (Square s : addedToThisMove) {
-            s.tile.isMovable = false;
-        }
-        updateComputerScore(topScore);
-        if (addedToThisMove.size() == 7) {
-            updateCPUNotes("*" + topScoreWord.word, topScore);
-        } else {
-            updateCPUNotes(topScoreWord.word, topScore);
-        }
-        updateRemaining(toRemoveFromRemaining);
-
-        addedToThisMove.clear();
-        newWordsAdded.clear();
-
-        //trekke nye brikker
-        cpuNewlyPicked = "";
-        while (rackString.length() != 7 && !bag.isEmpty()) {
-            Tile t = bag.pickTile();
-            rackString += t.letter;
-            cpuNewlyPicked += t.letter;
-        }
-        computersTurn = false;
-        //hvis CPU går ut
-        if(rackString.length() == 0) {
-            System.out.println("kaller finishGame fra CPU");
-            finishGame();
-        }
-        newlyAddedToBoard.clear();
-        bagCountLabel.setText("Brikker igjen i posen: " + bag.tileCount());
-        playerPassed = false;
     }
 
     //chooses what tiles to swap - antar at denne metoden kun kalles med nok brikker i posen
@@ -1993,8 +1460,6 @@ public class ScrabbleGame extends javax.swing.JFrame {
     ArrayList<Square> newlyAddedToBoard = new ArrayList<>();
     String alphaString = "ABCDEFGHIJKLMNOPQRSTUVWXYZÆØÅ-";
 
-    //TODO: CPUThinker og TipsCalculator bør egentlig gjøre det samme...
-    //Må lage en egen klasse som tar inn Board og Rack og kalkulerer de beste trekkene ut fra bare det.
     CPUThinker cpuThinker;
     TipsCalculator tipsCalculator;
 
@@ -2031,16 +1496,12 @@ public class ScrabbleGame extends javax.swing.JFrame {
     String cpuNewlyPicked;
     String rackStringCpy = "";
     boolean newWordAdded = false;
-    boolean playerTips = false;
+
     //Solver variables
 
     Move cpuLastWord;
-    int currentAnchorI = 0;
-    int currentAnchorJ = 0;
-    //ArrayList<PossibleWord> possibleWords = new ArrayList<>();
+
     TreeMap<Double, Move> tipsWords = new TreeMap<>(Collections.reverseOrder());
-    TreeMap<Double, Move> possibleWords = new TreeMap<>(Collections.reverseOrder());
-    ArrayList<String> newCPUWords;
 
     ArrayList<String> possibleBingos = new ArrayList<>();
     ArrayList<String> impossibleBingos = new ArrayList<>();

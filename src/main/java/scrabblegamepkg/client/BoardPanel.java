@@ -1,7 +1,6 @@
 package scrabblegamepkg.client;
 
-import scrabblegamepkg.server.ScrabbleGame;
-import scrabblegamepkg.server.Square;
+import scrabblegamepkg.server.*;
 
 import javax.swing.*;
 import java.awt.*;
@@ -102,4 +101,24 @@ public class BoardPanel extends JPanel {
             squareGrid[14][11].setMultiplier("DL");
         }
 
+    public void placeMove(Move move) {
+        for (int i = 0; i < move.word.length(); i++) {
+            Square square = move.vertical ? squareGrid[move.wordStart+i][move.row] : squareGrid[move.row][move.wordStart+i];
+
+            //hvis bokstaven ikke er på brettet
+            if (square.tile == null) {
+                char letter = move.word.charAt(i);
+                Tile tile;
+                if (Character.isLowerCase(letter)) {
+                    tile = new Tile('-');
+                    tile.letter = letter;
+                    JOptionPane.showMessageDialog(null, "Blank er " + letter);
+                } else {
+                    tile = new Tile(letter);
+                }
+                tile.isMovable = false;
+                square.placeTile(tile);
+            }
+        }
+    }
 }

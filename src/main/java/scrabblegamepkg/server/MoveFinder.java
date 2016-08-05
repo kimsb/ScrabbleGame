@@ -55,7 +55,7 @@ public class MoveFinder {
                         MDAGNode n = (MDAGNode) dictionary.getSourceNode();
                         for (int l = 0; l < k; l++) {
                             partialWord += charBoard[i][j - (k-l)];
-                            n = n.transition(charBoard[i][j - (k-l)]);
+                            n = n.transition(Character.toUpperCase(charBoard[i][j - (k-l)]));
                         }
                         extendRight(board, charBoard, rackString, crossChecks, partialWord, n, j, "");
 
