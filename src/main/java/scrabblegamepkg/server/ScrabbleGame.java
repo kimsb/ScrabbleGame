@@ -1111,7 +1111,7 @@ public class ScrabbleGame extends javax.swing.JFrame {
             for (int j = 0; j < 15; j++) {
                 board.charBoard[i][j] = '-';
                 //fyller crossChecks med alle bokstaver
-                board.crossChecks[i][j] = alphaString;
+                board.crossChecks[i][j] = StringUtil.alphaString();
                 //"t¯mmer" isAnchor
                 board.isAnchor[i][j] = false;
                 //t¯mmer brettet
@@ -1218,7 +1218,7 @@ public class ScrabbleGame extends javax.swing.JFrame {
 
             TreeMap<Double, Move> newPossibleWords = new TreeMap<>(Collections.reverseOrder());
 
-            ComputerAI computerAI = new ComputerAI(rackStringCpy, bag, vowelRatioLeft, alphaString,
+            ComputerAI computerAI = new ComputerAI(rackStringCpy, bag, vowelRatioLeft,
                     playerScore, computerScore, pointlessTurns, board.isAnchor, firstMove,
                     boardPanel.squareGrid, board.charBoard, dictionary,
                     rackString, rack.tileCount());
@@ -1458,7 +1458,6 @@ public class ScrabbleGame extends javax.swing.JFrame {
     MDAG dictionary;
     Bag bag = new Bag();
     ArrayList<Square> newlyAddedToBoard = new ArrayList<>();
-    String alphaString = "ABCDEFGHIJKLMNOPQRSTUVWXYZ∆ÿ≈-";
 
     CPUThinker cpuThinker;
     TipsCalculator tipsCalculator;

@@ -2,6 +2,10 @@ package scrabblegamepkg.server;
 
 public class StringUtil {
 
+    static String alphaString() {
+        return "ABCDEFGHIJKLMNOPQRSTUVWXYZ∆ÿ≈-";
+    }
+
     static String removeChar(String s, char c) {
         int index = s.indexOf(c);
         if (index == -1) {

@@ -3,8 +3,7 @@ package scrabblegamepkg.server;
 import com.BoxOfC.MDAG.MDAG;
 
 public class ComputerAI {
-
-    String alphaString;
+    
     String rackStringCpy;
     Bag bag;
     double vowelRatioLeft;
@@ -18,11 +17,10 @@ public class ComputerAI {
     String rackString;
     int onPlayersRack;
 
-    public ComputerAI(String rackStringCpy, Bag bag, double vowelRatioLeft, String alphaString,
+    public ComputerAI(String rackStringCpy, Bag bag, double vowelRatioLeft,
                       int playerScore, int computerScore, int pointlessTurns, boolean[][] isAnchor, boolean firstMove,
                       Square[][] squareGrid, char[][] charBoard, MDAG dictionary,
                       String rackString, int onPlayersRack) {
-        this.alphaString = alphaString;
         this.rackStringCpy = rackStringCpy;
         this.bag = bag;
         this.vowelRatioLeft = vowelRatioLeft;
@@ -338,12 +336,12 @@ public class ComputerAI {
             int playerOpenings = 0;
             int cpuOpenings = 0;
             for (int i = 0; i < 29; i++) {
-                if (dictionary.contains(alphaString.charAt(i) + posWord.word)) {
+                if (dictionary.contains(StringUtil.alphaString().charAt(i) + posWord.word)) {
                     //straff for åpning
-                    if (bag.containsLetterOrBlank(alphaString.charAt(i))) {
+                    if (bag.containsLetterOrBlank(StringUtil.alphaString().charAt(i))) {
                         playerOpenings++;
                         //bonus for åpning som ikke kan brukes av player
-                    } else if (rackString.indexOf(alphaString.charAt(i)) != -1) {
+                    } else if (rackString.indexOf(StringUtil.alphaString().charAt(i)) != -1) {
                         cpuOpenings++;
                     }
                 }
@@ -403,12 +401,12 @@ public class ComputerAI {
             int playerOpenings = 0;
             int cpuOpenings = 0;
             for (int i = 0; i < 29; i++) {
-                if (dictionary.contains(posWord.word + alphaString.charAt(i))) {
+                if (dictionary.contains(posWord.word + StringUtil.alphaString().charAt(i))) {
                     //straff for åpning
-                    if (bag.containsLetterOrBlank(alphaString.charAt(i))) {
+                    if (bag.containsLetterOrBlank(StringUtil.alphaString().charAt(i))) {
                         playerOpenings++;
                         //bonus for åpning som ikke kan brukes av player
-                    } else if (rackString.indexOf(alphaString.charAt(i)) != -1) {
+                    } else if (rackString.indexOf(StringUtil.alphaString().charAt(i)) != -1) {
                         cpuOpenings++;
                     }
                 }
@@ -468,12 +466,12 @@ public class ComputerAI {
             int playerOpenings = 0;
             int cpuOpenings = 0;
             for (int i = 0; i < 29; i++) {
-                if (dictionary.contains(posWord.word + alphaString.charAt(i))) {
+                if (dictionary.contains(posWord.word + StringUtil.alphaString().charAt(i))) {
                     //straff for åpning
-                    if (bag.containsLetterOrBlank(alphaString.charAt(i))) {
+                    if (bag.containsLetterOrBlank(StringUtil.alphaString().charAt(i))) {
                         playerOpenings++;
                         //bonus for åpning som ikke kan brukes av player
-                    } else if (rackString.indexOf(alphaString.charAt(i)) != -1) {
+                    } else if (rackString.indexOf(StringUtil.alphaString().charAt(i)) != -1) {
                         cpuOpenings++;
                     }
                 }
@@ -516,12 +514,12 @@ public class ComputerAI {
             int playerOpenings = 0;
             int cpuOpenings = 0;
             for (int i = 0; i < 29; i++) {
-                if (dictionary.contains(alphaString.charAt(i) + posWord.word)) {
+                if (dictionary.contains(StringUtil.alphaString().charAt(i) + posWord.word)) {
                     //straff for åpning
-                    if (bag.containsLetterOrBlank(alphaString.charAt(i))) {
+                    if (bag.containsLetterOrBlank(StringUtil.alphaString().charAt(i))) {
                         playerOpenings++;
                         //bonus for åpning som ikke kan brukes av player
-                    } else if (rackString.indexOf(alphaString.charAt(i)) != -1) {
+                    } else if (rackString.indexOf(StringUtil.alphaString().charAt(i)) != -1) {
                         cpuOpenings++;
                     }
                 }
@@ -574,8 +572,8 @@ public class ComputerAI {
                     }
                     boolean hasPrefix = false;
                     for (int i = 0; i < 29; i++) {
-                        if (dictionary.contains(alphaString.charAt(i) + vertSuffix) &&
-                                bag.contains(alphaString.charAt(i))) {
+                        if (dictionary.contains(StringUtil.alphaString().charAt(i) + vertSuffix) &&
+                                bag.contains(StringUtil.alphaString().charAt(i))) {
                             hasPrefix = true;
                             break;
                         }
@@ -601,8 +599,8 @@ public class ComputerAI {
                         }
                         boolean hasPrefix = false;
                         for (int i = 0; i < 29; i++) {
-                            if (dictionary.contains(alphaString.charAt(i) + vertSuffix) &&
-                                    bag.contains(alphaString.charAt(i))) {
+                            if (dictionary.contains(StringUtil.alphaString().charAt(i) + vertSuffix) &&
+                                    bag.contains(StringUtil.alphaString().charAt(i))) {
                                 hasPrefix = true;
                                 break;
                             }
@@ -636,8 +634,8 @@ public class ComputerAI {
                     }
                     boolean hasPrefix = false;
                     for (int i = 0; i < 29; i++) {
-                        if (dictionary.contains(alphaString.charAt(i) + vertSuffix) &&
-                                bag.contains(alphaString.charAt(i))) {
+                        if (dictionary.contains(StringUtil.alphaString().charAt(i) + vertSuffix) &&
+                                bag.contains(StringUtil.alphaString().charAt(i))) {
                             hasPrefix = true;
                             break;
                         }
@@ -662,8 +660,8 @@ public class ComputerAI {
                     }
                     boolean hasPrefix = false;
                     for (int i = 0; i < 29; i++) {
-                        if (dictionary.contains(alphaString.charAt(i) + vertSuffix) &&
-                                bag.contains(alphaString.charAt(i))) {
+                        if (dictionary.contains(StringUtil.alphaString().charAt(i) + vertSuffix) &&
+                                bag.contains(StringUtil.alphaString().charAt(i))) {
                             hasPrefix = true;
                             break;
                         }
@@ -704,8 +702,8 @@ public class ComputerAI {
                     }
                     boolean hasWord = false;
                     for (int i = 0; i < 29; i++) {
-                        if (dictionary.contains(vertPrefix + alphaString.charAt(i) + vertSuffix) &&
-                                bag.contains(alphaString.charAt(i))) {
+                        if (dictionary.contains(vertPrefix + StringUtil.alphaString().charAt(i) + vertSuffix) &&
+                                bag.contains(StringUtil.alphaString().charAt(i))) {
                             hasWord = true;
                             break;
                         }
@@ -744,8 +742,8 @@ public class ComputerAI {
                     }
                     boolean hasWord = false;
                     for (int i = 0; i < 29; i++) {
-                        if (dictionary.contains(vertPrefix + alphaString.charAt(i) + vertSuffix) &&
-                                bag.contains(alphaString.charAt(i))) {
+                        if (dictionary.contains(vertPrefix + StringUtil.alphaString().charAt(i) + vertSuffix) &&
+                                bag.contains(StringUtil.alphaString().charAt(i))) {
                             hasWord = true;
                             break;
                         }
@@ -786,8 +784,8 @@ public class ComputerAI {
                     }
                     boolean hasWord = false;
                     for (int i = 0; i < 29; i++) {
-                        if (dictionary.contains(vertPrefix + alphaString.charAt(i) + vertSuffix) &&
-                                bag.contains(alphaString.charAt(i))) {
+                        if (dictionary.contains(vertPrefix + StringUtil.alphaString().charAt(i) + vertSuffix) &&
+                                bag.contains(StringUtil.alphaString().charAt(i))) {
                             hasWord = true;
                             break;
                         }
@@ -826,8 +824,8 @@ public class ComputerAI {
                     }
                     boolean hasWord = false;
                     for (int i = 0; i < 29; i++) {
-                        if (dictionary.contains(vertPrefix + alphaString.charAt(i) + vertSuffix) &&
-                                bag.contains(alphaString.charAt(i))) {
+                        if (dictionary.contains(vertPrefix + StringUtil.alphaString().charAt(i) + vertSuffix) &&
+                                bag.contains(StringUtil.alphaString().charAt(i))) {
                             hasWord = true;
                             break;
                         }
@@ -862,8 +860,8 @@ public class ComputerAI {
                     }
                     boolean hasSuffix = false;
                     for (int i = 0; i < 29; i++) {
-                        if (dictionary.contains(vertPrefix + alphaString.charAt(i)) &&
-                                bag.contains(alphaString.charAt(i))) {
+                        if (dictionary.contains(vertPrefix + StringUtil.alphaString().charAt(i)) &&
+                                bag.contains(StringUtil.alphaString().charAt(i))) {
                             hasSuffix = true;
                             break;
                         }
@@ -889,8 +887,8 @@ public class ComputerAI {
                         }
                         boolean hasSuffix = false;
                         for (int i = 0; i < 29; i++) {
-                            if (dictionary.contains(vertPrefix + alphaString.charAt(i)) &&
-                                    bag.contains(alphaString.charAt(i))) {
+                            if (dictionary.contains(vertPrefix + StringUtil.alphaString().charAt(i)) &&
+                                    bag.contains(StringUtil.alphaString().charAt(i))) {
                                 hasSuffix = true;
                                 break;
                             }
@@ -924,8 +922,8 @@ public class ComputerAI {
                     }
                     boolean hasSuffix = false;
                     for (int i = 0; i < 29; i++) {
-                        if (dictionary.contains(vertPrefix + alphaString.charAt(i)) &&
-                                bag.contains(alphaString.charAt(i))) {
+                        if (dictionary.contains(vertPrefix + StringUtil.alphaString().charAt(i)) &&
+                                bag.contains(StringUtil.alphaString().charAt(i))) {
                             hasSuffix = true;
                             break;
                         }
@@ -950,8 +948,8 @@ public class ComputerAI {
                     }
                     boolean hasSuffix = false;
                     for (int i = 0; i < 29; i++) {
-                        if (dictionary.contains(vertPrefix + alphaString.charAt(i)) &&
-                                bag.contains(alphaString.charAt(i))) {
+                        if (dictionary.contains(vertPrefix + StringUtil.alphaString().charAt(i)) &&
+                                bag.contains(StringUtil.alphaString().charAt(i))) {
                             hasSuffix = true;
                             break;
                         }
@@ -1033,9 +1031,9 @@ public class ComputerAI {
                 }
                 boolean hasWord = false;
                 for (int i = 0; i < 29; i++) {
-                    if (dictionary.contains(horPrefix + alphaString.charAt(i) + posWord.word) &&
-                            bag.contains(alphaString.charAt(i))) {
-                        if (StringUtil.isBingoFriendlyChar(alphaString.charAt(i))) {
+                    if (dictionary.contains(horPrefix + StringUtil.alphaString().charAt(i) + posWord.word) &&
+                            bag.contains(StringUtil.alphaString().charAt(i))) {
+                        if (StringUtil.isBingoFriendlyChar(StringUtil.alphaString().charAt(i))) {
                             hasWord = true;
                             break;
                         }
@@ -1070,9 +1068,9 @@ public class ComputerAI {
                 }
                 boolean hasWord = false;
                 for (int i = 0; i < 29; i++) {
-                    if (dictionary.contains(posWord.word + alphaString.charAt(i) + horSuffix) &&
-                            bag.contains(alphaString.charAt(i))) {
-                        if (StringUtil.isBingoFriendlyChar(alphaString.charAt(i))) {
+                    if (dictionary.contains(posWord.word + StringUtil.alphaString().charAt(i) + horSuffix) &&
+                            bag.contains(StringUtil.alphaString().charAt(i))) {
+                        if (StringUtil.isBingoFriendlyChar(StringUtil.alphaString().charAt(i))) {
                             hasWord = true;
                             break;
                         }
@@ -1111,10 +1109,10 @@ public class ComputerAI {
             }
             double openingScore = 0;
             for (int i = 0; i < 29; i++) {
-                if (dictionary.contains(horPrefix + alphaString.charAt(i) + posWord.word)) {
+                if (dictionary.contains(horPrefix + StringUtil.alphaString().charAt(i) + posWord.word)) {
                     if (vertPrefix.length() == 0 && vertSuffix.length() == 0 ||
-                            dictionary.contains(vertPrefix + alphaString.charAt(i) + vertSuffix)) {
-                        char c = alphaString.charAt(i);
+                            dictionary.contains(vertPrefix + StringUtil.alphaString().charAt(i) + vertSuffix)) {
+                        char c = StringUtil.alphaString().charAt(i);
                         if (ScoreConstants.letterScore(c) != 0) {
                             openingScore += 2 * ScoreConstants.letterScore(c) * ScoreConstants.letterScore(c) * ((double)bag.letterCount(c) / (bag.tileCount() + onPlayersRack));
                         }
@@ -1163,10 +1161,10 @@ public class ComputerAI {
             }
             double openingScore = 0;
             for (int i = 0; i < 29; i++) {
-                if (dictionary.contains(posWord.word + alphaString.charAt(i) + horSuffix)) {
+                if (dictionary.contains(posWord.word + StringUtil.alphaString().charAt(i) + horSuffix)) {
                     if (vertPrefix.length() == 0 && vertSuffix.length() == 0 ||
-                            dictionary.contains(vertPrefix + alphaString.charAt(i) + vertSuffix)) {
-                        char c = alphaString.charAt(i);
+                            dictionary.contains(vertPrefix + StringUtil.alphaString().charAt(i) + vertSuffix)) {
+                        char c = StringUtil.alphaString().charAt(i);
                         if (ScoreConstants.letterScore(c) != 0) {
                             openingScore += 2 * ScoreConstants.letterScore(c) * ScoreConstants.letterScore(c) * ((double)bag.letterCount(c) / (bag.tileCount() + onPlayersRack));
                         }
@@ -1230,10 +1228,10 @@ public class ComputerAI {
                     double openingScore = 0;
                     for (int i = 0; i < 29; i++) {
 
-                        if (dictionary.contains(vertPrefix + alphaString.charAt(i) + vertSuffix)) {
+                        if (dictionary.contains(vertPrefix + StringUtil.alphaString().charAt(i) + vertSuffix)) {
                             if (horPrefix.length() == 0 && horSuffix.length() == 0 ||
-                                    dictionary.contains(horPrefix + alphaString.charAt(i) + horSuffix)) {
-                                char c = alphaString.charAt(i);
+                                    dictionary.contains(horPrefix + StringUtil.alphaString().charAt(i) + horSuffix)) {
+                                char c = StringUtil.alphaString().charAt(i);
                                 if (ScoreConstants.letterScore(c) != 0) {
                                     openingScore += 2 * ScoreConstants.letterScore(c) * ScoreConstants.letterScore(c) * ((double)bag.letterCount(c) / (bag.tileCount() + onPlayersRack));
                                 }
@@ -1304,10 +1302,10 @@ public class ComputerAI {
                     }
                     double openingScore = 0;
                     for (int i = 0; i < 29; i++) {
-                        if (dictionary.contains(vertPrefix + alphaString.charAt(i) + vertSuffix)) {
+                        if (dictionary.contains(vertPrefix + StringUtil.alphaString().charAt(i) + vertSuffix)) {
                             if (horPrefix.length() == 0 && horSuffix.length() == 0 ||
-                                    dictionary.contains(horPrefix + alphaString.charAt(i) + horSuffix)) {
-                                char c = alphaString.charAt(i);
+                                    dictionary.contains(horPrefix + StringUtil.alphaString().charAt(i) + horSuffix)) {
+                                char c = StringUtil.alphaString().charAt(i);
                                 if (ScoreConstants.letterScore(c) != 0) {
                                     openingScore += 2 * ScoreConstants.letterScore(c) * ScoreConstants.letterScore(c) * ((double)bag.letterCount(c) / (bag.tileCount() + onPlayersRack));
                                 }
