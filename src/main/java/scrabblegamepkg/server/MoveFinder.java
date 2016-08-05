@@ -9,9 +9,9 @@ import java.util.TreeMap;
 
 public class MoveFinder {
 
-    ArrayList<PotentialMove> allMoves;
+    ArrayList<Move> allMoves;
 
-    public ArrayList<PotentialMove> findAllMoves(MDAG dictionary, Board board, String rack) {
+    public ArrayList<Move> findAllMoves(MDAG dictionary, Board board, String rack) {
 
         allMoves = new ArrayList<>();
 
@@ -24,20 +24,20 @@ public class MoveFinder {
 
         transposed = false;
         String[][] crossChecks = findCrossChecks(dictionary, board.charBoard);
-        findAcrossMoves(dictionary, board.charBoard, crossChecks, getAnchors(board.charBoard), rackString);
+        findAcrossMoves(board, dictionary, board.charBoard, crossChecks, getAnchors(board.charBoard), rackString);
 
         //down-moves
         transposed = true;
-        char[][] transposedCharBoard = getTransposedCharBoard(board.charBoard);
+        char[][] transposedCharBoard = board.getTransposedCharBoard();
         String[][] transposedCrossChecks = findCrossChecks(dictionary, transposedCharBoard);
-        findAcrossMoves(dictionary, transposedCharBoard, transposedCrossChecks, getAnchors(transposedCharBoard), rackString);
+        findAcrossMoves(board, dictionary, transposedCharBoard, transposedCrossChecks, getAnchors(transposedCharBoard), rackString);
     }
 
     //TODO: bli kvitt disse globale
     private int currentAnchorI, currentAnchorJ;
     private boolean transposed;
 
-    private void findAcrossMoves(MDAG dictionary, char[][] charBoard, String[][] crossChecks, boolean[][] isAnchor, String rackString) {
+    private void findAcrossMoves(Board board, MDAG dictionary, char[][] charBoard, String[][] crossChecks, boolean[][] isAnchor, String rackString) {
         //for all anchorSquares
         for (int i = 0; i < 15; i++) {
             for (int j = 0; j < 15; j++) {
@@ -57,10 +57,10 @@ public class MoveFinder {
                             partialWord += charBoard[i][j - (k-l)];
                             n = n.transition(charBoard[i][j - (k-l)]);
                         }
-                        extendRight(charBoard, rackString, crossChecks, partialWord, n, j, "");
+                        extendRight(board, charBoard, rackString, crossChecks, partialWord, n, j, "");
 
                     } else {
-                        leftPart(charBoard, rackString, crossChecks, "", (MDAGNode) dictionary.getSourceNode(), k, "");
+                        leftPart(board, charBoard, rackString, crossChecks, "", (MDAGNode) dictionary.getSourceNode(), k, "");
                     }
                 }
             }
@@ -70,14 +70,14 @@ public class MoveFinder {
     //TODO: regne ut actual score
     int fakeScore = 1;
 
-    private void extendRight(char[][] charBoard, String rackString, String[][] crossChecks, String partialWord, MDAGNode n, int squareJ, String usedFromRack) {
+    private void extendRight(Board board, char[][] charBoard, String rackString, String[][] crossChecks, String partialWord, MDAGNode n, int squareJ, String usedFromRack) {
         //if square is vacant
         if (squareJ == 15 || charBoard[currentAnchorI][squareJ] == '-') {
             //if N si a terminal node
             if (squareJ != currentAnchorJ && n.isAcceptNode()) {
-                PotentialMove newPos = new PotentialMove(partialWord, currentAnchorI, squareJ-1, transposed,
+                Move newPos = new Move(partialWord, currentAnchorI, squareJ-1, transposed,
                         fakeScore++,
-                        usedFromRack);
+                        usedFromRack, board, rackString);
 
                 allMoves.add(newPos);
             }
@@ -98,7 +98,7 @@ public class MoveFinder {
                             MDAGNode nNext = entry.getValue();
                             //let next-square be the square to the right of square
                             //if (squareJ != 14) {
-                            extendRight(charBoard, rackString, crossChecks, (partialWord + l), nNext, squareJ+1, usedFromRack + l);
+                            extendRight(board, charBoard, rackString, crossChecks, (partialWord + l), nNext, squareJ+1, usedFromRack + l);
                             //}
                             //put the tile back in the rack
                             rackString += l;
@@ -114,7 +114,7 @@ public class MoveFinder {
                                 MDAGNode nNext = entry.getValue();
                                 //let next-square be the square to the right of square
                                 if (squareJ != 14) {
-                                    extendRight(charBoard, rackString, crossChecks, (partialWord + l), nNext, squareJ+1, usedFromRack + '-');
+                                    extendRight(board, charBoard, rackString, crossChecks, (partialWord + Character.toLowerCase(l)), nNext, squareJ+1, usedFromRack + '-');
                                 }
                                 //put the blank tile back in the rack
                                 rackString += '-';
@@ -131,14 +131,14 @@ public class MoveFinder {
             if (n.hasOutgoingTransition(l)) {
                 //let next-square be the square to the right of square
                 //if (squareJ != 14) {
-                extendRight(charBoard, rackString, crossChecks, (partialWord + l), n.transition(l), squareJ+1, usedFromRack);
+                extendRight(board, charBoard, rackString, crossChecks, (partialWord + l), n.transition(l), squareJ+1, usedFromRack);
                 //}
             }
         }
     }
 
-    private void leftPart(char[][] charBoard, String rackString, String[][] crossChecks, String partialWord, MDAGNode n, int limit, String usedFromRack) {
-        extendRight(charBoard, rackString, crossChecks, partialWord, n, currentAnchorJ, usedFromRack);
+    private void leftPart(Board board, char[][] charBoard, String rackString, String[][] crossChecks, String partialWord, MDAGNode n, int limit, String usedFromRack) {
+        extendRight(board, charBoard, rackString, crossChecks, partialWord, n, currentAnchorJ, usedFromRack);
         if (limit > 0) {
             //for each edge E out of N
             TreeMap<Character,MDAGNode> outGoingEdges = n.getOutgoingTransitions();
@@ -152,7 +152,7 @@ public class MoveFinder {
                     //let N' be the node reached by following edge E
                     MDAGNode nNext = entry.getValue();
                     //leftPart(...)
-                    leftPart(charBoard, rackString, crossChecks, (partialWord + l), nNext, limit-1, usedFromRack + l);
+                    leftPart(board, charBoard, rackString, crossChecks, (partialWord + l), nNext, limit-1, usedFromRack + l);
                     //put the tile back in the rack
                     rackString += l;
                 } else { //if not on rack, check for blanks
@@ -163,7 +163,7 @@ public class MoveFinder {
                         //let N' be the node reached by following edge E
                         MDAGNode nNext = entry.getValue();
                         //leftPart(...)
-                        leftPart(charBoard, rackString, crossChecks, (partialWord + l), nNext, limit-1, usedFromRack + '-');
+                        leftPart(board, charBoard, rackString, crossChecks, (partialWord + Character.toLowerCase(l)), nNext, limit-1, usedFromRack + '-');
                         //put the blank tile back in the rack
                         rackString += '-';
                     }
@@ -249,20 +249,6 @@ public class MoveFinder {
             }
         }
         return crossChecks;
-    }
-
-    protected char[][] getTransposedCharBoard(char[][] charBoard) {
-
-        char[][] transposedCharBoard = new char[15][15];
-
-        //"transpose"
-        for (int i = 0; i < 15; i++) {
-            for (int j = 0; j < 15; j++) {
-                transposedCharBoard[i][j] = charBoard[j][i];
-
-            }
-        }
-        return transposedCharBoard;
     }
 
 }
