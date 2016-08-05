@@ -132,7 +132,7 @@ public class Board {
         }
     }
 
-
+    //TODO: legge dette ut i egen klasse (BoardConstants eller noe sånt)
     private String[][] setMultipliers() {
 
         String[][] multipliers = new String[15][15];
