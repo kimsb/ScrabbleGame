@@ -27,6 +27,11 @@ public class MoveFinderTest {
 
         board = new Board();
         board.charBoard = getEmptyCharBoard();
+
+    }
+
+    @Test
+    public void finds_ecu_for_fourty_two_points() {
         board.charBoard[1][7] = 'P';
         board.charBoard[2][7] = 'A';
         board.charBoard[3][7] = 'L';
@@ -34,10 +39,7 @@ public class MoveFinderTest {
         board.charBoard[5][7] = 'I';
         board.charBoard[6][7] = 'N';
         board.charBoard[7][7] = 'G';
-    }
 
-    @Test
-    public void finds_ecu_for_fourty_two_points() {
         MoveFinder moveFinder = new MoveFinder();
 
         ArrayList<Move> allMoves = moveFinder.findAllMoves(dictionary, board, "CFELSTU");
@@ -45,6 +47,17 @@ public class MoveFinderTest {
         Move ecuMove = allMoves.stream().filter(move -> move.word.equals("ECU") && move.moveScore == 42).findFirst().get();
 
         assertThat(ecuMove).isNotNull();
+    }
+
+    @Test
+    public void finds_both_bingos_with_blank() {
+        MoveFinder moveFinder = new MoveFinder();
+
+        ArrayList<Move> allMoves = moveFinder.findAllMoves(dictionary, board, "HÅTASK-");
+
+        assertThat(allMoves.stream().filter(move -> move.word.equals("HÅTASKe")).findAny().get()).isNotNull();
+        assertThat(allMoves.stream().filter(move -> move.word.equals("HÅTASKa")).findAny().get()).isNotNull();
+
     }
 
     void createDictionary() throws IOException {

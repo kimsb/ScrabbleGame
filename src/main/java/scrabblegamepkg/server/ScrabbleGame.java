@@ -400,8 +400,9 @@ public class ScrabbleGame {
         MoveFinder moveFinder = new MoveFinder();
         ArrayList<Move> allMoves = moveFinder.findAllMoves(dictionary, board, playerRack);
 
-        int wordCount = 1;
-        allMoves.forEach(potentialMove -> tipsWords.put(potentialMove.moveScore + wordCount * 0.00000001, potentialMove));
+        for (int i = 0; i < allMoves.size(); i++) {
+            tipsWords.put(allMoves.get(i).moveScore + (i * 0.0000001), allMoves.get(i));
+        }
 
         if (!tipsWords.isEmpty()) {
             bestTipScore = tipsWords.firstEntry().getValue().wordScore;
