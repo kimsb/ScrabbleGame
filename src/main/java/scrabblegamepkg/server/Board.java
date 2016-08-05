@@ -9,7 +9,6 @@ import java.util.ArrayList;
 public class Board {
 
     //TODO: burde bare være én grid, med en type Square-object som holder på char, multiplier
-    boolean transposed = false;
     char[][] charBoard = new char[15][15];
     char[][] charBoardBeforeLastMove = new char[15][15];
     boolean[][] isAnchor = new boolean[15][15];
@@ -44,34 +43,6 @@ public class Board {
         return transposedCharBoard;
     }
 
-    //TODO: skjønner ikke at boardPanel trengs her?
-    void transposeBoard(BoardPanel boardPanel) {
-
-        transposed = !transposed;
-
-        Square[][] tempSquareGrid = new Square[15][15];
-        char[][] tempCharBoard = new char[15][15];
-        String[][] tempCrossChecks = new String[15][15];
-        boolean[][] tempIsAnchor = new boolean[15][15];
-        //copy
-        for (int i = 0; i < 15; i++) {
-            for (int j = 0; j < 15; j++) {
-                tempCharBoard[i][j] = charBoard[i][j];
-                tempCrossChecks[i][j] = crossChecks[i][j];
-                tempIsAnchor[i][j] = isAnchor[i][j];
-                tempSquareGrid[i][j] = boardPanel.squareGrid[i][j];
-            }
-        }
-        //"transpose"
-        for (int i = 0; i < 15; i++) {
-            for (int j = 0; j < 15; j++) {
-                charBoard[i][j] = tempCharBoard[j][i];
-                crossChecks[i][j] = tempCrossChecks[j][i];
-                isAnchor[i][j] = tempIsAnchor[j][i];
-                boardPanel.squareGrid[i][j] = tempSquareGrid[j][i];
-            }
-        }
-    }
 
     //TODO: legge dette ut i egen klasse (BoardConstants eller noe sånt)
     private String[][] setMultipliers() {

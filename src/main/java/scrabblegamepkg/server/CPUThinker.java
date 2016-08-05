@@ -104,7 +104,6 @@ public class CPUThinker extends SwingWorker<Void, Void> {
                 System.out.println("CPU kan ikke legge");
                 scrabbleGame.addedToThisMove.clear();
                 scrabbleGame.newWordsAdded.clear();
-                scrabbleGame.board.transposeBoard(scrabbleGame.scrabbleGameFrame.boardPanel);
 
                 //MÅ BYTTE OM MULIG
                 if (scrabbleGame.bag.tileCount() >= 7) {
@@ -152,7 +151,6 @@ public class CPUThinker extends SwingWorker<Void, Void> {
                     scrabbleGame.computersTurn = false;
                     scrabbleGame.addedToThisMove.clear();
                     scrabbleGame.newWordsAdded.clear();
-                    scrabbleGame.board.transposeBoard(scrabbleGame.scrabbleGameFrame.boardPanel);
                     return;
                 }
                 //hvis det ikker er første legg
@@ -164,7 +162,6 @@ public class CPUThinker extends SwingWorker<Void, Void> {
                     scrabbleGame.computersTurn = false;
                     scrabbleGame.addedToThisMove.clear();
                     scrabbleGame.newWordsAdded.clear();
-                    scrabbleGame.board.transposeBoard(scrabbleGame.scrabbleGameFrame.boardPanel);
                     return;
                 }
             }
