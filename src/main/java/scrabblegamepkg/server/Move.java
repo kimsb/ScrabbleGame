@@ -40,9 +40,9 @@ public class Move {
             char letter = word.charAt(k);
             boolean addedNow = charBoard[i][j+k] == '-';
             if (addedNow) {
-                int letterScore = ScoreConstants.letterScore(letter) * board.getLetterMultiplier(i, j+k);
+                int letterScore = ScoreConstants.letterScore(letter) * BoardConstants.getLetterMultiplier(i, j+k);
                 horizontalScore += letterScore;
-                int wordMultiplier = board.getWordMultiplier(i, j+k);
+                int wordMultiplier = BoardConstants.getWordMultiplier(i, j+k);
                 horizontalMultiplier *= wordMultiplier;
                 sum += getVerticalScore(charBoard, i, j+k, letterScore, wordMultiplier);
             } else {

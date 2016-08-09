@@ -407,6 +407,7 @@ public class ScrabbleGame {
         }
         
         possibleBingos.clear();
+        //TODO: impossible settes ikke lenger, lag metode som sender in rack.toString og returener liste over bingoer
         impossibleBingos.clear();
         for (Map.Entry<Double,Move> entry : tipsWords.entrySet()) {
             Move poss = entry.getValue();
@@ -812,24 +813,16 @@ public class ScrabbleGame {
             if (s.tile.isMovable) {
                 newTiles++;
             }
-            tempSum += s.tile.value;
-            if (s.tile.isMovable) { //sjekker bare multiplier for nye brikker
-               if (s.multiplier.equals("DL")) {
-                    tempSum += s.tile.value;
-                } else if (s.multiplier.equals("TL")) {
-                    tempSum += (s.tile.value * 2);
-                } else if (s.multiplier.equals("DW")) {
-                    multiplier *= 2;
-                } else if (s.multiplier.equals("TW")) {
-                    multiplier *= 3;
-                }
-            }
+
+            int letterMultiplier = s.tile.isMovable ? s.letterMultiplier() : 1;
+            tempSum += s.tile.value * letterMultiplier;
+
+            multiplier *= s.tile.isMovable ? s.wordMultiplier() : 1;
+
         }
         tempSum *= multiplier;
         if (newTiles == 7) { //bingo!
             tempSum += 50;
-            //System.out.println("kaller på bingoMessage");
-            //JOptionPane.showMessageDialog(null, "Bingo!");
         }           
         return tempSum;
     }

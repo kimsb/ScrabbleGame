@@ -20,7 +20,7 @@ public class RackPanel extends JPanel {
         setComponentOrientation(ComponentOrientation.LEFT_TO_RIGHT);
 
         for(int i = 0; i < 7; i++) {
-            Square square = new Square(false, scrabbleGame);
+            Square square = new Square(false, scrabbleGame, 0, 0);
             square.setBackground(new Color(0, 120, 98));
             squares.add(i, square);
             add(squares.get(i));

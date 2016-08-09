@@ -192,16 +192,16 @@ public class ComputerAI {
         int i = posWord.row;
         for (int j = posWord.wordStart; j < posWord.wordStart + posWord.word.length(); j++) {
             if (isAnchor[i][j] && !firstMove) {
-                if (squareGrid[i][j].multiplier.equals("DL")) {
+                if (BoardConstants.getLetterMultiplier(i, j) == 2) {
                     score += 2.5;
                     posWord.AIString += "+2.5 for bruk av toveis DL, ";
-                } else if (squareGrid[i][j].multiplier.equals("TL")) {
+                } else if (BoardConstants.getLetterMultiplier(i, j) == 3) {
                     score += 5;
                     posWord.AIString += "+5 for bruk av toveis TL, ";
-                } else if (squareGrid[i][j].multiplier.equals("DW")) {
+                } else if (BoardConstants.getWordMultiplier(i, j) == 2) {
                     score += 5;
                     posWord.AIString += "+5 for bruk av toveis DW, ";
-                } else if (squareGrid[i][j].multiplier.equals("TL")) {
+                } else if (BoardConstants.getWordMultiplier(i, j) == 3) {
                     score += 10;
                     posWord.AIString += "+10 for bruk av toveis TW, ";
                 }
@@ -1088,7 +1088,8 @@ public class ComputerAI {
     double toWayMultiplierSetUpPenalty(Move posWord) {
         double score = 0;
         //foran nye ord
-        if (posWord.wordStart != 0 && squareGrid[posWord.row][posWord.wordStart-1].multiplier.length() != 0) {
+        if (posWord.wordStart != 0 && (BoardConstants.getLetterMultiplier(posWord.row, posWord.wordStart-1) != 1
+        || BoardConstants.getWordMultiplier(posWord.row, posWord.wordStart-1) != 1)) {
             String horPrefix = "";
             int k = 0;
             while (posWord.wordStart - 2 - k >= 0 && charBoard[posWord.row][posWord.wordStart - 2 - k] != '-') {
@@ -1121,26 +1122,17 @@ public class ComputerAI {
                 }
             }
             if (openingScore > 0) {
-                double addedScore = 0;
-                if (squareGrid[posWord.row][posWord.wordStart - 1].multiplier.equals("DL")) {
-                    addedScore =  ((1 * openingScore) > 2.5) ? (1 * openingScore) : 2.5;
-                    posWord.AIString += "-" + addedScore + " for åpning av toveis DL (foran), ";
-                } else if (squareGrid[posWord.row][posWord.wordStart - 1].multiplier.equals("TL")) {
-                    addedScore = ((1.5 * openingScore) > 5) ? (1.5 * openingScore) : 5;
-                    posWord.AIString += "-" + addedScore + " for åpning av toveis TL (foran), ";
-                } else if (squareGrid[posWord.row][posWord.wordStart - 1].multiplier.equals("DW")) {
-                    addedScore = ((2 * openingScore) > 7.5) ? (2 * openingScore) : 7.5;
-                    posWord.AIString += "-" + addedScore + " for åpning av toveis DW (foran), ";
-                } else if (squareGrid[posWord.row][posWord.wordStart - 1].multiplier.equals("TW")) {
-                    addedScore = ((3 * openingScore) > 15) ? (3 * openingScore) : 15;
-                    posWord.AIString += "-" + addedScore + " for åpning av toveis TW (foran), ";
+                double addedScore = multiplierPenalty(posWord.row, posWord.wordStart, openingScore);
+                if (addedScore > 0) {
+                    posWord.AIString += "-" + addedScore + " for åpning foran, ";
+                    score -= addedScore;
                 }
-                score -= addedScore;
             }
 
         }
         //bak nye ord
-        if (posWord.wordStart+posWord.word.length() != 15 && squareGrid[posWord.row][posWord.wordStart+posWord.word.length()].multiplier.length() != 0) {
+        if (posWord.wordStart+posWord.word.length() != 15 && (BoardConstants.getLetterMultiplier(posWord.row, posWord.wordStart+posWord.word.length()) != 1 ||
+                                                                BoardConstants.getWordMultiplier(posWord.row, posWord.wordStart+posWord.word.length()) != 1)) {
             String horSuffix = "";
             int k = 0;
             while (posWord.wordStart+posWord.word.length() + 2 + k <= 14 && charBoard[posWord.row][posWord.wordStart+posWord.word.length() + 2 + k] != '-') {
@@ -1172,21 +1164,11 @@ public class ComputerAI {
                 }
             }
             if (openingScore > 0) {
-                double addedScore = 0;
-                if (squareGrid[posWord.row][posWord.wordStart+posWord.word.length()].multiplier.equals("DL")) {
-                    addedScore = ((1 * openingScore) > 2.5) ? (1 * openingScore) : 2.5;
-                    posWord.AIString += "-" + addedScore + " for åpning av toveis DL (bak), ";
-                } else if (squareGrid[posWord.row][posWord.wordStart+posWord.word.length()].multiplier.equals("TL")) {
-                    addedScore = ((1.5 * openingScore) > 5) ? (1.5 * openingScore) : 5;
-                    posWord.AIString += "-" + addedScore + " for åpning av toveis TL (bak), ";
-                } else if (squareGrid[posWord.row][posWord.wordStart+posWord.word.length()].multiplier.equals("DW")) {
-                    addedScore = ((2 * openingScore) > 7.5) ? (2 * openingScore) : 7.5;
-                    posWord.AIString += "-" + addedScore + " for åpning av toveis DW (bak), ";
-                } else if (squareGrid[posWord.row][posWord.wordStart+posWord.word.length()].multiplier.equals("TW")) {
-                    addedScore = ((3 * openingScore) > 15) ? (3 * openingScore) : 15;
-                    posWord.AIString += "-" + addedScore + " for åpning av toveis TW (bak), ";
+                double addedScore = multiplierPenalty(posWord.row, posWord.wordStart+posWord.word.length(), openingScore);
+                if (addedScore > 0) {
+                    posWord.AIString += "-" + addedScore + " for åpning bak, ";
+                    score -= addedScore;
                 }
-                score -= addedScore;
             }
 
         }
@@ -1200,7 +1182,7 @@ public class ComputerAI {
                     l++;
                 }
                 if (posWord.row > 0 && charBoard[posWord.row-l][j] == '-' &&
-                        squareGrid[posWord.row-l][j].multiplier.length() != 0) {
+                        (BoardConstants.getLetterMultiplier(posWord.row-l, j) != 1 || BoardConstants.getWordMultiplier(posWord.row-l, j) != 1)) {
                     String vertPrefix = "";
 
                     int k = posWord.row - l - 1;
@@ -1244,21 +1226,11 @@ public class ComputerAI {
                             score -= letterScore;
                             posWord.AIString += "-" + letterScore + " for bokstaven som åpner, ";
                         }
-                        double addedScore = 0;
-                        if (squareGrid[posWord.row-l][j].multiplier.equals("DL")) {
-                            addedScore = ((1 * openingScore) > 2.5) ? (1 * openingScore) : 2.5;
-                            posWord.AIString += "-" + addedScore + " for åpning av toveis DL (over), ";
-                        } else if (squareGrid[posWord.row-l][j].multiplier.equals("TL")) {
-                            addedScore = ((1.5 * openingScore) > 5) ? (1.5 * openingScore) : 5;
-                            posWord.AIString += "-" + addedScore + " for åpning av toveis TL (over), ";
-                        } else if (squareGrid[posWord.row-l][j].multiplier.equals("DW")) {
-                            addedScore = ((2 * openingScore) > 7.5) ? (2 * openingScore) : 7.5;
-                            posWord.AIString += "-" + addedScore + " for åpning av toveis DW (over), ";
-                        } else if (squareGrid[posWord.row-l][j].multiplier.equals("TW")) {
-                            addedScore = ((3 * openingScore) > 15) ? (3 * openingScore) : 15;
-                            posWord.AIString += "-" + addedScore + " for åpning av toveis TW (over), ";
+                        double addedScore = multiplierPenalty(posWord.row-l, j, openingScore);
+                        if (addedScore > 0) {
+                            posWord.AIString += "-" + addedScore + " for åpning over, ";
+                            score -= addedScore;
                         }
-                        score -= addedScore;
                     }
 
 
@@ -1276,7 +1248,7 @@ public class ComputerAI {
                     l++;
                 }
                 if (posWord.row < 14 && charBoard[posWord.row+l][j] == '-' &&
-                        squareGrid[posWord.row+l][j].multiplier.length() != 0) {
+                        (BoardConstants.getLetterMultiplier(posWord.row+l, j) != 1 || BoardConstants.getWordMultiplier(posWord.row+1, j) != 1)) {
                     String vertSuffix = "";
                     int k = posWord.row - 1;
                     while (k > 0 && charBoard[k][j] != '-') {
@@ -1318,21 +1290,11 @@ public class ComputerAI {
                             score -= letterScore;
                             posWord.AIString += "-" + letterScore + " for bokstaven som åpner, ";
                         }
-                        double addedScore = 0;
-                        if (squareGrid[posWord.row+l][j].multiplier.equals("DL")) {
-                            addedScore = ((1 * openingScore) > 2.5) ? (1 * openingScore) : 2.5;
-                            posWord.AIString += "-" + addedScore + " for åpning av toveis DL (under), ";
-                        } else if (squareGrid[posWord.row+l][j].multiplier.equals("TL")) {
-                            addedScore = ((1.5 * openingScore) > 5) ? (1.5 * openingScore) : 5;
-                            posWord.AIString += "-" + addedScore + " for åpning av toveis TL (under), ";
-                        } else if (squareGrid[posWord.row+l][j].multiplier.equals("DW")) {
-                            addedScore = ((2 * openingScore) > 7.5) ? (2 * openingScore) : 7.5;
-                            posWord.AIString += "-" + addedScore + " for åpning av toveis DW (under), ";
-                        } else if (squareGrid[posWord.row+l][j].multiplier.equals("TW")) {
-                            addedScore = ((3 * openingScore) > 15) ? (3 * openingScore) : 15;
-                            posWord.AIString += "-" + addedScore + " for åpning av toveis TW (under), ";
+                        double addedScore = multiplierPenalty(posWord.row+l, j, openingScore);
+                        if (addedScore > 0) {
+                            posWord.AIString += "-" + addedScore + " for åpning under, ";
+                            score -= addedScore;
                         }
-                        score -= addedScore;
                     }
 
                 }
@@ -1340,6 +1302,19 @@ public class ComputerAI {
         }
 
         return score;
+    }
+
+    private double multiplierPenalty(int row, int column, double openingScore) {
+        if (BoardConstants.getLetterMultiplier(row, column) == 2) {
+            return (openingScore > 2.5) ? openingScore : 2.5;
+        } else if (BoardConstants.getLetterMultiplier(row, column) == 3) {
+            return ((1.5 * openingScore) > 5) ? (1.5 * openingScore) : 5;
+        } else if (BoardConstants.getWordMultiplier(row, column) == 2) {
+            return ((2 * openingScore) > 7.5) ? (2 * openingScore) : 7.5;
+        } else if (BoardConstants.getWordMultiplier(row, column) == 3) {
+            return ((3 * openingScore) > 15) ? (3 * openingScore) : 15;
+        }
+        return 0;
     }
 
 }

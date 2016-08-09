@@ -9,14 +9,16 @@ public class Square extends javax.swing.JLabel {
     public int row;
     public int column;
     public Tile tile;
-    String multiplier = "";
     boolean onBoard;
     ScrabbleGame scrabbleGame;
 
-    public Square(boolean onBoard, ScrabbleGame scrabbleGame) {
+    public Square(boolean onBoard, ScrabbleGame scrabbleGame, int row, int column) {
         this.onBoard = onBoard;
         this.scrabbleGame = scrabbleGame;
+        this.row = row;
+        this.column = column;
 
+        setBackground();
         setPreferredSize(new Dimension(35, 35)); //endre 50, 50 for å endre størrelse
         setOpaque(true);
         addMouseListener(new MouseAdapter() {
@@ -28,25 +30,34 @@ public class Square extends javax.swing.JLabel {
         });
     }
 
+    private void setBackground() {
+        if (BoardConstants.getLetterMultiplier(row, column) == 2) {
+            setBackground(new Color(153, 221, 255));
+        } else if (BoardConstants.getLetterMultiplier(row, column) == 3) {
+            setBackground(new Color(77, 121, 255));
+        } else if (BoardConstants.getWordMultiplier(row, column) == 2) {
+            setBackground(new Color(255, 204, 153));
+        } else if (BoardConstants.getWordMultiplier(row, column) == 3) {
+            setBackground(new Color(255, 0, 0));
+        } else {
+            setBackground(new Color(57, 172, 172));
+        }
+    }
+
+    public int letterMultiplier() {
+        return BoardConstants.getLetterMultiplier(row, column);
+    }
+
+    public int wordMultiplier() {
+        return BoardConstants.getWordMultiplier(row, column);
+    }
+
     public ImageIcon createTileIcon() {
         ImageIcon imageIcon;
         imageIcon = new javax.swing.ImageIcon(getClass().getResource("/" + (tile.isBlank() ? '-' : tile.letter) + ".png"));
         Image img = imageIcon.getImage();
         Image newimg = img.getScaledInstance(35, 35, java.awt.Image.SCALE_SMOOTH); //endre 50, 50 for å endre størrelse
         return new ImageIcon(newimg);
-    }
-
-    public void setMultiplier(String mult) {
-        multiplier = mult;
-        if (mult.equals("DL")) {
-            setBackground(new Color(153, 221, 255));
-        } else if (mult.equals("TL")) {
-            setBackground(new Color(77, 121, 255));
-        } else if (mult.equals("DW")) {
-            setBackground(new Color(255, 204, 153));
-        } else if (mult.equals("TW")) {
-            setBackground(new Color(255, 0, 0));
-        }
     }
 
     public boolean placeTile(Tile t) {
