@@ -8,14 +8,13 @@ public class Move {
     public int row;
     public int wordStart;
     public boolean vertical;
-    int wordScore;
     int moveScore;
     String usedFromRack;
     String leftOnRack;
     ArrayList<String> words = new ArrayList<>();
     String AIString = "";
 
-    Move(String w, int r, int wordEnd, boolean trans, int wScore, String fromRack, Board board, String leftOnRack) {
+    Move(String w, int r, int wordEnd, boolean trans, String fromRack, Board board, String leftOnRack) {
         vertical = trans;
         word = w;
         row = r;
@@ -23,8 +22,7 @@ public class Move {
         wordStart = wordEnd - wordLen + 1;
         usedFromRack = fromRack;
         this.leftOnRack = leftOnRack;
-        wordScore = board == null ? wScore : getMoveScore(board);
-        moveScore = board == null ? 0 : getMoveScore(board);
+        moveScore = getMoveScore(board);
     }
 
     private int getMoveScore(Board board) {

@@ -17,14 +17,14 @@ public class MoveTest {
 
     @Test
     public void getMoveScore_gives_correct_score_for_first_move() {
-        Move firstMove = new Move("TRAN", 7, 9, true, 8, "TRAN", board, "KIM");
+        Move firstMove = new Move("TRAN", 7, 9, true, "TRAN", board, "KIM");
 
         assertThat(firstMove.moveScore).isEqualTo(8);
     }
 
     @Test
     public void getMoveScore_gives_no_score_for_blank_tile() {
-        Move firstMove = new Move("TrAN", 7, 9, true, 8, "T-AN", board, "KIM");
+        Move firstMove = new Move("TrAN", 7, 9, true, "T-AN", board, "KIM");
 
         assertThat(firstMove.moveScore).isEqualTo(6);
     }
@@ -39,7 +39,7 @@ public class MoveTest {
         board.charBoard[6][7] = 'N';
         board.charBoard[7][7] = 'G';
 
-        Move secondMove = new Move("JULEHELG", 3, 8, false, 89, "JULEHEG", board, "");
+        Move secondMove = new Move("JULEHELG", 3, 8, false, "JULEHEG", board, "");
 
         assertThat(secondMove.moveScore).isEqualTo(84);
     }
@@ -54,7 +54,7 @@ public class MoveTest {
         board.charBoard[6][7] = 'N';
         board.charBoard[7][7] = 'G';
 
-        Move secondMove = new Move("ECU", 8, 2, true, 99, "ECU", board, "KIMB");
+        Move secondMove = new Move("ECU", 8, 2, true, "ECU", board, "KIMB");
 
         assertThat(secondMove.moveScore).isEqualTo(42);
     }

@@ -40,7 +40,7 @@ public class ComputerAI {
     double cpuAIScore(Move posWord) {
         String casingCopy = posWord.word;
         posWord.word = posWord.word.toUpperCase();
-        double score = posWord.wordScore;
+        double score = posWord.moveScore;
 
         //hvis blank brukes - trekker fra 20p (straffes for max en)
         for (int i = 0; i < posWord.usedFromRack.length(); i++) {
@@ -173,7 +173,7 @@ public class ComputerAI {
 
         //gå ut om det gjør at cpu vinner (med mindre player ikke kan legge)
         if (bag.isEmpty() && posWord.leftOnRack.length() == 0 &&
-                (computerScore + posWord.wordScore) > playerScore &&
+                (computerScore + posWord.moveScore) > playerScore &&
                 pointlessTurns == 0) {
             score += 100;
             //stats

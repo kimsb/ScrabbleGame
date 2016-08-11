@@ -89,12 +89,12 @@ public class CPUThinker extends SwingWorker<Void, Void> {
             for (Map.Entry<Double, Move> entry : newPossibleWords.entrySet()) {
                 Move poss = entry.getValue();
                 if (count < 20) {
-                    System.out.println(entry.getKey() + " " + poss.word + " startsAt " + poss.wordStart + " vertical: " + poss.vertical + " bruker: " + poss.usedFromRack + " har igjen: " + poss.leftOnRack + " score: " + poss.wordScore + "  -> " + poss.AIString);
+                    System.out.println(entry.getKey() + " " + poss.word + " startsAt " + poss.wordStart + " vertical: " + poss.vertical + " bruker: " + poss.usedFromRack + " har igjen: " + poss.leftOnRack + " score: " + poss.moveScore + "  -> " + poss.AIString);
                     count++;
                 }
-                if (poss.wordScore > topSc || (poss.wordScore == topSc && entry.getKey() > topScKey)) {
+                if (poss.moveScore > topSc || (poss.moveScore == topSc && entry.getKey() > topScKey)) {
                     top = poss;
-                    topSc = poss.wordScore;
+                    topSc = poss.moveScore;
                     topScKey = entry.getKey();
                 }
             }
@@ -125,12 +125,12 @@ public class CPUThinker extends SwingWorker<Void, Void> {
                 if (top == topScoreWord) {
                     System.out.println("Velger TOPSCORE-word");
                 } else {
-                    System.out.println("TOPSCORE: " + topScKey + " " + top.word + " startsAt " + top.wordStart + " vertical: " + top.vertical + " bruker: " + top.usedFromRack + " har igjen: " + top.leftOnRack + " score: " + top.wordScore + "  -> " + top.AIString);
+                    System.out.println("TOPSCORE: " + topScKey + " " + top.word + " startsAt " + top.wordStart + " vertical: " + top.vertical + " bruker: " + top.usedFromRack + " har igjen: " + top.leftOnRack + " score: " + top.moveScore + "  -> " + top.AIString);
                 }
             }
 
             //TEST
-            System.out.print(newPossibleWords.firstEntry().getKey() + " (" + topScoreWord.wordScore + ") Velger " + topScoreWord.word + ": " + topScoreWord.AIString);
+            System.out.print(newPossibleWords.firstEntry().getKey() + " (" + topScoreWord.moveScore + ") Velger " + topScoreWord.word + ": " + topScoreWord.AIString);
             System.out.println(", row: " + topScoreWord.row + ", column: " + topScoreWord.wordStart);
             System.out.println("left: " + topScoreWord.leftOnRack);
             for (String s : topScoreWord.words) {
@@ -143,7 +143,7 @@ public class CPUThinker extends SwingWorker<Void, Void> {
             if (scrabbleGame.firstMove) {
                 //bytter hvis ordets score er negativ, eller gir mindre enn 10 poeng
                 //eller hvis cpu blir sittende igjen med minst tre bokstaver og alle er konsonanter
-                if (newPossibleWords.firstEntry().getKey() < 0 || topScoreWord.wordScore < 10 ||
+                if (newPossibleWords.firstEntry().getKey() < 0 || topScoreWord.moveScore < 10 ||
                         (topScoreWord.leftOnRack.length() >= 3 && !StringUtil.containsVowel(topScoreWord.leftOnRack)) ||
                         (topScoreWord.leftOnRack.length() >= 5 && StringUtil.vowelCount(topScoreWord.leftOnRack) == 1)) {
                     System.out.println("bytter ved på første trekk");
@@ -167,7 +167,7 @@ public class CPUThinker extends SwingWorker<Void, Void> {
             }
 
             scrabbleGame.cpuLastWord = topScoreWord;
-            int topScore = topScoreWord.wordScore;
+            int topScore = topScoreWord.moveScore;
 
             //legg brikker på brettet
             //TODO: Move burde ha være en bedre representasjon av et trekk -> "disse brikkene på disse feltene"

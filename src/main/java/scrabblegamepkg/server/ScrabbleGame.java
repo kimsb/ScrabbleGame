@@ -403,7 +403,7 @@ public class ScrabbleGame {
         }
 
         if (!tipsWords.isEmpty()) {
-            bestTipScore = tipsWords.firstEntry().getValue().wordScore;
+            bestTipScore = tipsWords.firstEntry().getValue().moveScore;
         }
         
         possibleBingos.clear();
@@ -434,7 +434,7 @@ public class ScrabbleGame {
 
             if (count < 5) {
                 if (!tipsGiven.contains(poss.word)) {
-                    tipsString += ("<br>" + poss.wordScore + ", " + poss.word);
+                    tipsString += ("<br>" + poss.moveScore + ", " + poss.word);
                     count++;
                     tipsGiven.add(poss.word);
                 }
@@ -523,11 +523,11 @@ public class ScrabbleGame {
             Move poss = tipsWords.firstEntry().getValue();
             if (score < bestTipScore) {
                 String message = "<html><body><u><b>Du kunne lagt:</u></b><br>";
-                message += (poss.wordScore + ", " + poss.word);
+                message += (poss.moveScore + ", " + poss.word);
                 JOptionPane.showMessageDialog(null, message);
             } else if (score > bestTipScore && !newWordAdded) {
                 String message = ("BUG - høyeste CPU fant var: " +
-                        poss.wordScore + ", " + poss.word);
+                        poss.moveScore + ", " + poss.word);
                 JOptionPane.showMessageDialog(null, message);
                 playerNotes += "!";
             }

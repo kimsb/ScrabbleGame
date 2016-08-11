@@ -67,16 +67,12 @@ public class MoveFinder {
         }
     }
 
-    //TODO: regne ut actual score
-    int fakeScore = 1;
-
     private void extendRight(Board board, char[][] charBoard, String rackString, String[][] crossChecks, String partialWord, MDAGNode n, int squareJ, String usedFromRack) {
         //if square is vacant
         if (squareJ == 15 || charBoard[currentAnchorI][squareJ] == '-') {
             //if N si a terminal node
             if (squareJ != currentAnchorJ && n.isAcceptNode()) {
                 Move newPos = new Move(partialWord, currentAnchorI, squareJ-1, transposed,
-                        fakeScore++,
                         usedFromRack, board, rackString);
 
                 allMoves.add(newPos);
