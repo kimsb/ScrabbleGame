@@ -4,6 +4,8 @@ import scrabblegamepkg.server.*;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 
 public class BoardPanel extends JPanel {
 
@@ -27,7 +29,7 @@ public class BoardPanel extends JPanel {
 
     public void placeMove(Move move) {
         for (int i = 0; i < move.word.length(); i++) {
-            Square square = move.vertical ? squareGrid[move.wordStart + i][move.row] : squareGrid[move.row][move.wordStart + i];
+            Square square = move.vertical ? squareGrid[move.startColumn + i][move.row] : squareGrid[move.row][move.startColumn + i];
 
             //hvis bokstaven ikke er på brettet
             if (square.tile == null) {
@@ -46,11 +48,41 @@ public class BoardPanel extends JPanel {
         }
     }
 
+    public ArrayList<Square> getSquaresWithMovableTiles() {
+        ArrayList<Square> squares = new ArrayList<>();
+        for (int i = 0; i < 15; i++) {
+            for (int j = 0; j < 15; j++) {
+                Square square = squareGrid[i][j];
+                if (square.tile != null && square.tile.isMovable) {
+                    squares.add(square);
+                }
+            }
+        }
+        return squares;
+    }
+
     public void cleanUp() {
         for (int i = 0; i < 15; i++) {
             for (int j = 0; j < 15; j++) {
                 squareGrid[i][j].setIcon(null);
                 squareGrid[i][j].tile = null;
+            }
+        }
+    }
+
+    public void lockTiles() {
+        for (int i = 0; i < 15; i++) {
+            for (int j = 0; j < 15; j++) {
+                Square square = squareGrid[i][j];
+                if (square.tile != null && square.tile.isMovable) {
+                    square.tile.isMovable = false;
+
+                    //TEST
+                    if (!square.onBoard) {
+                        System.out.println("Boardpanel - ikke onBoard, row: " + square.row + ", col: " + square.column + ", t: " + square.tile.letter);
+                    }
+
+                }
             }
         }
     }

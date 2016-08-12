@@ -7,21 +7,14 @@ public class Board {
     //TODO: burde bare være én grid, med en type Square-object som holder på char, multiplier
     char[][] charBoard = new char[15][15];
     char[][] charBoardBeforeLastMove = new char[15][15];
-    boolean[][] isAnchor = new boolean[15][15];
-    String[][] crossChecks = new String[15][15];
 
     Board() {
         for (int i = 0; i < 15; i++) {
             for (int j = 0; j < 15; j++) {
                 //fyller charBoard med '-'
                 charBoard[i][j] = '-';
-                //fyller crossChecks med alle bokstaver
-                crossChecks[i][j] = StringUtil.alphaString();
-                //"tømmer" isAnchor
-                isAnchor[i][j] = false;
             }
         }
-        isAnchor[7][7] = true;
     }
 
     void updateCharBoard(ArrayList<Square> addedToThisMove) {
@@ -51,14 +44,45 @@ public class Board {
     public void addToCharBoard(Move move) {
         for (int i = 0; i < move.word.length(); i++) {
             if (move.vertical) {
-                if (charBoard[move.wordStart + i][move.row] == '-') {
-                    charBoard[move.wordStart + i][move.row] = move.word.charAt(i);
+                if (charBoard[move.startColumn + i][move.row] == '-') {
+                    charBoard[move.startColumn + i][move.row] = move.word.charAt(i);
                 }
             } else {
-                if (charBoard[move.row][move.wordStart + i] == '-') {
-                    charBoard[move.row][move.wordStart + i] = move.word.charAt(i);
+                if (charBoard[move.row][move.startColumn + i] == '-') {
+                    charBoard[move.row][move.startColumn + i] = move.word.charAt(i);
                 }
             }
         }
+    }
+
+    public boolean[][] getAnchors(char[][] charBoard) {
+        boolean[][] isAnchor = new boolean[15][15];
+        int anchorCount = 0;
+
+        for (int i = 0; i < 15; i++) {
+            for (int j = 0; j < 15; j++) {
+                if (charBoard[i][j] == '-') {
+                    if (i != 0 && charBoard[i-1][j] != '-') {
+                        isAnchor[i][j] = true;
+                        anchorCount++;
+                    } else if (j != 0 && charBoard[i][j-1] != '-') {
+                        isAnchor[i][j] = true;
+                        anchorCount++;
+                    } else if (i != 14 && charBoard[i+1][j] != '-') {
+                        isAnchor[i][j] = true;
+                        anchorCount++;
+                    } else if (j != 14 && charBoard[i][j+1] != '-') {
+                        isAnchor[i][j] = true;
+                        anchorCount++;
+                    }
+                }
+            }
+        }
+
+        if (anchorCount == 0) {
+            isAnchor[7][7] = true;
+        }
+
+        return isAnchor;
     }
 }

@@ -9,7 +9,7 @@ public class Square extends javax.swing.JLabel {
     public int row;
     public int column;
     public Tile tile;
-    boolean onBoard;
+    public boolean onBoard;
     ScrabbleGame scrabbleGame;
 
     public Square(boolean onBoard, ScrabbleGame scrabbleGame, int row, int column) {
@@ -44,14 +44,6 @@ public class Square extends javax.swing.JLabel {
         }
     }
 
-    public int letterMultiplier() {
-        return BoardConstants.getLetterMultiplier(row, column);
-    }
-
-    public int wordMultiplier() {
-        return BoardConstants.getWordMultiplier(row, column);
-    }
-
     public ImageIcon createTileIcon() {
         ImageIcon imageIcon;
         imageIcon = new javax.swing.ImageIcon(getClass().getResource("/" + (tile.isBlank() ? '-' : tile.letter) + ".png"));
@@ -74,7 +66,7 @@ public class Square extends javax.swing.JLabel {
                     char blankLetter = blankString.charAt(0);
                     if (blankString.length() == 1 && Character.isLetter(blankLetter)) {
                         System.out.println("blanke er nå " + blankLetter);
-                        t.letter = blankLetter;
+                        t.letter = Character.toLowerCase(blankLetter);
                         hasValue = true;
                     } else {
                         JOptionPane.showMessageDialog(null, "Blanke kan bare være en bokstav");

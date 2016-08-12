@@ -55,13 +55,6 @@ public class Rack {
         return string;
     }
 
-    //Denne returnerer false også om racket har blank. usikker på ønsket oppførsel
-    public boolean contains(char letter) {
-        return tiles
-                .stream()
-                .anyMatch(tile -> tile.letter == letter);
-    }
-
     public int rackScore() {
         return tiles.stream().mapToInt(tile -> tile.value).sum();
     }

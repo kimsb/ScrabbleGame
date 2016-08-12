@@ -76,7 +76,7 @@ public class CPUThinker extends SwingWorker<Void, Void> {
             TreeMap<Double, Move> newPossibleWords = new TreeMap<>(Collections.reverseOrder());
 
             ComputerAI computerAI = new ComputerAI(scrabbleGame.rackStringCpy, scrabbleGame.bag, scrabbleGame.vowelRatioLeft,
-                    scrabbleGame.playerScore, scrabbleGame.computerScore, scrabbleGame.pointlessTurns, scrabbleGame.board.isAnchor, scrabbleGame.firstMove,
+                    scrabbleGame.playerScore, scrabbleGame.computerScore, scrabbleGame.pointlessTurns, scrabbleGame.board.getAnchors(scrabbleGame.board.charBoard), scrabbleGame.firstMove,
                     scrabbleGame.scrabbleGameFrame.boardPanel.squareGrid, scrabbleGame.board.charBoard, scrabbleGame.dictionary,
                     scrabbleGame.rackString, scrabbleGame.rack.tileCount());
 
@@ -89,7 +89,7 @@ public class CPUThinker extends SwingWorker<Void, Void> {
             for (Map.Entry<Double, Move> entry : newPossibleWords.entrySet()) {
                 Move poss = entry.getValue();
                 if (count < 20) {
-                    System.out.println(entry.getKey() + " " + poss.word + " startsAt " + poss.wordStart + " vertical: " + poss.vertical + " bruker: " + poss.usedFromRack + " har igjen: " + poss.leftOnRack + " score: " + poss.moveScore + "  -> " + poss.AIString);
+                    System.out.println(entry.getKey() + " " + poss.word + " startsAt " + poss.startColumn + " vertical: " + poss.vertical + " bruker: " + poss.usedFromRack + " har igjen: " + poss.leftOnRack + " score: " + poss.moveScore + "  -> " + poss.AIString);
                     count++;
                 }
                 if (poss.moveScore > topSc || (poss.moveScore == topSc && entry.getKey() > topScKey)) {
@@ -125,15 +125,15 @@ public class CPUThinker extends SwingWorker<Void, Void> {
                 if (top == topScoreWord) {
                     System.out.println("Velger TOPSCORE-word");
                 } else {
-                    System.out.println("TOPSCORE: " + topScKey + " " + top.word + " startsAt " + top.wordStart + " vertical: " + top.vertical + " bruker: " + top.usedFromRack + " har igjen: " + top.leftOnRack + " score: " + top.moveScore + "  -> " + top.AIString);
+                    System.out.println("TOPSCORE: " + topScKey + " " + top.word + " startsAt " + top.startColumn + " vertical: " + top.vertical + " bruker: " + top.usedFromRack + " har igjen: " + top.leftOnRack + " score: " + top.moveScore + "  -> " + top.AIString);
                 }
             }
 
             //TEST
             System.out.print(newPossibleWords.firstEntry().getKey() + " (" + topScoreWord.moveScore + ") Velger " + topScoreWord.word + ": " + topScoreWord.AIString);
-            System.out.println(", row: " + topScoreWord.row + ", column: " + topScoreWord.wordStart);
+            System.out.println(", row: " + topScoreWord.row + ", column: " + topScoreWord.startColumn);
             System.out.println("left: " + topScoreWord.leftOnRack);
-            for (String s : topScoreWord.words) {
+            for (String s : topScoreWord.getWords()) {
                 System.out.println("(" + s + ")");
             }
             //TEST SLUTT

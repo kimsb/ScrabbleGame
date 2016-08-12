@@ -24,13 +24,13 @@ public class MoveFinder {
 
         transposed = false;
         String[][] crossChecks = findCrossChecks(dictionary, board.charBoard);
-        findAcrossMoves(board, dictionary, board.charBoard, crossChecks, getAnchors(board.charBoard), rackString);
+        findAcrossMoves(board, dictionary, board.charBoard, crossChecks, board.getAnchors(board.charBoard), rackString);
 
         //down-moves
         transposed = true;
         char[][] transposedCharBoard = board.getTransposedCharBoard();
         String[][] transposedCrossChecks = findCrossChecks(dictionary, transposedCharBoard);
-        findAcrossMoves(board, dictionary, transposedCharBoard, transposedCrossChecks, getAnchors(transposedCharBoard), rackString);
+        findAcrossMoves(board, dictionary, transposedCharBoard, transposedCrossChecks, board.getAnchors(transposedCharBoard), rackString);
     }
 
     //TODO: bli kvitt disse globale
@@ -72,8 +72,8 @@ public class MoveFinder {
         if (squareJ == 15 || charBoard[currentAnchorI][squareJ] == '-') {
             //if N si a terminal node
             if (squareJ != currentAnchorJ && n.isAcceptNode()) {
-                Move newPos = new Move(partialWord, currentAnchorI, squareJ-1, transposed,
-                        usedFromRack, board, rackString);
+                Move newPos = new Move(currentAnchorI, (squareJ-partialWord.length()), transposed,
+                        usedFromRack, (transposed ? board.getTransposedCharBoard() : board.charBoard), rackString);
 
                 allMoves.add(newPos);
             }
@@ -110,7 +110,7 @@ public class MoveFinder {
                                 MDAGNode nNext = entry.getValue();
                                 //let next-square be the square to the right of square
                                 if (squareJ != 14) {
-                                    extendRight(board, charBoard, rackString, crossChecks, (partialWord + Character.toLowerCase(l)), nNext, squareJ+1, usedFromRack + '-');
+                                    extendRight(board, charBoard, rackString, crossChecks, (partialWord + Character.toLowerCase(l)), nNext, squareJ+1, usedFromRack + Character.toLowerCase(l));
                                 }
                                 //put the blank tile back in the rack
                                 rackString += '-';
@@ -159,7 +159,7 @@ public class MoveFinder {
                         //let N' be the node reached by following edge E
                         MDAGNode nNext = entry.getValue();
                         //leftPart(...)
-                        leftPart(board, charBoard, rackString, crossChecks, (partialWord + Character.toLowerCase(l)), nNext, limit-1, usedFromRack + '-');
+                        leftPart(board, charBoard, rackString, crossChecks, (partialWord + Character.toLowerCase(l)), nNext, limit-1, usedFromRack + Character.toLowerCase(l));
                         //put the blank tile back in the rack
                         rackString += '-';
                     }
@@ -167,37 +167,6 @@ public class MoveFinder {
 
             }
         }
-    }
-
-    private boolean[][] getAnchors(char[][] charBoard) {
-        boolean[][] isAnchor = new boolean[15][15];
-        int anchorCount = 0;
-
-        for (int i = 0; i < 15; i++) {
-            for (int j = 0; j < 15; j++) {
-                if (charBoard[i][j] == '-') {
-                    if (i != 0 && charBoard[i-1][j] != '-') {
-                        isAnchor[i][j] = true;
-                        anchorCount++;
-                    } else if (j != 0 && charBoard[i][j-1] != '-') {
-                        isAnchor[i][j] = true;
-                        anchorCount++;
-                    } else if (i != 14 && charBoard[i+1][j] != '-') {
-                        isAnchor[i][j] = true;
-                        anchorCount++;
-                    } else if (j != 14 && charBoard[i][j+1] != '-') {
-                        isAnchor[i][j] = true;
-                        anchorCount++;
-                    }
-                }
-            }
-        }
-
-        if (anchorCount == 0) {
-            isAnchor[7][7] = true;
-        }
-
-        return isAnchor;
     }
 
     //denne kan gjøres raskere, nå sjekker jeg alle felter

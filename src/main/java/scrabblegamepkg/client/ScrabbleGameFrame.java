@@ -211,7 +211,11 @@ public class ScrabbleGameFrame extends JFrame {
     }
 
     private void playButtonActionPerformed(ActionEvent evt) {
-        scrabbleGame.playAction();
+        try {
+            scrabbleGame.playAction();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private void challengeButtonActionPerformed(java.awt.event.ActionEvent evt) {

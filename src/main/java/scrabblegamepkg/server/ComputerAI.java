@@ -56,7 +56,8 @@ public class ComputerAI {
         double leftScore = 0;
         String leftOnRack = rackStringCpy;
         for (int i = 0; i < posWord.usedFromRack.length(); i++) {
-            int index = leftOnRack.indexOf(posWord.usedFromRack.charAt(i));
+            char c = posWord.usedFromRack.charAt(i);
+            int index = Character.isLowerCase(c) ? leftOnRack.indexOf('-') : leftOnRack.indexOf(c);
             leftOnRack = leftOnRack.substring(0,index) + leftOnRack.substring(index+1);
         }
         posWord.leftOnRack = leftOnRack;
@@ -190,7 +191,7 @@ public class ComputerAI {
 
         //bonus for bruk av toveis DL, TL, DW, TW
         int i = posWord.row;
-        for (int j = posWord.wordStart; j < posWord.wordStart + posWord.word.length(); j++) {
+        for (int j = posWord.startColumn; j < posWord.startColumn + posWord.word.length(); j++) {
             if (isAnchor[i][j] && !firstMove) {
                 if (BoardConstants.getLetterMultiplier(i, j) == 2) {
                     score += 2.5;
@@ -236,7 +237,7 @@ public class ComputerAI {
         double score = 0;
 
         //hvis starter på første rad
-        if (posWord.wordStart == 0) {
+        if (posWord.startColumn == 0) {
             boolean upperOpening = false;
             boolean upperMiddleOpening = false;
             boolean lowerMiddleOpening = false;
@@ -284,7 +285,7 @@ public class ComputerAI {
         }
 
         //hvis ender på siste rad
-        if (posWord.wordStart + posWord.word.length() == 15) {
+        if (posWord.startColumn + posWord.word.length() == 15) {
             boolean upperOpening = false;
             boolean upperMiddleOpening = false;
             boolean lowerMiddleOpening = false;
@@ -332,7 +333,7 @@ public class ComputerAI {
         }
 
         //for åpninger på venstre side
-        if (posWord.wordStart == 1) {
+        if (posWord.startColumn == 1) {
             int playerOpenings = 0;
             int cpuOpenings = 0;
             for (int i = 0; i < 29; i++) {
@@ -397,7 +398,7 @@ public class ComputerAI {
         }
 
         // for åpninger på høyre side
-        if (posWord.wordStart + posWord.word.length() == 14) {
+        if (posWord.startColumn + posWord.word.length() == 14) {
             int playerOpenings = 0;
             int cpuOpenings = 0;
             for (int i = 0; i < 29; i++) {
@@ -462,7 +463,7 @@ public class ComputerAI {
         }
 
         // for åpninger med ord foran midtlinja
-        if (posWord.wordStart + posWord.word.length() == 7) {
+        if (posWord.startColumn + posWord.word.length() == 7) {
             int playerOpenings = 0;
             int cpuOpenings = 0;
             for (int i = 0; i < 29; i++) {
@@ -510,7 +511,7 @@ public class ComputerAI {
             }
         }
         // for åpninger med ord bak midtlinja
-        if (posWord.wordStart == 8) {
+        if (posWord.startColumn == 8) {
             int playerOpenings = 0;
             int cpuOpenings = 0;
             for (int i = 0; i < 29; i++) {
@@ -559,15 +560,15 @@ public class ComputerAI {
 
         // hvis legges på rad 1 (og åpner for øverste rad)
         if (posWord.row == 1) {
-            if (posWord.wordStart >= 0 && posWord.wordStart <= 6) {
+            if (posWord.startColumn >= 0 && posWord.startColumn <= 6) {
                 boolean leftOpening = false;
                 boolean middleOpening = false;
                 //sjekker mot venstre
-                if (charBoard[0][posWord.wordStart] == '-' && charBoard[0][posWord.wordStart+1] == '-') {
+                if (charBoard[0][posWord.startColumn] == '-' && charBoard[0][posWord.startColumn+1] == '-') {
                     String vertSuffix = "" + posWord.word.charAt(1);
                     int k = 2;
-                    while (k < 15 && charBoard[k][posWord.wordStart] != '-') {
-                        vertSuffix += charBoard[k][posWord.wordStart];
+                    while (k < 15 && charBoard[k][posWord.startColumn] != '-') {
+                        vertSuffix += charBoard[k][posWord.startColumn];
                         k++;
                     }
                     boolean hasPrefix = false;
@@ -580,16 +581,16 @@ public class ComputerAI {
                     }
                     if (hasPrefix) {
                         leftOpening = true;
-                        for (int j = 0; j < posWord.wordStart; j++) {
+                        for (int j = 0; j < posWord.startColumn; j++) {
                             if (charBoard[0][j] != '-') {
                                 leftOpening = false;
                             }
                         }
                     }
                 }
-                if (posWord.wordStart + posWord.word.length() <= 7) {
+                if (posWord.startColumn + posWord.word.length() <= 7) {
                     //sjekker mot midten
-                    int wordStop = posWord.wordStart + posWord.word.length() - 1;
+                    int wordStop = posWord.startColumn + posWord.word.length() - 1;
                     if (charBoard[0][wordStop] == '-' && charBoard[0][wordStop+1] == '-') {
                         String vertSuffix = "" + posWord.word.charAt(posWord.word.length()-1);
                         int k = 2;
@@ -621,15 +622,15 @@ public class ComputerAI {
                 }
             }
             //sjekker mot midten og mot høyre
-            if ((posWord.wordStart + posWord.word.length()) >= 9 && (posWord.wordStart + posWord.word.length()) <= 15) {
+            if ((posWord.startColumn + posWord.word.length()) >= 9 && (posWord.startColumn + posWord.word.length()) <= 15) {
                 boolean middleOpening = false;
                 boolean rightOpening = false;
                 //sjekker mot midten
-                if (charBoard[0][posWord.wordStart] == '-' && charBoard[0][posWord.wordStart-1] == '-') {
+                if (charBoard[0][posWord.startColumn] == '-' && charBoard[0][posWord.startColumn-1] == '-') {
                     String vertSuffix = "" + posWord.word.charAt(1);
                     int k = 2;
-                    while (k < 15 && charBoard[k][posWord.wordStart] != '-') {
-                        vertSuffix += charBoard[k][posWord.wordStart];
+                    while (k < 15 && charBoard[k][posWord.startColumn] != '-') {
+                        vertSuffix += charBoard[k][posWord.startColumn];
                         k++;
                     }
                     boolean hasPrefix = false;
@@ -642,7 +643,7 @@ public class ComputerAI {
                     }
                     if (hasPrefix) {
                         middleOpening = true;
-                        for (int j = 7; j < posWord.wordStart; j++) {
+                        for (int j = 7; j < posWord.startColumn; j++) {
                             if (charBoard[0][j] != '-') {
                                 middleOpening = false;
                             }
@@ -650,7 +651,7 @@ public class ComputerAI {
                     }
                 }
                 //sjekker mot høyre
-                int wordStop = posWord.wordStart + posWord.word.length() - 1;
+                int wordStop = posWord.startColumn + posWord.word.length() - 1;
                 if (charBoard[0][wordStop] == '-' &&  charBoard[0][wordStop-1] == '-') {
                     String vertSuffix = "" + posWord.word.charAt(posWord.word.length()-1);
                     int k = 2;
@@ -684,20 +685,20 @@ public class ComputerAI {
 
         // hvis legges på rad 8 (og åpner for midterste rad)
         if (posWord.row == 8) {
-            if (posWord.wordStart >= 0 && posWord.wordStart < 7) {
+            if (posWord.startColumn >= 0 && posWord.startColumn < 7) {
                 boolean leftOpening = false;
                 //sjekker mot venstre
-                if (charBoard[7][posWord.wordStart] == '-' && charBoard[7][posWord.wordStart+1] == '-') {
+                if (charBoard[7][posWord.startColumn] == '-' && charBoard[7][posWord.startColumn+1] == '-') {
                     String vertSuffix = "" + posWord.word.charAt(1);
                     int k = 9;
-                    while (k < 15 && charBoard[k][posWord.wordStart] != '-') {
-                        vertSuffix += charBoard[k][posWord.wordStart];
+                    while (k < 15 && charBoard[k][posWord.startColumn] != '-') {
+                        vertSuffix += charBoard[k][posWord.startColumn];
                         k++;
                     }
                     String vertPrefix = "";
                     k = 6;
-                    while (k >= 0 && charBoard[k][posWord.wordStart] != '-') {
-                        vertPrefix = charBoard[k][posWord.wordStart] + vertPrefix;
+                    while (k >= 0 && charBoard[k][posWord.startColumn] != '-') {
+                        vertPrefix = charBoard[k][posWord.startColumn] + vertPrefix;
                         k--;
                     }
                     boolean hasWord = false;
@@ -710,7 +711,7 @@ public class ComputerAI {
                     }
                     if (hasWord) {
                         leftOpening = true;
-                        for (int j = 0; j < posWord.wordStart; j++) {
+                        for (int j = 0; j < posWord.startColumn; j++) {
                             if (charBoard[7][j] != '-') {
                                 leftOpening = false;
                             }
@@ -723,10 +724,10 @@ public class ComputerAI {
                 }
             }
             //sjekker mot høyre
-            if ((posWord.wordStart + posWord.word.length()) >= 9 && (posWord.wordStart + posWord.word.length()) <= 14) {
+            if ((posWord.startColumn + posWord.word.length()) >= 9 && (posWord.startColumn + posWord.word.length()) <= 14) {
                 boolean rightOpening = false;
                 //sjekker mot høyre
-                int wordStop = posWord.wordStart + posWord.word.length() - 1;
+                int wordStop = posWord.startColumn + posWord.word.length() - 1;
                 if (charBoard[7][wordStop] == '-' && charBoard[7][wordStop-1] == '-') {
                     String vertSuffix = "" + posWord.word.charAt(posWord.word.length()-1);
                     int k = 9;
@@ -766,20 +767,20 @@ public class ComputerAI {
         }
         // hvis legges på rad 6 (og åpner for midterste rad)
         if (posWord.row == 6) {
-            if (posWord.wordStart >= 1 && posWord.wordStart < 7) {
+            if (posWord.startColumn >= 1 && posWord.startColumn < 7) {
                 boolean leftOpening = false;
                 //sjekker mot venstre
-                if (charBoard[7][posWord.wordStart] == '-' && charBoard[7][posWord.wordStart+1] == '-') {
+                if (charBoard[7][posWord.startColumn] == '-' && charBoard[7][posWord.startColumn+1] == '-') {
                     String vertSuffix = "";
                     int k = 8;
-                    while (k < 15 && charBoard[k][posWord.wordStart] != '-') {
-                        vertSuffix += charBoard[k][posWord.wordStart];
+                    while (k < 15 && charBoard[k][posWord.startColumn] != '-') {
+                        vertSuffix += charBoard[k][posWord.startColumn];
                         k++;
                     }
                     String vertPrefix = "" + posWord.word.charAt(1);
                     k = 5;
-                    while (k >= 0 && charBoard[k][posWord.wordStart] != '-') {
-                        vertPrefix = charBoard[k][posWord.wordStart] + vertPrefix;
+                    while (k >= 0 && charBoard[k][posWord.startColumn] != '-') {
+                        vertPrefix = charBoard[k][posWord.startColumn] + vertPrefix;
                         k--;
                     }
                     boolean hasWord = false;
@@ -792,7 +793,7 @@ public class ComputerAI {
                     }
                     if (hasWord) {
                         leftOpening = true;
-                        for (int j = 0; j < posWord.wordStart; j++) {
+                        for (int j = 0; j < posWord.startColumn; j++) {
                             if (charBoard[7][j] != '-') {
                                 leftOpening = false;
                             }
@@ -805,10 +806,10 @@ public class ComputerAI {
                 }
             }
             //sjekker mot høyre
-            if ((posWord.wordStart + posWord.word.length()) >= 9 && (posWord.wordStart + posWord.word.length()) <= 14) {
+            if ((posWord.startColumn + posWord.word.length()) >= 9 && (posWord.startColumn + posWord.word.length()) <= 14) {
                 boolean rightOpening = false;
                 //sjekker mot høyre
-                int wordStop = posWord.wordStart + posWord.word.length() - 1;
+                int wordStop = posWord.startColumn + posWord.word.length() - 1;
                 if (charBoard[7][wordStop] == '-' && charBoard[7][wordStop-1] == '-') {
                     String vertSuffix = "";
                     int k = 8;
@@ -847,15 +848,15 @@ public class ComputerAI {
         }
         // hvis legges på rad 13 (og åpner for nederst rad)
         if (posWord.row == 13) {
-            if (posWord.wordStart >= 0 && posWord.wordStart < 7) {
+            if (posWord.startColumn >= 0 && posWord.startColumn < 7) {
                 boolean leftOpening = false;
                 boolean middleOpening = false;
                 //sjekker mot venstre
-                if (charBoard[14][posWord.wordStart] == '-' && charBoard[14][posWord.wordStart+1] == '-') {
+                if (charBoard[14][posWord.startColumn] == '-' && charBoard[14][posWord.startColumn+1] == '-') {
                     String vertPrefix = "" + posWord.word.charAt(1);
                     int k = 12;
-                    while (k >= 0 && charBoard[k][posWord.wordStart] != '-') {
-                        vertPrefix = charBoard[k][posWord.wordStart] + vertPrefix;
+                    while (k >= 0 && charBoard[k][posWord.startColumn] != '-') {
+                        vertPrefix = charBoard[k][posWord.startColumn] + vertPrefix;
                         k--;
                     }
                     boolean hasSuffix = false;
@@ -868,7 +869,7 @@ public class ComputerAI {
                     }
                     if (hasSuffix) {
                         leftOpening = true;
-                        for (int j = 0; j < posWord.wordStart; j++) {
+                        for (int j = 0; j < posWord.startColumn; j++) {
                             if (charBoard[14][j] != '-') {
                                 leftOpening = false;
                             }
@@ -876,8 +877,8 @@ public class ComputerAI {
                     }
                 }
                 //sjekker mot midten
-                if  (posWord.wordStart + posWord.word.length() <= 7) {
-                    int wordStop = posWord.wordStart + posWord.word.length() - 1;
+                if  (posWord.startColumn + posWord.word.length() <= 7) {
+                    int wordStop = posWord.startColumn + posWord.word.length() - 1;
                     if (charBoard[14][wordStop] == '-' && charBoard[14][wordStop-1] == '-') {
                         String vertPrefix = "" + posWord.word.charAt(posWord.word.length()-1);
                         int k = 12;
@@ -909,15 +910,15 @@ public class ComputerAI {
                 }
             }
             //sjekker mot midten og mot høyre
-            if ((posWord.wordStart + posWord.word.length()) >= 9 && (posWord.wordStart + posWord.word.length()) <= 15) {
+            if ((posWord.startColumn + posWord.word.length()) >= 9 && (posWord.startColumn + posWord.word.length()) <= 15) {
                 boolean middleOpening = false;
                 boolean rightOpening = false;
                 //sjekker mot midten
-                if (charBoard[14][posWord.wordStart] == '-' && charBoard[14][posWord.wordStart+1] == '-') {
+                if (charBoard[14][posWord.startColumn] == '-' && charBoard[14][posWord.startColumn+1] == '-') {
                     String vertPrefix = "" + posWord.word.charAt(1);
                     int k = 12;
-                    while (k >= 0 && charBoard[k][posWord.wordStart] != '-') {
-                        vertPrefix = charBoard[k][posWord.wordStart] + vertPrefix;
+                    while (k >= 0 && charBoard[k][posWord.startColumn] != '-') {
+                        vertPrefix = charBoard[k][posWord.startColumn] + vertPrefix;
                         k--;
                     }
                     boolean hasSuffix = false;
@@ -930,7 +931,7 @@ public class ComputerAI {
                     }
                     if (hasSuffix) {
                         middleOpening = true;
-                        for (int j = 7; j < posWord.wordStart; j++) {
+                        for (int j = 7; j < posWord.startColumn; j++) {
                             if (charBoard[14][j] != '-') {
                                 middleOpening = false;
                             }
@@ -938,7 +939,7 @@ public class ComputerAI {
                     }
                 }
                 //sjekker mot høyre
-                int wordStop = posWord.wordStart + posWord.word.length() - 1;
+                int wordStop = posWord.startColumn + posWord.word.length() - 1;
                 if (charBoard[14][wordStop] == '-' && charBoard[14][wordStop-1] == '-') {
                     String vertPrefix = "" + posWord.word.charAt(posWord.word.length()-1);
                     int k = 12;
@@ -972,16 +973,16 @@ public class ComputerAI {
 
         //sjekker om åpner for midtTW og dobbel
         //oppe
-        if (posWord.row == 2 && posWord.wordStart <= 7 &&
-                posWord.wordStart + posWord.word.length() >= 8) {
+        if (posWord.row == 2 && posWord.startColumn <= 7 &&
+                posWord.startColumn + posWord.word.length() >= 8) {
             if (charBoard[0][6] == '-' && charBoard[0][7] == '-' && charBoard[0][8] == '-' &&
                     charBoard[1][7] == '-' && charBoard[3][7] == '-' && charBoard[4][7] == '-') {
                 score -= 15;
                 posWord.AIString += "-15 for åpning av øverste TW og dobbel, ";
             }
         }
-        if (posWord.row == 4 && posWord.wordStart <= 7 &&
-                posWord.wordStart + posWord.word.length() >= 8) {
+        if (posWord.row == 4 && posWord.startColumn <= 7 &&
+                posWord.startColumn + posWord.word.length() >= 8) {
             if (charBoard[0][6] == '-' && charBoard[0][7] == '-' && charBoard[0][8] == '-' &&
                     charBoard[1][7] == '-' && charBoard[2][7] == '-' && charBoard[3][7] == '-' && charBoard[5][7] == '-') {
                 score -= 15;
@@ -989,16 +990,16 @@ public class ComputerAI {
             }
         }
         //nede
-        if (posWord.row == 12 && posWord.wordStart <= 7 &&
-                posWord.wordStart + posWord.word.length() >= 8) {
+        if (posWord.row == 12 && posWord.startColumn <= 7 &&
+                posWord.startColumn + posWord.word.length() >= 8) {
             if (charBoard[14][6] == '-' && charBoard[14][7] == '-' && charBoard[14][8] == '-' &&
                     charBoard[10][7] == '-' && charBoard[11][7] == '-' && charBoard[13][7] == '-') {
                 score -= 15;
                 posWord.AIString += "-15 for åpning av nederste TW og dobbel, ";
             }
         }
-        if (posWord.row == 10 && posWord.wordStart <= 7 &&
-                posWord.wordStart + posWord.word.length() >= 8) {
+        if (posWord.row == 10 && posWord.startColumn <= 7 &&
+                posWord.startColumn + posWord.word.length() >= 8) {
             if (charBoard[14][6] == '-' && charBoard[14][7] == '-' && charBoard[14][8] == '-' &&
                     charBoard[9][7] == '-' && charBoard[11][7] == '-' && charBoard[12][7] == '-' && charBoard[13][7] == '-') {
                 score -= 15;
@@ -1008,18 +1009,18 @@ public class ComputerAI {
 
         //sjekker om legger gjennom DW*DW
         //trekker 10p bare hvis bokstaven som åpner er bingofriendly
-        if (posWord.wordStart <= 4 && posWord.wordStart + posWord.word.length() >= 5 &&
+        if (posWord.startColumn <= 4 && posWord.startColumn + posWord.word.length() >= 5 &&
                 posWord.row >= 5 && posWord.row <= 9) {
             if (charBoard[4][4] == '-' && charBoard[5][4] == '-' && charBoard[6][4] == '-' &&
                     charBoard[7][4] == '-' && charBoard[8][4] == '-' && charBoard[9][4] == '-' &&
                     charBoard[10][4] == '-') {
-                if (StringUtil.isBingoFriendlyChar(posWord.word.charAt(4 - posWord.wordStart))) {
+                if (StringUtil.isBingoFriendlyChar(posWord.word.charAt(4 - posWord.startColumn))) {
                     score -= 10;
                     posWord.AIString += "-10 for åpning av DW * DW, ";
                 }
             }
         }
-        if (posWord.wordStart == 5 && posWord.row >= 5 && posWord.row <= 9) {
+        if (posWord.startColumn == 5 && posWord.row >= 5 && posWord.row <= 9) {
             if (charBoard[4][4] == '-' && charBoard[5][4] == '-' && charBoard[6][4] == '-' &&
                     charBoard[7][4] == '-' && charBoard[8][4] == '-' && charBoard[9][4] == '-' &&
                     charBoard[10][4] == '-') {
@@ -1045,18 +1046,18 @@ public class ComputerAI {
                 }
             }
         }
-        if (posWord.wordStart <= 10 && posWord.wordStart + posWord.word.length() >= 11 &&
+        if (posWord.startColumn <= 10 && posWord.startColumn + posWord.word.length() >= 11 &&
                 posWord.row >= 5 && posWord.row <= 9) {
             if (charBoard[4][10] == '-' && charBoard[5][10] == '-' && charBoard[6][10] == '-' &&
                     charBoard[7][10] == '-' && charBoard[8][10] == '-' && charBoard[9][10] == '-' &&
                     charBoard[10][10] == '-') {
-                if (StringUtil.isBingoFriendlyChar(posWord.word.charAt(10 - posWord.wordStart))) {
+                if (StringUtil.isBingoFriendlyChar(posWord.word.charAt(10 - posWord.startColumn))) {
                     score -= 10;
                     posWord.AIString += "-10 for åpning av DW * DW, ";
                 }
             }
         }
-        if (posWord.wordStart + posWord.word.length() == 10 && posWord.row >= 5 && posWord.row <= 9) {
+        if (posWord.startColumn + posWord.word.length() == 10 && posWord.row >= 5 && posWord.row <= 9) {
             if (charBoard[4][10] == '-' && charBoard[5][10] == '-' && charBoard[6][10] == '-' &&
                     charBoard[7][10] == '-' && charBoard[8][10] == '-' && charBoard[9][10] == '-' &&
                     charBoard[10][10] == '-') {
@@ -1088,24 +1089,24 @@ public class ComputerAI {
     double toWayMultiplierSetUpPenalty(Move posWord) {
         double score = 0;
         //foran nye ord
-        if (posWord.wordStart != 0 && (BoardConstants.getLetterMultiplier(posWord.row, posWord.wordStart-1) != 1
-        || BoardConstants.getWordMultiplier(posWord.row, posWord.wordStart-1) != 1)) {
+        if (posWord.startColumn != 0 && (BoardConstants.getLetterMultiplier(posWord.row, posWord.startColumn-1) != 1
+        || BoardConstants.getWordMultiplier(posWord.row, posWord.startColumn-1) != 1)) {
             String horPrefix = "";
             int k = 0;
-            while (posWord.wordStart - 2 - k >= 0 && charBoard[posWord.row][posWord.wordStart - 2 - k] != '-') {
-                horPrefix = charBoard[posWord.row][posWord.wordStart - 2 - k] + horPrefix;
+            while (posWord.startColumn - 2 - k >= 0 && charBoard[posWord.row][posWord.startColumn - 2 - k] != '-') {
+                horPrefix = charBoard[posWord.row][posWord.startColumn - 2 - k] + horPrefix;
                 k++;
             }
             String vertPrefix = "";
             String vertSuffix = "";
             k = posWord.row - 1;
-            while (k >= 0 && charBoard[k][posWord.wordStart - 1] != '-') {
-                vertPrefix = charBoard[k][posWord.wordStart - 1] + vertPrefix;
+            while (k >= 0 && charBoard[k][posWord.startColumn - 1] != '-') {
+                vertPrefix = charBoard[k][posWord.startColumn - 1] + vertPrefix;
                 k--;
             }
             k = posWord.row + 1;
-            while (k < 15 && charBoard[k][posWord.wordStart - 1] != '-') {
-                vertSuffix += charBoard[k][posWord.wordStart - 1];
+            while (k < 15 && charBoard[k][posWord.startColumn - 1] != '-') {
+                vertSuffix += charBoard[k][posWord.startColumn - 1];
                 k++;
             }
             double openingScore = 0;
@@ -1122,7 +1123,7 @@ public class ComputerAI {
                 }
             }
             if (openingScore > 0) {
-                double addedScore = multiplierPenalty(posWord.row, posWord.wordStart, openingScore);
+                double addedScore = multiplierPenalty(posWord.row, posWord.startColumn, openingScore);
                 if (addedScore > 0) {
                     posWord.AIString += "-" + addedScore + " for åpning foran, ";
                     score -= addedScore;
@@ -1131,24 +1132,24 @@ public class ComputerAI {
 
         }
         //bak nye ord
-        if (posWord.wordStart+posWord.word.length() != 15 && (BoardConstants.getLetterMultiplier(posWord.row, posWord.wordStart+posWord.word.length()) != 1 ||
-                                                                BoardConstants.getWordMultiplier(posWord.row, posWord.wordStart+posWord.word.length()) != 1)) {
+        if (posWord.startColumn+posWord.word.length() != 15 && (BoardConstants.getLetterMultiplier(posWord.row, posWord.startColumn+posWord.word.length()) != 1 ||
+                                                                BoardConstants.getWordMultiplier(posWord.row, posWord.startColumn+posWord.word.length()) != 1)) {
             String horSuffix = "";
             int k = 0;
-            while (posWord.wordStart+posWord.word.length() + 2 + k <= 14 && charBoard[posWord.row][posWord.wordStart+posWord.word.length() + 2 + k] != '-') {
-                horSuffix += charBoard[posWord.row][posWord.wordStart+posWord.word.length() + 2 + k];
+            while (posWord.startColumn+posWord.word.length() + 2 + k <= 14 && charBoard[posWord.row][posWord.startColumn+posWord.word.length() + 2 + k] != '-') {
+                horSuffix += charBoard[posWord.row][posWord.startColumn+posWord.word.length() + 2 + k];
                 k++;
             }
             String vertPrefix = "";
             String vertSuffix = "";
             k = posWord.row - 1;
-            while (k >= 0 && charBoard[k][posWord.wordStart+posWord.word.length()] != '-') {
-                vertPrefix = charBoard[k][posWord.wordStart+posWord.word.length()] + vertPrefix;
+            while (k >= 0 && charBoard[k][posWord.startColumn+posWord.word.length()] != '-') {
+                vertPrefix = charBoard[k][posWord.startColumn+posWord.word.length()] + vertPrefix;
                 k--;
             }
             k = posWord.row + 1;
-            while (k < 15 && charBoard[k][posWord.wordStart+posWord.word.length()] != '-') {
-                vertSuffix += charBoard[k][posWord.wordStart+posWord.word.length()];
+            while (k < 15 && charBoard[k][posWord.startColumn+posWord.word.length()] != '-') {
+                vertSuffix += charBoard[k][posWord.startColumn+posWord.word.length()];
                 k++;
             }
             double openingScore = 0;
@@ -1164,7 +1165,7 @@ public class ComputerAI {
                 }
             }
             if (openingScore > 0) {
-                double addedScore = multiplierPenalty(posWord.row, posWord.wordStart+posWord.word.length(), openingScore);
+                double addedScore = multiplierPenalty(posWord.row, posWord.startColumn+posWord.word.length(), openingScore);
                 if (addedScore > 0) {
                     posWord.AIString += "-" + addedScore + " for åpning bak, ";
                     score -= addedScore;
@@ -1173,10 +1174,10 @@ public class ComputerAI {
 
         }
         //over hver nye bokstav
-        for (int j = posWord.wordStart; j < posWord.wordStart + posWord.word.length(); j++) {
+        for (int j = posWord.startColumn; j < posWord.startColumn + posWord.word.length(); j++) {
             if (charBoard[posWord.row][j] == '-' ) {
                 int l = 1;
-                String vertSuffix = "" + posWord.word.charAt(j - posWord.wordStart);
+                String vertSuffix = "" + posWord.word.charAt(j - posWord.startColumn);
                 while (posWord.row - l > 0 && charBoard[posWord.row-l][j] != '-') {
                     vertSuffix = charBoard[posWord.row-l][j] + vertSuffix;
                     l++;
@@ -1221,8 +1222,8 @@ public class ComputerAI {
                         }
                     }
                     if (openingScore > 0) {
-                        if (rackStringCpy.indexOf(posWord.word.charAt(j - posWord.wordStart)) != -1) {
-                            double letterScore = (double) ScoreConstants.letterScore(posWord.word.charAt(j - posWord.wordStart)) / 2;
+                        if (rackStringCpy.indexOf(posWord.word.charAt(j - posWord.startColumn)) != -1) {
+                            double letterScore = (double) ScoreConstants.letterScore(posWord.word.charAt(j - posWord.startColumn)) / 2;
                             score -= letterScore;
                             posWord.AIString += "-" + letterScore + " for bokstaven som åpner, ";
                         }
@@ -1239,10 +1240,10 @@ public class ComputerAI {
         }
 
         //under hver nye bokstav
-        for (int j = posWord.wordStart; j < posWord.wordStart + posWord.word.length(); j++) {
+        for (int j = posWord.startColumn; j < posWord.startColumn + posWord.word.length(); j++) {
             if (charBoard[posWord.row][j] == '-') {
                 int l = 1;
-                String vertPrefix = "" + posWord.word.charAt(j - posWord.wordStart);
+                String vertPrefix = "" + posWord.word.charAt(j - posWord.startColumn);
                 while (posWord.row + l < 14 && charBoard[posWord.row+l][j] != '-') {
                     vertPrefix += charBoard[posWord.row+l][j];
                     l++;
@@ -1285,8 +1286,8 @@ public class ComputerAI {
                         }
                     }
                     if (openingScore > 0) {
-                        if (rackStringCpy.indexOf(posWord.word.charAt(j - posWord.wordStart)) != -1) {
-                            double letterScore = (double) ScoreConstants.letterScore(posWord.word.charAt(j - posWord.wordStart)) / 2;
+                        if (rackStringCpy.indexOf(posWord.word.charAt(j - posWord.startColumn)) != -1) {
+                            double letterScore = (double) ScoreConstants.letterScore(posWord.word.charAt(j - posWord.startColumn)) / 2;
                             score -= letterScore;
                             posWord.AIString += "-" + letterScore + " for bokstaven som åpner, ";
                         }

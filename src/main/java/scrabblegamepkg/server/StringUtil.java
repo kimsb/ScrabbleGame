@@ -7,6 +7,9 @@ public class StringUtil {
     }
 
     static String removeChar(String s, char c) {
+        if (Character.isLowerCase(c)) {
+            c = '-';
+        }
         int index = s.indexOf(c);
         if (index == -1) {
             return s;
