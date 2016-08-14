@@ -23,9 +23,7 @@ public class Square extends javax.swing.JLabel {
         setOpaque(true);
         addMouseListener(new MouseAdapter() {
             public void mousePressed(MouseEvent e) {
-                if (!scrabbleGame.computersTurn) {
                     squareClicked();
-                }
             }
         });
     }
@@ -54,7 +52,7 @@ public class Square extends javax.swing.JLabel {
 
     public boolean placeTile(Tile t) {
         if (onBoard) {
-            if (!scrabbleGame.computersTurn && t.isBlank()) {
+            if (!scrabbleGame.game.computersTurn && t.isBlank()) {
                 //brikken er blank å må få verdi
                 boolean hasValue = false;
                 while (!hasValue) {
@@ -74,7 +72,7 @@ public class Square extends javax.swing.JLabel {
                 }
             }
             scrabbleGame.newlyAddedToBoard.add(this);
-            if (scrabbleGame.computersTurn) {
+            if (scrabbleGame.game.computersTurn) {
                 scrabbleGame.addedToThisMove.add(this);
             }
         }

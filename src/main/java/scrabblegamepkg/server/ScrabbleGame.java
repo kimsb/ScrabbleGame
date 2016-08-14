@@ -35,8 +35,6 @@ public class ScrabbleGame {
     }
 
     public void playAction() throws Exception {
-        System.out.println("Player kaller play med " + rack.toString() + " på racket.");
-
         Move move = getMoveFromBoard();
         if (checkWords(move)) {
             updatePlayerScore(move.moveScore);
@@ -70,23 +68,21 @@ public class ScrabbleGame {
 
             updateRemaining(move.usedFromRack);
 
-            rack.removeTiles(scrabbleGameFrame.boardPanel.getSquaresWithMovableTiles().stream().map(square -> square.tile).collect(Collectors.toCollection(ArrayList::new)));
+            game.getPlayer().getRack().removeTiles(scrabbleGameFrame.boardPanel.getSquaresWithMovableTiles().stream().map(square -> square.tile).collect(Collectors.toCollection(ArrayList::new)));
             //trekke nye brikker
-            rack.addTiles(bag.pickTiles(move.usedFromRack.length()));
-            System.out.println("Playerrack etter å ha plukket brikker: " + rack.toString());
+            game.getPlayer().getRack().addTiles(game.getBag().pickTiles(move.usedFromRack.length()));
 
             //TODO: generell programflyt -> rendering skal ikke styres fra server, men fra returverdier til klienten (gjelder flere steder)
-            scrabbleGameFrame.renderRack(rack);
+            scrabbleGameFrame.renderRack(game.getPlayer().getRack());
 
             //brikker har blitt lagt, oppdaterer charBoard
 
-            board.addToCharBoard(move);
+            game.getBoard().addToCharBoard(move);
             scrabbleGameFrame.boardPanel.lockTiles();
 
-            if (rack.isEmpty()) {
+            if (game.getPlayer().getRack().isEmpty()) {
                 finishGame();
             } else {
-                computersTurn = true;
                 computerMove();
             }
         } else {
@@ -96,18 +92,17 @@ public class ScrabbleGame {
                 scrabbleGameFrame.rackPanel.putBack(scrabbleGameFrame.boardPanel.getSquaresWithMovableTiles());
                 updatePlayerNotes("(ikke godkjent)", 0);
 
-                computersTurn = true;
                 computerMove();
             }
         }
 
-        for (Tile tile : rack.getTiles()) {
+        for (Tile tile : game.getPlayer().getRack().getTiles()) {
             if (!tile.isMovable) {
                 throw new Exception("Rack: not movable: " + tile.letter);
             }
         }
 
-        scrabbleGameFrame.bagCountLabel.setText("Brikker igjen i posen: " + bag.tileCount());
+        scrabbleGameFrame.bagCountLabel.setText("Brikker igjen i posen: " + game.getBag().tileCount());
     }
 
     private boolean checkWords(Move move) {
@@ -125,7 +120,7 @@ public class ScrabbleGame {
     private Move getMoveFromBoard() throws Exception {
         //TODO: dette bør være representert annerledes senere, fra klient til server
         ArrayList<Square> squares = scrabbleGameFrame.boardPanel.getSquaresWithMovableTiles();
-        boolean hasAnchor = squares.stream().filter(square -> board.getAnchors(board.charBoard)[square.row][square.column]).count() > 0;
+        boolean hasAnchor = squares.stream().filter(square -> game.getBoard().getAnchors(game.getBoard().charBoard)[square.row][square.column]).count() > 0;
 
         long rowCount = squares.stream().map(square -> square.row).distinct().count();
         long columnCount = squares.stream().map(square -> square.column).distinct().count();
@@ -145,12 +140,12 @@ public class ScrabbleGame {
         int row = transposed ? firstSquare.column : firstSquare.row;
         int startColumn = transposed ? firstSquare.row : firstSquare.column;
         String lettersUsed = "";
-        String remainingTiles = rack.toString();
+        String remainingTiles = game.getPlayer().getRack().toString();
         for (Square square : squares) {
             lettersUsed += square.tile.letter;
             remainingTiles = StringUtil.removeChar(remainingTiles, square.tile.letter);
         }
-        return new Move(row, startColumn, transposed, lettersUsed, (transposed ? board.getTransposedCharBoard() : board.charBoard), remainingTiles);
+        return new Move(row, startColumn, transposed, lettersUsed, (transposed ? game.getBoard().getTransposedCharBoard() : game.getBoard().charBoard), remainingTiles);
     }
 
     private class PlayerNameCreator extends SwingWorker<Void, Void> {
@@ -250,6 +245,7 @@ public class ScrabbleGame {
 
 
     void computerMove() {
+        game.computersTurn = true;
         JScrollBar verticalScrollBar = scrabbleGameFrame.firstPlayerScrollPane.getVerticalScrollBar();
         verticalScrollBar.setValue(verticalScrollBar.getMaximum());
         verticalScrollBar = scrabbleGameFrame.secondPlayerScrollPane.getVerticalScrollBar();
@@ -258,6 +254,10 @@ public class ScrabbleGame {
     }
 
     public void challengeAction() {
+
+        System.out.println("challenge funker ikke nå - bruk Turns når dette er implementert");
+
+        /*
         boolean wordRemoved = false;
         for (String s : cpuLastWord.getWords()) {
             Object[] options = {"Ja", "Nei"};
@@ -293,22 +293,22 @@ public class ScrabbleGame {
 
             //legger tilbake i posen
             for (int i = 0; i < cpuNewlyPicked.length(); i++) {
-                bag.add(new Tile(cpuNewlyPicked.charAt(i)));
+                game.getBag().add(new Tile(cpuNewlyPicked.charAt(i)));
             }
             //omgjør rack til forrige rack
-            rackString = previousRackString;
+            rackString =    previousRackString;
             //fjerner fra brett og oppdaterer charBoard
             for (int i = 0; i < 15; i++) {
                 for (int j = 0; j < 15; j++) {
-                    if (board.charBoardBeforeLastMove[i][j] != board.charBoard[i][j]) {
-                        board.charBoard[i][j] = board.charBoardBeforeLastMove[i][j];
+                    if (game.getBoard().charBoardBeforeLastMove[i][j] != game.getBoard().charBoard[i][j]) {
+                        game.getBoard().charBoard[i][j] = game.getBoard().charBoardBeforeLastMove[i][j];
                         scrabbleGameFrame.boardPanel.squareGrid[i][j].tile = null;
                         scrabbleGameFrame.boardPanel.squareGrid[i][j].setIcon(null);
                     }
                 }
             }
             //fjerner fra computerScore
-            computerScore -= previousCPUMoveScore;
+            game.getComputer().removeScore(previousCPUMoveScore);
             //oppdaterer gjenværende brikker
             tilesLeft = previousTilesLeft;
             scrabbleGameFrame.remainingLabel.setText(tilesLeft);
@@ -316,26 +316,16 @@ public class ScrabbleGame {
             cpuNotes = previousCPUNotes;
             JLabel noteLabel = scrabbleGameFrame.firstPlayerLabel;
             JScrollPane scrollPane = scrabbleGameFrame.firstPlayerScrollPane;
-            if (playerIsFirst) {
+            if (game.playerIsFirst) {
                 noteLabel = scrabbleGameFrame.secondPlayerLabel;
                 scrollPane = scrabbleGameFrame.secondPlayerScrollPane;
             }
-            noteLabel.setText("<html><body>" + cpuNotes + "<b>" + computerScore + "</b></body></html>");
+            noteLabel.setText("<html><body>" + cpuNotes + "<b>" + game.getComputer().getScore() + "</b></body></html>");
             JScrollBar verticalScrollBar = scrollPane.getVerticalScrollBar();
             verticalScrollBar.setValue(verticalScrollBar.getMaximum());
-            computersTurn = true;
-            firstMove = true;
-            for (int i = 0; i < 15; i++) {
-                for (int j = 0; j < 15; j++) {
-                    if (board.charBoard[i][j] != '-') {
-                        firstMove = false;
-                        break;
-                    }
-                }
-            }
             computerMove();
         }
-
+        */
     }
 
     public void swapAction() {
@@ -351,24 +341,23 @@ public class ScrabbleGame {
             }
         }
         if (!toSwap.isEmpty()) {
-            if (bag.tileCount() < 7) {
+            if (game.getBag().tileCount() < 7) {
                 JOptionPane.showMessageDialog(null, "Det er ikke nok brikker i posen");
             } else {
                 int size = toSwap.size();
                 System.out.println("Bytter " + size + " brikker");
 
                 ArrayList<Tile> tilesToSwap = toSwap.stream().map(square -> square.tile).collect(Collectors.toCollection(ArrayList::new));
-                ArrayList<Tile> newTiles = bag.pickTiles(toSwap.size());
-                tilesToSwap.forEach(tile -> bag.add(tile));
+                ArrayList<Tile> newTiles = game.getBag().pickTiles(toSwap.size());
+                tilesToSwap.forEach(tile -> game.getBag().add(tile));
 
-                rack.removeTiles(tilesToSwap);
-                rack.addTiles(newTiles);
+                game.getPlayer().getRack().removeTiles(tilesToSwap);
+                game.getPlayer().getRack().addTiles(newTiles);
 
                 toSwap.forEach(Square::cleanUp);
-                scrabbleGameFrame.rackPanel.renderRack(rack);
+                scrabbleGameFrame.rackPanel.renderRack(game.getPlayer().getRack());
 
                 updatePlayerNotes("(bytte)", 0);
-                computersTurn = true;
                 computerMove();
             }
         }
@@ -391,13 +380,13 @@ public class ScrabbleGame {
 
     //TODO: denne må ut i tipscalculator
     void calculateTips() {
-        String playerRack = rack.toString();
+        String playerRack = game.getPlayer().getRack().toString();
         bestTipScore = 0;
         tipsWords.clear();
 
         //bruker nye metoden for å finne ord
         MoveFinder moveFinder = new MoveFinder();
-        ArrayList<Move> allMoves = moveFinder.findAllMoves(dictionary, board, playerRack);
+        ArrayList<Move> allMoves = moveFinder.findAllMoves(dictionary, game.getBoard(), playerRack);
 
         for (int i = 0; i < allMoves.size(); i++) {
             tipsWords.put(allMoves.get(i).moveScore + (i * 0.0000001), allMoves.get(i));
@@ -445,24 +434,21 @@ public class ScrabbleGame {
         JOptionPane.showMessageDialog(null, tipsString);
     }
 
-    public void pass() {
+    //TODO: fjerne computer-boolean, men nå har jeg i hvert fall fjernet global variabel
+    public void pass(boolean computersTurn) {
         if (computersTurn) {
-            computersTurn = false;
             updateCPUNotes("(pass)", 0);
             addedToThisMove.clear();
-            newWordsAdded.clear();
         } else {
             System.out.println("kommer hit - pass 1");
             //legger evt brikker tilbake på racken
 
             scrabbleGameFrame.rackPanel.putBack(newlyAddedToBoard);
-            rack.alphabetize();
+            game.getPlayer().getRack().alphabetize();
 
             updatePlayerNotes("(pass)", 0);
             //fjerner fra listen over nylig lagt til brikker
             addedToThisMove.clear();
-            newWordsAdded.clear();
-            computersTurn = true;
             computerMove();
             playerPassed = true;
         }
@@ -500,7 +486,7 @@ public class ScrabbleGame {
 
     void updatePlayerNotes(String word, int score) {
         JLabel noteLabel = scrabbleGameFrame.firstPlayerLabel;
-        if (!playerIsFirst) {
+        if (!game.playerIsFirst) {
             noteLabel = scrabbleGameFrame.secondPlayerLabel;
         }
         playerNotes += word + " ";
@@ -522,25 +508,13 @@ public class ScrabbleGame {
             }
         }
         playerNotes += "<br>";
-        noteLabel.setText("<html><body>" + playerNotes + "<b>" + playerScore + "</b></body></html>");
-        if (score == 0) {
-            if (++pointlessTurns == 6) {
-                JOptionPane.showMessageDialog(null, "<html><body>Det har gått 6 runder uten poeng,<br>kampen avsluttes</body></html>");
-                finishGame();
-            }
-        } else {
-            pointlessTurns = 0;
-            if (firstMove) {
-                firstMove = false;
-                scrabbleGameFrame.challengeButton.setEnabled(true);
-            }
-        }
+        noteLabel.setText("<html><body>" + playerNotes + "<b>" + game.getPlayer().getScore() + "</b></body></html>");
     }
 
     void updateCPUNotes(String word, int score) {
         previousCPUNotes = cpuNotes;
         JLabel noteLabel = scrabbleGameFrame.firstPlayerLabel;
-        if (playerIsFirst) {
+        if (game.playerIsFirst) {
             noteLabel = scrabbleGameFrame.secondPlayerLabel;
         }
         cpuNotes += word + " ";
@@ -548,24 +522,11 @@ public class ScrabbleGame {
             cpuNotes += score;
         }
         cpuNotes += "<br>";
-        noteLabel.setText("<html><body>" + cpuNotes + "<b>" + computerScore + "</b></body></html>");
-
-        if (score == 0) {
-            if (++pointlessTurns == 6) {
-                JOptionPane.showMessageDialog(null, "<html><body>Det har gått 6 runder uten poeng,<br>kampen avsluttes</body></html>");
-                finishGame();
-            }
-        } else {
-            pointlessTurns = 0;
-            if (firstMove) {
-                firstMove = false;
-                scrabbleGameFrame.challengeButton.setEnabled(true);
-            }
-        }
+        noteLabel.setText("<html><body>" + cpuNotes + "<b>" + game.getComputer().getScore() + "</b></body></html>");
     }
 
     void updatePlayerScore(int moveScore) {
-        playerScore += moveScore;
+        game.getPlayer().addScore(moveScore);
     }
 
     void updateRemaining(String toRemoveString) {
@@ -590,7 +551,7 @@ public class ScrabbleGame {
             if (rackString.charAt(i) != '-') {
                 letterScore = ScoreConstants.letterScore(rackString.charAt(i));
             }
-            computerScore -= letterScore;
+            game.getComputer().removeScore(letterScore);
             cpuMinus -= letterScore;
             cpuTiles += rackString.charAt(i);
             System.out.println("Trekker fra CPU " + letterScore + " poeng for '" + rackString.charAt(i) + "'");
@@ -600,28 +561,28 @@ public class ScrabbleGame {
         }
 
         //trekker fra score for players rack
-        int playerRackScore = rack.rackScore();
-        String playerTiles = rack.toString();
+        int playerRackScore = game.getPlayer().getRack().rackScore();
+        String playerTiles = game.getPlayer().getRack().toString();
 
         if (playerRackScore > 0) {
-            playerScore -= playerRackScore;
+            game.getPlayer().removeScore(playerRackScore);
             updatePlayerNotes("(" + playerTiles + ")", -playerRackScore);
         }
 
         //legger til score til den andre spilleren
         if (cpuTiles.compareTo("") == 0) {
-            computerScore += Math.abs(playerRackScore);
+            game.getComputer().addScore(Math.abs(playerRackScore));
             updateCPUNotes("(" + playerTiles + ")", Math.abs(playerRackScore));
         }
         if (playerTiles.compareTo("") == 0) {
-            playerScore += Math.abs(cpuMinus);
+            game.getPlayer().addScore(Math.abs(cpuMinus));
             updatePlayerNotes("(" + cpuTiles + ")", Math.abs(cpuMinus));
         }
 
         //if CPU wins
-        if (computerScore > playerScore) {
+        if (game.getComputer().getScore() > game.getPlayer().getScore()) {
             JOptionPane.showMessageDialog(null, "CPU vant!");
-        } else if (computerScore == playerScore) { //draw
+        } else if (game.getComputer().getScore() == game.getPlayer().getScore()) { //draw
             JOptionPane.showMessageDialog(null, "Kampen endte uavgjort");
         } else { //player won
             JOptionPane.showMessageDialog(null, "DU VANT!");
@@ -646,14 +607,7 @@ public class ScrabbleGame {
     }
 
     void initGame() {
-        board = new Board();
         scrabbleGameFrame.boardPanel.cleanUp();
-
-        rackString = "";
-        rackStringCpy = "";
-
-        playerScore = 0;
-        computerScore = 0;
 
         //for å skrive ut gjenværende brikker        
         tilesLeft = "<html><body>AAAAAAA EEEEEEEEE<br>" +
@@ -669,55 +623,33 @@ public class ScrabbleGame {
 
         newlyAddedToBoard.clear();
         addedToThisMove.clear();
-        newWordsAdded.clear();
-
-        bag = new Bag();
 
 
-        //hvis computer starter
-        if (new Random().nextInt(2) == 0) {
+        Bag bag = new Bag();
 
-            //TEST
-            System.out.println("cpu Starter");
-            computersTurn = true;
-            for (int i = 0; i < 7; i++) {
-                Tile t = bag.pickTile();
-                rackString += t.letter;
-            }
-            rack = new Rack(bag.pickTiles(7));
-        } else { //hvis pl1 starter
-            computersTurn = false;
-            rack = new Rack(bag.pickTiles(7));
-            for (int i = 0; i < 7; i++) {
-                Tile t = bag.pickTile();
-                rackString += t.letter;
-            }
-        }
+        game = new Game(new Board(), bag, playerName, this);
 
-        scrabbleGameFrame.rackPanel.renderRack(rack);
+        scrabbleGameFrame.rackPanel.renderRack(game.getPlayer().getRack());
 
         scrabbleGameFrame.tilesLeftTitleLabel.setText("<html><body><b><u>Gjenværende brikker:</u></b></body></html>");
-        firstMove = true;
         scrabbleGameFrame.bagCountLabel.setText("Brikker igjen i posen: " + bag.tileCount());
-        playerIsFirst = !computersTurn;
         playerNotes = "<b><u>" + playerName + ":</u></b><br>";
         cpuNotes = "<u><b>CPU:</b></u><br>";
         updatePlayerNotes("", 0);
         updateCPUNotes("", 0);
-        if (computersTurn) {
+
+        if (game.computersTurn) {
             computerMove();
-        } else {
-            new TipsCalculator(this).execute();
         }
-        pointlessTurns = 0;
     }
 
     // My variables
 
     ScrabbleGameFrame scrabbleGameFrame;
     MDAG dictionary;
-    Bag bag = new Bag();
     ArrayList<Square> newlyAddedToBoard = new ArrayList<>();
+
+    Game game;
 
     NewGame newGame;
     DictionaryCreator dictionaryCreator;
@@ -725,28 +657,21 @@ public class ScrabbleGame {
 
 
     ArrayList<Square> addedToThisMove = new ArrayList<>();
-    ArrayList<Square[]> newWordsAdded = new ArrayList<>();
 
-    Board board;
-    Rack rack;
     Square selectedSquare;
-    boolean firstMove = true;
-    int playerScore, computerScore;
     int previousCPUMoveScore;   // int previousCPUMoveScore;
-    boolean computersTurn;
 
-    boolean playerIsFirst;
     boolean playerPassed;
     String playerNotes;
     String cpuNotes;
     String previousCPUNotes;
     String tilesLeft;
     String previousTilesLeft;
-    int pointlessTurns;
     double vowelRatioLeft;
     boolean dictionaryIsCreated = false;
     boolean nameGiven = false;
     int bestTipScore;
+    //TODO: fjerne all bruk av disse, heller bruke game.getComputer().getRack().toString();
     String rackString = "";
     String previousRackString;
     String cpuNewlyPicked;

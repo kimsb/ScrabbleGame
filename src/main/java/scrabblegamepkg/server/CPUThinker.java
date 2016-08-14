@@ -38,24 +38,26 @@ public class CPUThinker extends SwingWorker<Void, Void> {
         verticalScrollBar.setValue(verticalScrollBar.getMaximum());
         verticalScrollBar = scrabbleGame.scrabbleGameFrame.secondPlayerScrollPane.getVerticalScrollBar();
         verticalScrollBar.setValue(verticalScrollBar.getMaximum());
-
+        scrabbleGame.game.computersTurn = false;
     }
 
     void computerAI() {
 
         try {
-            System.out.println("STARET COMPUTERAI()");
+            System.out.println("STARTET COMPUTERAI()");
+
+            Game game = scrabbleGame.game;
 
             //calculating vowelRatio in bag + players rack
-            double vowelsLeft = scrabbleGame.bag.vowelCount() + StringUtil.vowelCount(scrabbleGame.rack.toString());
-            int lettersLeft = scrabbleGame.bag.tileCount() + scrabbleGame.rack.tileCount();
+            double vowelsLeft = game.getBag().vowelCount() + StringUtil.vowelCount(game.getPlayer().getRack().toString());
+            int lettersLeft = game.getBag().tileCount() + game.getPlayer().getRack().tileCount();
 
             scrabbleGame.vowelRatioLeft = vowelsLeft / lettersLeft;
 
             scrabbleGame.previousRackString = scrabbleGame.rackString;
             System.out.println("ComputerAI starts.. cpuRack: " + scrabbleGame.rackString);
             scrabbleGame.newlyAddedToBoard.clear();
-            if (!scrabbleGame.computersTurn) {
+            if (!game.computersTurn) {
                 System.out.println("ikke cpus tur");
                 return;
             } else if (scrabbleGame.rackString.length() == 0) {
@@ -71,14 +73,14 @@ public class CPUThinker extends SwingWorker<Void, Void> {
 
             //bruker nye metoden for å finne ord
             MoveFinder moveFinder = new MoveFinder();
-            ArrayList<Move> allMoves = moveFinder.findAllMoves(scrabbleGame.dictionary, scrabbleGame.board, scrabbleGame.rackString);
+            ArrayList<Move> allMoves = moveFinder.findAllMoves(scrabbleGame.dictionary, game.getBoard(), scrabbleGame.rackString);
 
             TreeMap<Double, Move> newPossibleWords = new TreeMap<>(Collections.reverseOrder());
 
-            ComputerAI computerAI = new ComputerAI(scrabbleGame.rackStringCpy, scrabbleGame.bag, scrabbleGame.vowelRatioLeft,
-                    scrabbleGame.playerScore, scrabbleGame.computerScore, scrabbleGame.pointlessTurns, scrabbleGame.board.getAnchors(scrabbleGame.board.charBoard), scrabbleGame.firstMove,
-                    scrabbleGame.scrabbleGameFrame.boardPanel.squareGrid, scrabbleGame.board.charBoard, scrabbleGame.dictionary,
-                    scrabbleGame.rackString, scrabbleGame.rack.tileCount());
+            ComputerAI computerAI = new ComputerAI(scrabbleGame.rackStringCpy, game.getBag(), scrabbleGame.vowelRatioLeft,
+                    game.getPlayer().getScore(), game.getComputer().getScore(), game.pointlessTurns, game.getBoard().getAnchors(game.getBoard().charBoard), game.isFirstMove(),
+                    scrabbleGame.scrabbleGameFrame.boardPanel.squareGrid, game.getBoard().charBoard, scrabbleGame.dictionary,
+                    scrabbleGame.rackString, game.getPlayer().getRack().tileCount());
 
             allMoves.forEach(potentialMove -> newPossibleWords.put(computerAI.cpuAIScore(potentialMove), potentialMove));
 
@@ -103,17 +105,15 @@ public class CPUThinker extends SwingWorker<Void, Void> {
             if (newPossibleWords.isEmpty()) {
                 System.out.println("CPU kan ikke legge");
                 scrabbleGame.addedToThisMove.clear();
-                scrabbleGame.newWordsAdded.clear();
 
                 //MÅ BYTTE OM MULIG
-                if (scrabbleGame.bag.tileCount() >= 7) {
+                if (game.getBag().tileCount() >= 7) {
                     //bytter alle
                     computerSwap(scrabbleGame.rackString);
                 } else {
                     JOptionPane.showMessageDialog(null, "CPU passer");
-                    scrabbleGame.pass();
+                    scrabbleGame.pass(true);
                 }
-                scrabbleGame.computersTurn = false;
                 return;
             }
 
@@ -140,7 +140,7 @@ public class CPUThinker extends SwingWorker<Void, Void> {
 
             //hvis beste legg ikke er noe godt legg => bytte brikker
             //har lavere terskel for å bytte om det er første trekk
-            if (scrabbleGame.firstMove) {
+            if (game.isFirstMove()) {
                 //bytter hvis ordets score er negativ, eller gir mindre enn 10 poeng
                 //eller hvis cpu blir sittende igjen med minst tre bokstaver og alle er konsonanter
                 if (newPossibleWords.firstEntry().getKey() < 0 || topScoreWord.moveScore < 10 ||
@@ -148,20 +148,16 @@ public class CPUThinker extends SwingWorker<Void, Void> {
                         (topScoreWord.leftOnRack.length() >= 5 && StringUtil.vowelCount(topScoreWord.leftOnRack) == 1)) {
                     System.out.println("bytter ved på første trekk");
                     cpuMakeSwap();
-                    scrabbleGame.computersTurn = false;
                     scrabbleGame.addedToThisMove.clear();
-                    scrabbleGame.newWordsAdded.clear();
                     return;
                 }
                 //hvis det ikker er første legg
             } else {
                 //kriterier for å bytte: negativ score eller kun konsonanter
-                if (scrabbleGame.bag.tileCount() >= 7 && newPossibleWords.firstEntry().getKey() < 0) {
+                if (game.getBag().tileCount() >= 7 && newPossibleWords.firstEntry().getKey() < 0) {
                     System.out.println("bytter pga for dårlig bestelegg");
                     cpuMakeSwap();
-                    scrabbleGame.computersTurn = false;
                     scrabbleGame.addedToThisMove.clear();
-                    scrabbleGame.newWordsAdded.clear();
                     return;
                 }
             }
@@ -173,7 +169,7 @@ public class CPUThinker extends SwingWorker<Void, Void> {
             //TODO: Move burde ha være en bedre representasjon av et trekk -> "disse brikkene på disse feltene"
             scrabbleGame.scrabbleGameFrame.boardPanel.placeMove(topScoreWord);
             removeFromCPURack(topScoreWord);
-            scrabbleGame.board.addToCharBoard(topScoreWord);
+            game.getBoard().addToCharBoard(topScoreWord);
 
             updateComputerScore(topScore);
             if (scrabbleGame.addedToThisMove.size() == 7) {
@@ -184,23 +180,21 @@ public class CPUThinker extends SwingWorker<Void, Void> {
             scrabbleGame.updateRemaining(topScoreWord.usedFromRack);
 
             scrabbleGame.addedToThisMove.clear();
-            scrabbleGame.newWordsAdded.clear();
 
             //trekke nye brikker
             scrabbleGame.cpuNewlyPicked = "";
-            while (scrabbleGame.rackString.length() != 7 && !scrabbleGame.bag.isEmpty()) {
-                Tile t = scrabbleGame.bag.pickTile();
+            while (scrabbleGame.rackString.length() != 7 && !game.getBag().isEmpty()) {
+                Tile t = game.getBag().pickTile();
                 scrabbleGame.rackString += t.letter;
                 scrabbleGame.cpuNewlyPicked += t.letter;
             }
-            scrabbleGame.computersTurn = false;
             //hvis CPU går ut
             if (scrabbleGame.rackString.length() == 0) {
                 System.out.println("kaller finishGame fra CPU");
                 scrabbleGame.finishGame();
             }
             scrabbleGame.newlyAddedToBoard.clear();
-            scrabbleGame.scrabbleGameFrame.bagCountLabel.setText("Brikker igjen i posen: " + scrabbleGame.bag.tileCount());
+            scrabbleGame.scrabbleGameFrame.bagCountLabel.setText("Brikker igjen i posen: " + game.getBag().tileCount());
             scrabbleGame.playerPassed = false;
 
             System.out.println("AVSLUTTER COMPUTERAI()");
@@ -217,7 +211,7 @@ public class CPUThinker extends SwingWorker<Void, Void> {
     }
 
     private void sjekkAtBoardErOK() {
-        char[][] charBoard = scrabbleGame.board.charBoard;
+        char[][] charBoard = scrabbleGame.game.getBoard().charBoard;
         Square[][] squareGrid = scrabbleGame.scrabbleGameFrame.boardPanel.squareGrid;
 
         for (int i = 0; i < 15; i++) {
@@ -289,12 +283,12 @@ public class CPUThinker extends SwingWorker<Void, Void> {
     void computerSwap(String toSwap) {
         JOptionPane.showMessageDialog(null, "CPU bytter " + toSwap.length() + " brikker");
         System.out.println("CPU kaller swap med " + toSwap + ", rackString er " + scrabbleGame.rackString + "<-slutt");
-        if (scrabbleGame.bag.tileCount() < 7) {
+        if (scrabbleGame.game.getBag().tileCount() < 7) {
             System.out.println("CPU prøver å bytte med for lite i posen");
         } else {
             //trekker brikker
             for (int i = 0; i < toSwap.length(); i++) {
-                Tile t = scrabbleGame.bag.pickTile();
+                Tile t = scrabbleGame.game.getBag().pickTile();
                 scrabbleGame.rackString += t.letter;
             }
             System.out.println("etter å ha trukket opp: " + scrabbleGame.rackString);
@@ -302,7 +296,7 @@ public class CPUThinker extends SwingWorker<Void, Void> {
             for (int i = 0; i < toSwap.length(); i++) {
                 char c = toSwap.charAt(i);
                 scrabbleGame.rackString = scrabbleGame.rackString.substring(0,scrabbleGame.rackString.indexOf(c)) + scrabbleGame.rackString.substring(scrabbleGame.rackString.indexOf(c)+1);
-                scrabbleGame.bag.add(new Tile(c));
+                scrabbleGame.game.getBag().add(new Tile(c));
             }
             System.out.println("etter å ha lagt tilbake: " + scrabbleGame.rackString);
         }
@@ -310,7 +304,7 @@ public class CPUThinker extends SwingWorker<Void, Void> {
     }
 
     void updateComputerScore(int moveScore) {
-        scrabbleGame.computerScore += moveScore;
+        scrabbleGame.game.getComputer().addScore(moveScore);
         scrabbleGame.previousCPUMoveScore = moveScore;
     }
 }

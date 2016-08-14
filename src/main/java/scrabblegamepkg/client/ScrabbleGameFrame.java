@@ -227,7 +227,7 @@ public class ScrabbleGameFrame extends JFrame {
     }
 
     private void passButtonActionPerformed(java.awt.event.ActionEvent evt) {
-        scrabbleGame.pass();
+        scrabbleGame.pass(false);
     }
 
     private void tipsButtonActionPerformed(java.awt.event.ActionEvent evt) {
