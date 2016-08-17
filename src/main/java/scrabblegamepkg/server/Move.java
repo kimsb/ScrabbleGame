@@ -56,6 +56,13 @@ public class Move {
             k++;
         }
 
+        //TODO: dette burde løses (skjer dersom kun én brikke legges, og bare danner ord nedover...)
+        if (word.length() == 1) {
+            word = words.get(0);
+            words.clear();
+            horizontalScore = 0;
+        }
+
         return sum + (horizontalScore * horizontalMultiplier) + (isBingo() ? 50 : 0);
     }
 

@@ -74,6 +74,23 @@ public class MoveTest {
         assertThat(secondMove.moveScore).isEqualTo(13);
     }
 
+    @Test
+    public void getMoveScore_doesnt_add_one_letter_words() {
+        board.charBoard[7][6] = 'B';
+        board.charBoard[7][7] = 'A';
+        board.charBoard[8][5] = 'L';
+        board.charBoard[8][8] = 'Ø';
+        board.charBoard[8][7] = 'P';
+
+        Move move = new Move(6, 7, false, "T", board.charBoard, "KIMBOW");
+        Move verticalMove = new Move(7, 6, true, "T", board.getTransposedCharBoard(), "KIMBOW");
+
+        assertThat(move.word).isNotEqualTo("T");
+        assertThat(verticalMove.word).isNotEqualTo("T");
+
+        assertThat(move.moveScore).isEqualTo(verticalMove.moveScore);
+    }
+
     private char[][] getEmptyCharBoard() {
         char[][] charBoard = new char[15][15];
 
