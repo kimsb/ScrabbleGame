@@ -4,6 +4,11 @@ import java.util.ArrayList;
 
 public class Move {
 
+    //Dette liker jeg ikke... men om legget er vertikalt, så er 'row' raden på det transposa brettet...
+    //Tilsvarende med column.
+    //TODO: representere row og column kun riktig vei
+    //addedTiles kommer til å representere det faktiske brettet -> row er alltid rad på brettet riktig vei.
+
     public String word = "";
     public int row;
     public int startColumn;
@@ -13,6 +18,7 @@ public class Move {
     String leftOnRack;
     private ArrayList<String> words = new ArrayList<>();
     String AIString = "";
+    ArrayList<Tile> addedTiles = new ArrayList<>();
 
     Move(int r, int startColumn, boolean trans, String fromRack, char[][] charBoard, String leftOnRack) {
         vertical = trans;
@@ -37,6 +43,7 @@ public class Move {
             char letter = charBoard[i][j+k];
             if (letter == '-') {
                 letter = usedFromRack.charAt(letterFromRack++);
+                addedTiles.add(new Tile(letter, vertical ? j+k : i, vertical ? i : j+k));
                 int letterScore = ScoreConstants.letterScore(letter) * BoardConstants.getLetterMultiplier(i, j+k);
                 horizontalScore += letterScore;
                 int wordMultiplier = BoardConstants.getWordMultiplier(i, j+k);

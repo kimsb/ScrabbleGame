@@ -59,6 +59,21 @@ public class MoveTest {
         assertThat(secondMove.moveScore).isEqualTo(42);
     }
 
+    @Test
+    public void getMoveScore_gives_correct_score_for_adding_to_word() {
+        board.charBoard[1][7] = 'P';
+        board.charBoard[2][7] = 'A';
+        board.charBoard[3][7] = 'L';
+        board.charBoard[4][7] = 'M';
+        board.charBoard[5][7] = 'I';
+        board.charBoard[6][7] = 'N';
+        board.charBoard[7][7] = 'G';
+
+        Move secondMove = new Move(7, 1, true, "A", board.getTransposedCharBoard(), "KIMBOW");
+
+        assertThat(secondMove.moveScore).isEqualTo(13);
+    }
+
     private char[][] getEmptyCharBoard() {
         char[][] charBoard = new char[15][15];
 

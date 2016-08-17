@@ -4,11 +4,20 @@ public class Tile implements Comparable<Tile>{
 
     public char letter;
     int value;
+    //TODO: isMovable er en GUI-ting og burde ikke være her
     public boolean isMovable = true;
 
-    public Tile(char l) {
-        letter = l;
-        value = ScoreConstants.letterScore(l);
+    int row, column;
+
+    public Tile(char letter) {
+        this(letter, -1, -1);
+    }
+
+    public Tile(char letter, int row, int column) {
+        this.letter = letter;
+        this.row = row;
+        this.column = column;
+        value = ScoreConstants.letterScore(letter);
     }
 
     public boolean isBlank() {
