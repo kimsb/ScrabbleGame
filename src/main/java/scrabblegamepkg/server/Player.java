@@ -1,10 +1,13 @@
 package scrabblegamepkg.server;
 
+import java.util.ArrayList;
+
 public class Player {
 
     private final String name;
     private Rack rack;
     private int score;
+    private ArrayList<Turn> turns;
 
     public Player(String name, Rack rack) {
         this.name = name;
@@ -29,5 +32,13 @@ public class Player {
 
     public Rack getRack() {
         return rack;
+    }
+
+    public void addTurn(Turn turn) {
+        turns.add(turn);
+    }
+
+    public ArrayList<Turn> getTurns() {
+        return turns;
     }
 }

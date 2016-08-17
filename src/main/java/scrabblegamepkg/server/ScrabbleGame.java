@@ -80,6 +80,8 @@ public class ScrabbleGame {
             game.getBoard().addToCharBoard(move);
             scrabbleGameFrame.boardPanel.lockTiles();
 
+            game.getPlayer().addTurn(new Turn(Action.MOVE, move));
+
             if (game.getPlayer().getRack().isEmpty()) {
                 finishGame();
             } else {
@@ -89,6 +91,7 @@ public class ScrabbleGame {
             //turen avsluttes
             if (retryIfWordIsNotValid) {
             } else {
+                game.getPlayer().addTurn(new Turn(Action.DISALLOWED));
                 scrabbleGameFrame.rackPanel.putBack(scrabbleGameFrame.boardPanel.getSquaresWithMovableTiles());
                 updatePlayerNotes("(ikke godkjent)", 0);
 
@@ -357,6 +360,7 @@ public class ScrabbleGame {
                 toSwap.forEach(Square::cleanUp);
                 scrabbleGameFrame.rackPanel.renderRack(game.getPlayer().getRack());
 
+                game.getPlayer().addTurn(new Turn(Action.SWAP));
                 updatePlayerNotes("(bytte)", 0);
                 computerMove();
             }
@@ -440,12 +444,11 @@ public class ScrabbleGame {
             updateCPUNotes("(pass)", 0);
             addedToThisMove.clear();
         } else {
-            System.out.println("kommer hit - pass 1");
             //legger evt brikker tilbake på racken
-
             scrabbleGameFrame.rackPanel.putBack(newlyAddedToBoard);
             game.getPlayer().getRack().alphabetize();
 
+            game.getPlayer().addTurn(new Turn(Action.PASS));
             updatePlayerNotes("(pass)", 0);
             //fjerner fra listen over nylig lagt til brikker
             addedToThisMove.clear();
