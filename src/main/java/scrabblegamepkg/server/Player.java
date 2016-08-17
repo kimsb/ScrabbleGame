@@ -7,7 +7,7 @@ public class Player {
     private final String name;
     private Rack rack;
     private int score;
-    private ArrayList<Turn> turns;
+    private ArrayList<Turn> turns = new ArrayList<>();
 
     public Player(String name, Rack rack) {
         this.name = name;

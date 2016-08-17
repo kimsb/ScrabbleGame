@@ -38,10 +38,7 @@ public class ScrabbleGame {
         Move move = getMoveFromBoard();
         if (checkWords(move)) {
             updatePlayerScore(move.moveScore);
-            if (move.usedFromRack.length() == 7) {
-                updatePlayerNotes("*" + move.word, move.moveScore);
-            } else {
-                updatePlayerNotes(move.word, move.moveScore);
+            if (move.usedFromRack.length() < 7) {
 
                 //sjekker om player hadde bingo på hånda
                 if (!possibleBingos.isEmpty() || !impossibleBingos.isEmpty()) {
@@ -65,8 +62,6 @@ public class ScrabbleGame {
                     JOptionPane.showMessageDialog(null, bingoMessage);
                 }
             }
-
-            updateRemaining(move.usedFromRack);
 
             game.getPlayer().getRack().removeTiles(scrabbleGameFrame.boardPanel.getSquaresWithMovableTiles().stream().map(square -> square.tile).collect(Collectors.toCollection(ArrayList::new)));
             //trekke nye brikker
@@ -93,7 +88,6 @@ public class ScrabbleGame {
             } else {
                 game.getPlayer().addTurn(new Turn(Action.DISALLOWED));
                 scrabbleGameFrame.rackPanel.putBack(scrabbleGameFrame.boardPanel.getSquaresWithMovableTiles());
-                updatePlayerNotes("(ikke godkjent)", 0);
 
                 computerMove();
             }
@@ -361,7 +355,6 @@ public class ScrabbleGame {
                 scrabbleGameFrame.rackPanel.renderRack(game.getPlayer().getRack());
 
                 game.getPlayer().addTurn(new Turn(Action.SWAP));
-                updatePlayerNotes("(bytte)", 0);
                 computerMove();
             }
         }
@@ -441,7 +434,7 @@ public class ScrabbleGame {
     //TODO: fjerne computer-boolean, men nå har jeg i hvert fall fjernet global variabel
     public void pass(boolean computersTurn) {
         if (computersTurn) {
-            updateCPUNotes("(pass)", 0);
+            game.getComputer().addTurn(new Turn(Action.PASS));
             addedToThisMove.clear();
         } else {
             //legger evt brikker tilbake på racken
@@ -449,7 +442,6 @@ public class ScrabbleGame {
             game.getPlayer().getRack().alphabetize();
 
             game.getPlayer().addTurn(new Turn(Action.PASS));
-            updatePlayerNotes("(pass)", 0);
             //fjerner fra listen over nylig lagt til brikker
             addedToThisMove.clear();
             computerMove();
@@ -487,62 +479,8 @@ public class ScrabbleGame {
         return true;
     }
 
-    void updatePlayerNotes(String word, int score) {
-        JLabel noteLabel = scrabbleGameFrame.firstPlayerLabel;
-        if (!game.playerIsFirst) {
-            noteLabel = scrabbleGameFrame.secondPlayerLabel;
-        }
-        playerNotes += word + " ";
-        if (score != 0) {
-            playerNotes += score;
-            if (score == bestTipScore) {
-                playerNotes += "!";
-            }
-            Move poss = tipsWords.firstEntry().getValue();
-            if (score < bestTipScore) {
-                String message = "<html><body><u><b>Du kunne lagt:</u></b><br>";
-                message += (poss.moveScore + ", " + poss.word);
-                JOptionPane.showMessageDialog(null, message);
-            } else if (score > bestTipScore && !newWordAdded) {
-                String message = ("BUG - høyeste CPU fant var: " +
-                        poss.moveScore + ", " + poss.word);
-                JOptionPane.showMessageDialog(null, message);
-                playerNotes += "!";
-            }
-        }
-        playerNotes += "<br>";
-        noteLabel.setText("<html><body>" + playerNotes + "<b>" + game.getPlayer().getScore() + "</b></body></html>");
-    }
-
-    void updateCPUNotes(String word, int score) {
-        previousCPUNotes = cpuNotes;
-        JLabel noteLabel = scrabbleGameFrame.firstPlayerLabel;
-        if (game.playerIsFirst) {
-            noteLabel = scrabbleGameFrame.secondPlayerLabel;
-        }
-        cpuNotes += word + " ";
-        if (score != 0) {
-            cpuNotes += score;
-        }
-        cpuNotes += "<br>";
-        noteLabel.setText("<html><body>" + cpuNotes + "<b>" + game.getComputer().getScore() + "</b></body></html>");
-    }
-
     void updatePlayerScore(int moveScore) {
         game.getPlayer().addScore(moveScore);
-    }
-
-    void updateRemaining(String toRemoveString) {
-        previousTilesLeft = tilesLeft;
-        for (int i = 0; i < toRemoveString.length(); i++) {
-            char c = toRemoveString.charAt(i);
-            if (Character.isLowerCase(c)) {
-                tilesLeft = tilesLeft.substring(0, tilesLeft.indexOf('[')) + '-' + tilesLeft.substring(tilesLeft.indexOf('[') + 2);
-            } else {
-                tilesLeft = tilesLeft.substring(0, tilesLeft.indexOf(c)) + '-' + tilesLeft.substring(tilesLeft.indexOf(c) + 1);
-            }
-        }
-        scrabbleGameFrame.remainingLabel.setText(tilesLeft);
     }
 
     void finishGame() {
@@ -559,9 +497,6 @@ public class ScrabbleGame {
             cpuTiles += rackString.charAt(i);
             System.out.println("Trekker fra CPU " + letterScore + " poeng for '" + rackString.charAt(i) + "'");
         }
-        if (cpuMinus < 0) {
-            updateCPUNotes("(" + cpuTiles + ")", cpuMinus);
-        }
 
         //trekker fra score for players rack
         int playerRackScore = game.getPlayer().getRack().rackScore();
@@ -569,17 +504,14 @@ public class ScrabbleGame {
 
         if (playerRackScore > 0) {
             game.getPlayer().removeScore(playerRackScore);
-            updatePlayerNotes("(" + playerTiles + ")", -playerRackScore);
         }
 
         //legger til score til den andre spilleren
         if (cpuTiles.compareTo("") == 0) {
             game.getComputer().addScore(Math.abs(playerRackScore));
-            updateCPUNotes("(" + playerTiles + ")", Math.abs(playerRackScore));
         }
         if (playerTiles.compareTo("") == 0) {
             game.getPlayer().addScore(Math.abs(cpuMinus));
-            updatePlayerNotes("(" + cpuTiles + ")", Math.abs(cpuMinus));
         }
 
         //if CPU wins
@@ -612,34 +544,14 @@ public class ScrabbleGame {
     void initGame() {
         scrabbleGameFrame.boardPanel.cleanUp();
 
-        //for å skrive ut gjenværende brikker        
-        tilesLeft = "<html><body>AAAAAAA EEEEEEEEE<br>" +
-                "IIIII OOOO UUU<br>" +
-                "Y Æ ØØ ÅÅ<br>" +
-                "BBB C DDDDD FFFF<br>" +
-                "GGGG HHH JJ KKKK<br>" +
-                "LLLLL MMM NNNNNN<br>" +
-                "PP RRRRRR SSSSSS<br>" +
-                "TTTTTT VVV W<br>" +
-                "[][]</body></html>";
-        scrabbleGameFrame.remainingLabel.setText(tilesLeft);
-
         newlyAddedToBoard.clear();
         addedToThisMove.clear();
-
 
         Bag bag = new Bag();
 
         game = new Game(new Board(), bag, playerName, this);
 
         scrabbleGameFrame.rackPanel.renderRack(game.getPlayer().getRack());
-
-        scrabbleGameFrame.tilesLeftTitleLabel.setText("<html><body><b><u>Gjenværende brikker:</u></b></body></html>");
-        scrabbleGameFrame.bagCountLabel.setText("Brikker igjen i posen: " + bag.tileCount());
-        playerNotes = "<b><u>" + playerName + ":</u></b><br>";
-        cpuNotes = "<u><b>CPU:</b></u><br>";
-        updatePlayerNotes("", 0);
-        updateCPUNotes("", 0);
 
         if (game.computersTurn) {
             computerMove();
@@ -665,11 +577,6 @@ public class ScrabbleGame {
     int previousCPUMoveScore;   // int previousCPUMoveScore;
 
     boolean playerPassed;
-    String playerNotes;
-    String cpuNotes;
-    String previousCPUNotes;
-    String tilesLeft;
-    String previousTilesLeft;
     double vowelRatioLeft;
     boolean dictionaryIsCreated = false;
     boolean nameGiven = false;

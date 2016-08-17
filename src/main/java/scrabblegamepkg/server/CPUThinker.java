@@ -172,12 +172,8 @@ public class CPUThinker extends SwingWorker<Void, Void> {
             game.getBoard().addToCharBoard(topScoreWord);
 
             updateComputerScore(topScore);
-            if (scrabbleGame.addedToThisMove.size() == 7) {
-                scrabbleGame.updateCPUNotes("*" + topScoreWord.word, topScore);
-            } else {
-                scrabbleGame.updateCPUNotes(topScoreWord.word, topScore);
-            }
-            scrabbleGame.updateRemaining(topScoreWord.usedFromRack);
+
+            game.getComputer().addTurn(new Turn(Action.MOVE, topScoreWord));
 
             scrabbleGame.addedToThisMove.clear();
 
@@ -281,6 +277,7 @@ public class CPUThinker extends SwingWorker<Void, Void> {
     }
 
     void computerSwap(String toSwap) {
+        scrabbleGame.game.getComputer().addTurn(new Turn(Action.SWAP));
         JOptionPane.showMessageDialog(null, "CPU bytter " + toSwap.length() + " brikker");
         System.out.println("CPU kaller swap med " + toSwap + ", rackString er " + scrabbleGame.rackString + "<-slutt");
         if (scrabbleGame.game.getBag().tileCount() < 7) {
@@ -300,7 +297,6 @@ public class CPUThinker extends SwingWorker<Void, Void> {
             }
             System.out.println("etter å ha lagt tilbake: " + scrabbleGame.rackString);
         }
-        scrabbleGame.updateCPUNotes("(bytte)", 0);
     }
 
     void updateComputerScore(int moveScore) {
