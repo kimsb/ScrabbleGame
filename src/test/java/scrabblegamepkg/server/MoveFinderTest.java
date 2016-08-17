@@ -26,19 +26,14 @@ public class MoveFinderTest {
         }
 
         board = new Board();
-        board.charBoard = getEmptyCharBoard();
 
     }
 
     @Test
     public void finds_ecu_for_fourty_two_points() {
-        board.charBoard[1][7] = 'P';
-        board.charBoard[2][7] = 'A';
-        board.charBoard[3][7] = 'L';
-        board.charBoard[4][7] = 'M';
-        board.charBoard[5][7] = 'I';
-        board.charBoard[6][7] = 'N';
-        board.charBoard[7][7] = 'G';
+
+        Move firstMove = new Move(7, 1, true, "PALMING", board.getCharBoard(), "");
+        board.addToCharBoard(firstMove);
 
         MoveFinder moveFinder = new MoveFinder();
 
@@ -88,18 +83,6 @@ public class MoveFinderTest {
             System.out.println("Laging av dictionary feiler");
             e.printStackTrace();
         }
-    }
-
-    private char[][] getEmptyCharBoard() {
-        char[][] charBoard = new char[15][15];
-
-        //fyller charBoard med '-'
-        for (int i = 0; i < 15; i++) {
-            for (int j = 0; j < 15; j++) {
-                charBoard[i][j] = '-';
-            }
-        }
-        return charBoard;
     }
 
 }

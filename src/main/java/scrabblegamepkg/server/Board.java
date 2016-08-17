@@ -1,30 +1,25 @@
 package scrabblegamepkg.server;
 
-import java.util.ArrayList;
-
 public class Board {
 
-    //TODO: burde bare være én grid, med en type Square-object som holder på char, multiplier
-    char[][] charBoard = new char[15][15];
-    char[][] charBoardBeforeLastMove = new char[15][15];
+    private char[][] charBoard;
 
     Board() {
+        charBoard = getEmptyCharBoard();
+    }
+
+    public char[][] getCharBoard() {
+        return charBoard;
+    }
+
+    public char[][] getEmptyCharBoard() {
+        char[][] charBoard = new char[15][15];
         for (int i = 0; i < 15; i++) {
             for (int j = 0; j < 15; j++) {
-                //fyller charBoard med '-'
                 charBoard[i][j] = '-';
             }
         }
-    }
-
-    void updateCharBoard(ArrayList<Square> addedToThisMove) {
-        for (int i = 0; i < 15; i++) {
-            System.arraycopy(charBoard[i], 0, charBoardBeforeLastMove[i], 0, 15);
-        }
-
-        for (Square s : addedToThisMove) {
-            charBoard[s.row][s.column] = s.tile.letter;
-        }
+        return charBoard;
     }
 
     protected char[][] getTransposedCharBoard() {
@@ -62,16 +57,16 @@ public class Board {
         for (int i = 0; i < 15; i++) {
             for (int j = 0; j < 15; j++) {
                 if (charBoard[i][j] == '-') {
-                    if (i != 0 && charBoard[i-1][j] != '-') {
+                    if (i != 0 && charBoard[i - 1][j] != '-') {
                         isAnchor[i][j] = true;
                         anchorCount++;
-                    } else if (j != 0 && charBoard[i][j-1] != '-') {
+                    } else if (j != 0 && charBoard[i][j - 1] != '-') {
                         isAnchor[i][j] = true;
                         anchorCount++;
-                    } else if (i != 14 && charBoard[i+1][j] != '-') {
+                    } else if (i != 14 && charBoard[i + 1][j] != '-') {
                         isAnchor[i][j] = true;
                         anchorCount++;
-                    } else if (j != 14 && charBoard[i][j+1] != '-') {
+                    } else if (j != 14 && charBoard[i][j + 1] != '-') {
                         isAnchor[i][j] = true;
                         anchorCount++;
                     }

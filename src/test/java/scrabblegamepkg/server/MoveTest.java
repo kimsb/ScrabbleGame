@@ -12,7 +12,6 @@ public class MoveTest {
     @Before
     public void setUp() {
         board = new Board();
-        board.charBoard = getEmptyCharBoard();
     }
 
     @Test
@@ -31,28 +30,18 @@ public class MoveTest {
 
     @Test
     public void getMoveScore_gives_correct_score_for_second_move() {
-        board.charBoard[1][7] = 'P';
-        board.charBoard[2][7] = 'A';
-        board.charBoard[3][7] = 'L';
-        board.charBoard[4][7] = 'M';
-        board.charBoard[5][7] = 'I';
-        board.charBoard[6][7] = 'N';
-        board.charBoard[7][7] = 'G';
+        Move firstMove = new Move(7, 1, true, "PALMING", board.getCharBoard(), "");
+        board.addToCharBoard(firstMove);
 
-        Move secondMove = new Move(3, 1, false, "JULEHEG", board.charBoard, "");
+        Move secondMove = new Move(3, 1, false, "JULEHEG", board.getCharBoard(), "");
 
         assertThat(secondMove.moveScore).isEqualTo(84);
     }
 
     @Test
     public void getMoveScore_gives_correct_score_for_second_move_along_edge() {
-        board.charBoard[1][7] = 'P';
-        board.charBoard[2][7] = 'A';
-        board.charBoard[3][7] = 'L';
-        board.charBoard[4][7] = 'M';
-        board.charBoard[5][7] = 'I';
-        board.charBoard[6][7] = 'N';
-        board.charBoard[7][7] = 'G';
+        Move firstMove = new Move(7, 1, true, "PALMING", board.getCharBoard(), "");
+        board.addToCharBoard(firstMove);
 
         Move secondMove = new Move(8, 0, true, "ECU", board.getTransposedCharBoard(), "KIMB");
 
@@ -61,13 +50,8 @@ public class MoveTest {
 
     @Test
     public void getMoveScore_gives_correct_score_for_adding_to_word() {
-        board.charBoard[1][7] = 'P';
-        board.charBoard[2][7] = 'A';
-        board.charBoard[3][7] = 'L';
-        board.charBoard[4][7] = 'M';
-        board.charBoard[5][7] = 'I';
-        board.charBoard[6][7] = 'N';
-        board.charBoard[7][7] = 'G';
+        Move firstMove = new Move(7, 1, true, "PALMING", board.getCharBoard(), "");
+        board.addToCharBoard(firstMove);
 
         Move secondMove = new Move(7, 1, true, "A", board.getTransposedCharBoard(), "KIMBOW");
 
@@ -76,30 +60,18 @@ public class MoveTest {
 
     @Test
     public void getMoveScore_doesnt_add_one_letter_words() {
-        board.charBoard[7][6] = 'B';
-        board.charBoard[7][7] = 'A';
-        board.charBoard[8][5] = 'L';
-        board.charBoard[8][8] = 'Ø';
-        board.charBoard[8][7] = 'P';
 
-        Move move = new Move(6, 7, false, "T", board.charBoard, "KIMBOW");
+        Move firstMove = new Move(7, 6, false, "BA", board.getCharBoard(), "KIMBO");
+        board.addToCharBoard(firstMove);
+        Move secondMove = new Move(8, 5, false, "LØP", board.getCharBoard(), "KIMB");
+        board.addToCharBoard(secondMove);
+
+        Move move = new Move(6, 7, false, "T", board.getCharBoard(), "KIMBOW");
         Move verticalMove = new Move(7, 6, true, "T", board.getTransposedCharBoard(), "KIMBOW");
 
         assertThat(move.word).isNotEqualTo("T");
         assertThat(verticalMove.word).isNotEqualTo("T");
 
         assertThat(move.moveScore).isEqualTo(verticalMove.moveScore);
-    }
-
-    private char[][] getEmptyCharBoard() {
-        char[][] charBoard = new char[15][15];
-
-        //fyller charBoard med '-'
-        for (int i = 0; i < 15; i++) {
-            for (int j = 0; j < 15; j++) {
-                charBoard[i][j] = '-';
-            }
-        }
-        return charBoard;
     }
 }

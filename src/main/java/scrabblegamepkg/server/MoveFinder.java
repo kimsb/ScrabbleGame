@@ -23,8 +23,8 @@ public class MoveFinder {
     private void findMoves(MDAG dictionary, Board board, String rackString) {
 
         transposed = false;
-        String[][] crossChecks = findCrossChecks(dictionary, board.charBoard);
-        findAcrossMoves(board, dictionary, board.charBoard, crossChecks, board.getAnchors(board.charBoard), rackString);
+        String[][] crossChecks = findCrossChecks(dictionary, board.getCharBoard());
+        findAcrossMoves(board, dictionary, board.getCharBoard(), crossChecks, board.getAnchors(board.getCharBoard()), rackString);
 
         //down-moves
         transposed = true;
@@ -73,7 +73,7 @@ public class MoveFinder {
             //if N si a terminal node
             if (squareJ != currentAnchorJ && n.isAcceptNode()) {
                 Move newPos = new Move(currentAnchorI, (squareJ-partialWord.length()), transposed,
-                        usedFromRack, (transposed ? board.getTransposedCharBoard() : board.charBoard), rackString);
+                        usedFromRack, (transposed ? board.getTransposedCharBoard() : board.getCharBoard()), rackString);
 
                 allMoves.add(newPos);
             }

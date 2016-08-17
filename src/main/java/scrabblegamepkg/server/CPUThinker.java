@@ -78,8 +78,8 @@ public class CPUThinker extends SwingWorker<Void, Void> {
             TreeMap<Double, Move> newPossibleWords = new TreeMap<>(Collections.reverseOrder());
 
             ComputerAI computerAI = new ComputerAI(scrabbleGame.rackStringCpy, game.getBag(), scrabbleGame.vowelRatioLeft,
-                    game.getPlayer().getScore(), game.getComputer().getScore(), game.pointlessTurns, game.getBoard().getAnchors(game.getBoard().charBoard), game.isFirstMove(),
-                    scrabbleGame.scrabbleGameFrame.boardPanel.squareGrid, game.getBoard().charBoard, scrabbleGame.dictionary,
+                    game.getPlayer().getScore(), game.getComputer().getScore(), game.pointlessTurns, game.getBoard().getAnchors(game.getBoard().getCharBoard()), game.isFirstMove(),
+                    scrabbleGame.scrabbleGameFrame.boardPanel.squareGrid, game.getBoard().getCharBoard(), scrabbleGame.dictionary,
                     scrabbleGame.rackString, game.getPlayer().getRack().tileCount());
 
             allMoves.forEach(potentialMove -> newPossibleWords.put(computerAI.cpuAIScore(potentialMove), potentialMove));
@@ -205,7 +205,7 @@ public class CPUThinker extends SwingWorker<Void, Void> {
     }
 
     private void sjekkAtBoardErOK() {
-        char[][] charBoard = scrabbleGame.game.getBoard().charBoard;
+        char[][] charBoard = scrabbleGame.game.getBoard().getCharBoard();
         Square[][] squareGrid = scrabbleGame.scrabbleGameFrame.boardPanel.squareGrid;
 
         for (int i = 0; i < 15; i++) {

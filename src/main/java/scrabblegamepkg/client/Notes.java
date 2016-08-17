@@ -76,6 +76,7 @@ public class Notes {
         cpuNotes = "<u><b>CPU:</b></u><br>";
 
 
+        scrabbleGameFrame.bagCountLabel.setText("Brikker igjen i posen: " + game.getBag().tileCount());
      */
 
 }

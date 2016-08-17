@@ -26,6 +26,7 @@ public class Game {
             computer = new Player("CPU", new Rack(bag.pickTiles(7)));
             scrabbleGame.rackString = computer.getRack().toString();
             player = new Player(playerName, new Rack(bag.pickTiles(7)));
+            computersTurn = true;
         } else { //hvis pl1 starter
             playerIsFirst = true;
             player = new Player(playerName, new Rack(bag.pickTiles(7)));
@@ -52,7 +53,7 @@ public class Game {
     }
 
     public boolean isFirstMove() {
-        return board.charBoard[7][7] == '-';
+        return board.getCharBoard()[7][7] == '-';
     }
 
     //TODO: lage Turn-objekt.

@@ -9,12 +9,9 @@ public class BoardTest {
     @Test
     public void transposeCharBoard_fungerer() {
         Board board = new Board();
-        board.charBoard = getEmptyCharBoard();
-        board.charBoard[1][3] = 'K';
-        board.charBoard[1][4] = 'I';
-        board.charBoard[1][5] = 'M';
-        board.charBoard[1][6] = 'B';
-        board.charBoard[1][7] = 'O';
+
+        Move firstMove = new Move(1, 3, false, "KIMBO", board.getCharBoard(), "BO");
+        board.addToCharBoard(firstMove);
 
         char[][] transposedCharBoard = board.getTransposedCharBoard();
 
@@ -24,19 +21,6 @@ public class BoardTest {
         assertThat(transposedCharBoard[6][1] == 'B').isTrue();
         assertThat(transposedCharBoard[7][1] == 'O').isTrue();
 
-    }
-
-
-    private char[][] getEmptyCharBoard() {
-        char[][] charBoard = new char[15][15];
-
-        //fyller charBoard med '-'
-        for (int i = 0; i < 15; i++) {
-            for (int j = 0; j < 15; j++) {
-                charBoard[i][j] = '-';
-            }
-        }
-        return charBoard;
     }
 
 }

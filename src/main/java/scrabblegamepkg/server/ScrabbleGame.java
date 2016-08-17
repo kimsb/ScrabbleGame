@@ -34,32 +34,35 @@ public class ScrabbleGame {
         (playerNameCreator = new PlayerNameCreator()).execute();
     }
 
+    private void checkForBingos() {
+        //sjekker om player hadde bingo på hånda
+        if (!possibleBingos.isEmpty() || !impossibleBingos.isEmpty()) {
+            String bingoMessage = "<html><body>";
+            if (!possibleBingos.isEmpty()) {
+                bingoMessage += "<b><u>Du kunne lagt bingo:</u></b>";
+                for (String s : possibleBingos) {
+                    bingoMessage += ("<br>" + s);
+                }
+            }
+            if (!impossibleBingos.isEmpty()) {
+                if (!possibleBingos.isEmpty()) {
+                    bingoMessage += "<br><br>";
+                }
+                bingoMessage += "<b><u>Du hadde bingo som ikke kunne legges:</u></b>";
+                for (String s : impossibleBingos) {
+                    bingoMessage += ("<br>" + s);
+                }
+            }
+            bingoMessage += "</body></html>";
+            JOptionPane.showMessageDialog(null, bingoMessage);
+        }
+    }
+
     public void playAction() throws Exception {
         Move move = getMoveFromBoard();
         if (checkWords(move)) {
             if (move.usedFromRack.length() < 7) {
-
-                //sjekker om player hadde bingo på hånda
-                if (!possibleBingos.isEmpty() || !impossibleBingos.isEmpty()) {
-                    String bingoMessage = "<html><body>";
-                    if (!possibleBingos.isEmpty()) {
-                        bingoMessage += "<b><u>Du kunne lagt bingo:</u></b>";
-                        for (String s : possibleBingos) {
-                            bingoMessage += ("<br>" + s);
-                        }
-                    }
-                    if (!impossibleBingos.isEmpty()) {
-                        if (!possibleBingos.isEmpty()) {
-                            bingoMessage += "<br><br>";
-                        }
-                        bingoMessage += "<b><u>Du hadde bingo som ikke kunne legges:</u></b>";
-                        for (String s : impossibleBingos) {
-                            bingoMessage += ("<br>" + s);
-                        }
-                    }
-                    bingoMessage += "</body></html>";
-                    JOptionPane.showMessageDialog(null, bingoMessage);
-                }
+                checkForBingos();
             }
 
             game.getPlayer().getRack().removeTiles(scrabbleGameFrame.boardPanel.getSquaresWithMovableTiles().stream().map(square -> square.tile).collect(Collectors.toCollection(ArrayList::new)));
@@ -97,8 +100,6 @@ public class ScrabbleGame {
                 throw new Exception("Rack: not movable: " + tile.letter);
             }
         }
-
-        scrabbleGameFrame.bagCountLabel.setText("Brikker igjen i posen: " + game.getBag().tileCount());
     }
 
     private boolean checkWords(Move move) {
@@ -116,7 +117,7 @@ public class ScrabbleGame {
     private Move getMoveFromBoard() throws Exception {
         //TODO: dette bør være representert annerledes senere, fra klient til server
         ArrayList<Square> squares = scrabbleGameFrame.boardPanel.getSquaresWithMovableTiles();
-        boolean hasAnchor = squares.stream().filter(square -> game.getBoard().getAnchors(game.getBoard().charBoard)[square.row][square.column]).count() > 0;
+        boolean hasAnchor = squares.stream().filter(square -> game.getBoard().getAnchors(game.getBoard().getCharBoard())[square.row][square.column]).count() > 0;
 
         long rowCount = squares.stream().map(square -> square.row).distinct().count();
         long columnCount = squares.stream().map(square -> square.column).distinct().count();
@@ -141,7 +142,7 @@ public class ScrabbleGame {
             lettersUsed += square.tile.letter;
             remainingTiles = StringUtil.removeChar(remainingTiles, square.tile.letter);
         }
-        return new Move(row, startColumn, transposed, lettersUsed, (transposed ? game.getBoard().getTransposedCharBoard() : game.getBoard().charBoard), remainingTiles);
+        return new Move(row, startColumn, transposed, lettersUsed, (transposed ? game.getBoard().getTransposedCharBoard() : game.getBoard().getCharBoard()), remainingTiles);
     }
 
     private class PlayerNameCreator extends SwingWorker<Void, Void> {
@@ -374,39 +375,8 @@ public class ScrabbleGame {
         }
     }
 
-    //TODO: denne må ut i tipscalculator
-    void calculateTips() {
-        String playerRack = game.getPlayer().getRack().toString();
-        bestTipScore = 0;
-        tipsWords.clear();
-
-        //bruker nye metoden for å finne ord
-        MoveFinder moveFinder = new MoveFinder();
-        ArrayList<Move> allMoves = moveFinder.findAllMoves(dictionary, game.getBoard(), playerRack);
-
-        for (int i = 0; i < allMoves.size(); i++) {
-            tipsWords.put(allMoves.get(i).moveScore + (i * 0.0000001), allMoves.get(i));
-        }
-
-        if (!tipsWords.isEmpty()) {
-            bestTipScore = tipsWords.firstEntry().getValue().moveScore;
-        }
-
-        possibleBingos.clear();
-        //TODO: impossible settes ikke lenger, lag metode som sender in rack.toString og returener liste over bingoer
-        impossibleBingos.clear();
-        for (Map.Entry<Double, Move> entry : tipsWords.entrySet()) {
-            Move poss = entry.getValue();
-            if (poss.usedFromRack.length() == 7) {
-                if (!possibleBingos.contains(poss.word)) {
-                    possibleBingos.add(poss.word);
-                }
-            }
-        }
-
-    }
-
     public void tipsAction() {
+        //TODO: flytte dette inn i klient
         int count = 0;
         String tipsString = "<html><body>";
         ArrayList<String> tipsGiven = new ArrayList<>();
@@ -565,6 +535,11 @@ public class ScrabbleGame {
     DictionaryCreator dictionaryCreator;
     PlayerNameCreator playerNameCreator;
 
+    //TODO: disse må vekk
+    ArrayList<String> possibleBingos = new ArrayList<>();
+    ArrayList<String> impossibleBingos = new ArrayList<>();
+    TreeMap<Double, Move> tipsWords = new TreeMap<>(Collections.reverseOrder());
+
 
     ArrayList<Square> addedToThisMove = new ArrayList<>();
 
@@ -574,7 +549,6 @@ public class ScrabbleGame {
     double vowelRatioLeft;
     boolean dictionaryIsCreated = false;
     boolean nameGiven = false;
-    int bestTipScore;
     //TODO: fjerne all bruk av disse, heller bruke game.getComputer().getRack().toString();
     String rackString = "";
     String previousRackString;
@@ -586,10 +560,6 @@ public class ScrabbleGame {
 
     Move cpuLastWord;
 
-    TreeMap<Double, Move> tipsWords = new TreeMap<>(Collections.reverseOrder());
-
-    ArrayList<String> possibleBingos = new ArrayList<>();
-    ArrayList<String> impossibleBingos = new ArrayList<>();
     //Innstillinger
     boolean retryIfWordIsNotValid = false;
     String playerName = "player";
