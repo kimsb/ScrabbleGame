@@ -86,13 +86,10 @@ public class ScrabbleGame {
             }
         } else {
             //turen avsluttes
-            if (retryIfWordIsNotValid) {
-            } else {
                 game.getPlayer().addTurn(new Turn(Action.DISALLOWED));
                 scrabbleGameFrame.rackPanel.putBack(scrabbleGameFrame.boardPanel.getSquaresWithMovableTiles());
 
                 computerMove();
-            }
         }
 
         for (Tile tile : game.getPlayer().getRack().getTiles()) {
@@ -550,12 +547,7 @@ public class ScrabbleGame {
     String rackStringCpy = "";
     boolean newWordAdded = false;
 
-    //Solver variables
-
-    Move cpuLastWord;
-
     //Innstillinger
-    boolean retryIfWordIsNotValid = false;
     String playerName = "player";
 
 }

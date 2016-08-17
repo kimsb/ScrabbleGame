@@ -158,9 +158,6 @@ public class CPUThinker extends SwingWorker<Void, Void> {
                 }
             }
 
-            scrabbleGame.cpuLastWord = topScoreWord;
-            int topScore = topScoreWord.moveScore;
-
             //legg brikker på brettet
             //TODO: Move burde ha være en bedre representasjon av et trekk -> "disse brikkene på disse feltene"
             scrabbleGame.scrabbleGameFrame.boardPanel.placeMove(topScoreWord);
