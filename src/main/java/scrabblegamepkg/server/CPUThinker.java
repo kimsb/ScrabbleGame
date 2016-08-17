@@ -34,10 +34,6 @@ public class CPUThinker extends SwingWorker<Void, Void> {
         scrabbleGame.scrabbleGameFrame.enableButtons(true);
         scrabbleGame.scrabbleGameFrame.tipsButton.setEnabled(false);
         new TipsCalculator(scrabbleGame).execute();
-        JScrollBar verticalScrollBar = scrabbleGame.scrabbleGameFrame.firstPlayerScrollPane.getVerticalScrollBar();
-        verticalScrollBar.setValue(verticalScrollBar.getMaximum());
-        verticalScrollBar = scrabbleGame.scrabbleGameFrame.secondPlayerScrollPane.getVerticalScrollBar();
-        verticalScrollBar.setValue(verticalScrollBar.getMaximum());
         scrabbleGame.game.computersTurn = false;
     }
 
@@ -188,7 +184,6 @@ public class CPUThinker extends SwingWorker<Void, Void> {
                 scrabbleGame.finishGame();
             }
             scrabbleGame.newlyAddedToBoard.clear();
-            scrabbleGame.scrabbleGameFrame.bagCountLabel.setText("Brikker igjen i posen: " + game.getBag().tileCount());
             scrabbleGame.playerPassed = false;
 
             System.out.println("AVSLUTTER COMPUTERAI()");
