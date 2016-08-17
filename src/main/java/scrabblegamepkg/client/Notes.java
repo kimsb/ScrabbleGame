@@ -77,6 +77,12 @@ public class Notes {
 
 
         scrabbleGameFrame.bagCountLabel.setText("Brikker igjen i posen: " + game.getBag().tileCount());
+
+
+        JScrollBar verticalScrollBar = scrabbleGame.scrabbleGameFrame.firstPlayerScrollPane.getVerticalScrollBar();
+        verticalScrollBar.setValue(verticalScrollBar.getMaximum());
+        verticalScrollBar = scrabbleGame.scrabbleGameFrame.secondPlayerScrollPane.getVerticalScrollBar();
+        verticalScrollBar.setValue(verticalScrollBar.getMaximum());
      */
 
 }

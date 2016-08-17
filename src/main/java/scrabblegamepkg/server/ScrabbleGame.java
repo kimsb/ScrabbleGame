@@ -243,10 +243,6 @@ public class ScrabbleGame {
 
     void computerMove() {
         game.computersTurn = true;
-        JScrollBar verticalScrollBar = scrabbleGameFrame.firstPlayerScrollPane.getVerticalScrollBar();
-        verticalScrollBar.setValue(verticalScrollBar.getMaximum());
-        verticalScrollBar = scrabbleGameFrame.secondPlayerScrollPane.getVerticalScrollBar();
-        verticalScrollBar.setValue(verticalScrollBar.getMaximum());
         new CPUThinker(this).execute();
     }
 
@@ -414,7 +410,6 @@ public class ScrabbleGame {
             //fjerner fra listen over nylig lagt til brikker
             addedToThisMove.clear();
             computerMove();
-            playerPassed = true;
         }
     }
 
@@ -545,7 +540,6 @@ public class ScrabbleGame {
 
     Square selectedSquare;
 
-    boolean playerPassed;
     double vowelRatioLeft;
     boolean dictionaryIsCreated = false;
     boolean nameGiven = false;

@@ -10,19 +10,19 @@ public class ScrabbleGameFrame extends JFrame {
 
     ScrabbleGame scrabbleGame;
 
-    public javax.swing.JLabel bagCountLabel;
+    private javax.swing.JLabel bagCountLabel;
     public javax.swing.JButton challengeButton;
-    public javax.swing.JLabel firstPlayerLabel;
-    public javax.swing.JScrollPane firstPlayerScrollPane;
+    private javax.swing.JLabel firstPlayerLabel;
+    private javax.swing.JScrollPane firstPlayerScrollPane;
     private javax.swing.JPanel jPanel1;
     public javax.swing.JButton newGameButton;
     javax.swing.JButton passButton;
     javax.swing.JButton playButton;
-    public javax.swing.JLabel remainingLabel;
-    public javax.swing.JLabel secondPlayerLabel;
-    public javax.swing.JScrollPane secondPlayerScrollPane;
+    private javax.swing.JLabel remainingLabel;
+    private javax.swing.JLabel secondPlayerLabel;
+    private javax.swing.JScrollPane secondPlayerScrollPane;
     javax.swing.JButton swapButton;
-    public javax.swing.JLabel tilesLeftTitleLabel;
+    private javax.swing.JLabel tilesLeftTitleLabel;
     public javax.swing.JButton tipsButton;
 
     public RackPanel rackPanel;

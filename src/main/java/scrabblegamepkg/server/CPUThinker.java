@@ -184,7 +184,6 @@ public class CPUThinker extends SwingWorker<Void, Void> {
                 scrabbleGame.finishGame();
             }
             scrabbleGame.newlyAddedToBoard.clear();
-            scrabbleGame.playerPassed = false;
 
             System.out.println("AVSLUTTER COMPUTERAI()");
         } catch (Exception e) {
