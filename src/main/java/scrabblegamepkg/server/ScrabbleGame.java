@@ -37,7 +37,6 @@ public class ScrabbleGame {
     public void playAction() throws Exception {
         Move move = getMoveFromBoard();
         if (checkWords(move)) {
-            updatePlayerScore(move.moveScore);
             if (move.usedFromRack.length() < 7) {
 
                 //sjekker om player hadde bingo på hånda
@@ -479,10 +478,6 @@ public class ScrabbleGame {
         return true;
     }
 
-    void updatePlayerScore(int moveScore) {
-        game.getPlayer().addScore(moveScore);
-    }
-
     void finishGame() {
         //trekker fra score for CPUs rack
         int cpuMinus = 0;
@@ -574,7 +569,6 @@ public class ScrabbleGame {
     ArrayList<Square> addedToThisMove = new ArrayList<>();
 
     Square selectedSquare;
-    int previousCPUMoveScore;   // int previousCPUMoveScore;
 
     boolean playerPassed;
     double vowelRatioLeft;

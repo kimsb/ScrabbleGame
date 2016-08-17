@@ -171,8 +171,6 @@ public class CPUThinker extends SwingWorker<Void, Void> {
             removeFromCPURack(topScoreWord);
             game.getBoard().addToCharBoard(topScoreWord);
 
-            updateComputerScore(topScore);
-
             game.getComputer().addTurn(new Turn(Action.MOVE, topScoreWord));
 
             scrabbleGame.addedToThisMove.clear();
@@ -297,10 +295,5 @@ public class CPUThinker extends SwingWorker<Void, Void> {
             }
             System.out.println("etter å ha lagt tilbake: " + scrabbleGame.rackString);
         }
-    }
-
-    void updateComputerScore(int moveScore) {
-        scrabbleGame.game.getComputer().addScore(moveScore);
-        scrabbleGame.previousCPUMoveScore = moveScore;
     }
 }

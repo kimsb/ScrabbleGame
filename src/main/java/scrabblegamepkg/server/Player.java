@@ -36,6 +36,9 @@ public class Player {
 
     public void addTurn(Turn turn) {
         turns.add(turn);
+        if (turn.action == Action.MOVE) {
+            score += turn.move.moveScore;
+        }
     }
 
     public ArrayList<Turn> getTurns() {
