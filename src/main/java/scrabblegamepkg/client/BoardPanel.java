@@ -48,24 +48,33 @@ public class BoardPanel extends JPanel {
         }
     }
 
-    public ArrayList<Square> getSquaresWithMovableTiles() {
-        ArrayList<Square> squares = new ArrayList<>();
+    public ArrayList<Tile> getNewlyAddedTiles() {
+        ArrayList<Tile> tiles = new ArrayList<>();
         for (int i = 0; i < 15; i++) {
             for (int j = 0; j < 15; j++) {
                 Square square = squareGrid[i][j];
                 if (square.tile != null && square.tile.isMovable) {
-                    squares.add(square);
+                    tiles.add(new Tile(square.tile.letter, i, j));
                 }
             }
         }
-        return squares;
+        return tiles;
+    }
+
+    public void cleanUpUnlockedTiles() {
+        for (int i = 0; i < 15; i++) {
+            for (int j = 0; j < 15; j++) {
+                if (squareGrid[i][j].tile.isMovable) {
+                    squareGrid[i][j].cleanUp();
+                }
+            }
+        }
     }
 
     public void cleanUp() {
         for (int i = 0; i < 15; i++) {
             for (int j = 0; j < 15; j++) {
-                squareGrid[i][j].setIcon(null);
-                squareGrid[i][j].tile = null;
+                squareGrid[i][j].cleanUp();
             }
         }
     }
@@ -76,14 +85,25 @@ public class BoardPanel extends JPanel {
                 Square square = squareGrid[i][j];
                 if (square.tile != null && square.tile.isMovable) {
                     square.tile.isMovable = false;
-
-                    //TEST
-                    if (!square.onBoard) {
-                        System.out.println("Boardpanel - ikke onBoard, row: " + square.row + ", col: " + square.column + ", t: " + square.tile.letter);
-                    }
-
                 }
             }
         }
+    }
+
+    public void render(char[][] charBoard) {
+
+        for (int i = 0; i < 15; i++) {
+            for (int j = 0; j < 15; j++) {
+                Square square = squareGrid[i][j];
+                if (square.tile != null &&  square.tile.letter != charBoard[i][j]) {
+                    if (charBoard[i][j] == '-') {
+                        square.cleanUp();
+                    } else {
+                        square.placeTile(new Tile(charBoard[i][j]));
+                    }
+                }
+            }
+        }
+
     }
 }

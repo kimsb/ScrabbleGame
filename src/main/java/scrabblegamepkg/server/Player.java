@@ -44,4 +44,11 @@ public class Player {
     public ArrayList<Turn> getTurns() {
         return turns;
     }
+
+    public Turn getLastTurn() {
+        if (turns.isEmpty()) {
+            return null;
+        }
+        return turns.get(turns.size()-1);
+    }
 }

@@ -13,4 +13,12 @@ public class Turn {
         this(action);
         this.move = move;
     }
+
+    public Action getAction() {
+        return action;
+    }
+
+    public Move getMove() {
+        return move;
+    }
 }

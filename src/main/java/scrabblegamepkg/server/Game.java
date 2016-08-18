@@ -11,7 +11,7 @@ public class Game {
     ScrabbleGame scrabbleGame;
 
     //TODO: disse burde jeg vel kunne unngå?
-    boolean playerIsFirst;
+    public boolean playerIsFirst;
     boolean computersTurn;
     boolean firstMove = true;
     int pointlessTurns = 0;

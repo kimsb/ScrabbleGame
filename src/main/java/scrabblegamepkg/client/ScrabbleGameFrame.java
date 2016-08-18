@@ -1,10 +1,11 @@
 package scrabblegamepkg.client;
 
-import scrabblegamepkg.server.Rack;
-import scrabblegamepkg.server.ScrabbleGame;
+import scrabblegamepkg.server.*;
+import scrabblegamepkg.server.Action;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
+import java.util.ArrayList;
 
 public class ScrabbleGameFrame extends JFrame {
 
@@ -212,10 +213,42 @@ public class ScrabbleGameFrame extends JFrame {
 
     private void playButtonActionPerformed(ActionEvent evt) {
         try {
-            scrabbleGame.playAction();
+            ArrayList<Tile> newlyAddedTiles = boardPanel.getNewlyAddedTiles();
+            if (!newlyAddedTiles.isEmpty()) {
+                renderGame(scrabbleGame.playAction(newlyAddedTiles));
+            }
         } catch (Exception e) {
             e.printStackTrace();
+            JOptionPane.showMessageDialog(null, e.getMessage());
         }
+    }
+
+    private void renderGame(Game game) {
+        switch (game.getPlayer().getLastTurn().getAction()) {
+            case MOVE:
+                boardPanel.lockTiles();
+                break;
+            case DISALLOWED:
+            case PASS:
+            case SWAP:
+        }
+        boardPanel.render(game.getBoard().getCharBoard());
+        rackPanel.renderRack(game.getPlayer().getRack());
+        renderNotes(game);
+    }
+
+    private void renderNotes(Game game) {
+
+        remainingLabel.setText(Notes.getRemainingTilesNotes(game.getBoard().getCharBoard()));
+
+        firstPlayerLabel.setText(game.playerIsFirst ? Notes.getPlayerNotes(game.getPlayer()) : Notes.getPlayerNotes(game.getComputer()));
+        secondPlayerLabel.setText(game.playerIsFirst ? Notes.getPlayerNotes(game.getComputer()) : Notes.getPlayerNotes(game.getPlayer()));
+
+        tilesLeftTitleLabel.setText("<html><body><b><u>Gjenværende brikker:</u></b></body></html>");
+        bagCountLabel.setText("Brikker igjen i posen: " + game.getBag().tileCount());
+
+        firstPlayerScrollPane.getVerticalScrollBar().setValue(firstPlayerScrollPane.getVerticalScrollBar().getMaximum());
+        secondPlayerScrollPane.getVerticalScrollBar().setValue(secondPlayerScrollPane.getVerticalScrollBar().getMaximum());
     }
 
     private void challengeButtonActionPerformed(java.awt.event.ActionEvent evt) {
@@ -236,10 +269,6 @@ public class ScrabbleGameFrame extends JFrame {
 
     private void newGameButtonActionPerformed(java.awt.event.ActionEvent evt) {
         scrabbleGame.newGameAction();
-    }
-
-    public void renderRack(Rack rack) {
-        rackPanel.renderRack(rack);
     }
 
     public void enableButtons(boolean enable) {

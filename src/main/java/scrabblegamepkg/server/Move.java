@@ -13,7 +13,7 @@ public class Move {
     public int row;
     public int startColumn;
     public boolean vertical;
-    int moveScore;
+    public int moveScore;
     String usedFromRack;
     String leftOnRack;
     private ArrayList<String> words = new ArrayList<>();

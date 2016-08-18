@@ -21,9 +21,6 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-/**
- * @author Kim
- */
 public class ScrabbleGame {
 
     public ScrabbleGame() throws IOException {
@@ -58,24 +55,19 @@ public class ScrabbleGame {
         }
     }
 
-    public void playAction() throws Exception {
-        Move move = getMoveFromBoard();
+    public Game playAction(ArrayList<Tile> addedTiles) throws Exception {
+        Move move = getMoveFromAddedTiles(addedTiles);
         if (checkWords(move)) {
             if (move.usedFromRack.length() < 7) {
                 checkForBingos();
             }
 
-            game.getPlayer().getRack().removeTiles(scrabbleGameFrame.boardPanel.getSquaresWithMovableTiles().stream().map(square -> square.tile).collect(Collectors.toCollection(ArrayList::new)));
+            game.getPlayer().getRack().removeTiles(addedTiles);
             //trekke nye brikker
             game.getPlayer().getRack().addTiles(game.getBag().pickTiles(move.usedFromRack.length()));
 
-            //TODO: generell programflyt -> rendering skal ikke styres fra server, men fra returverdier til klienten (gjelder flere steder)
-            scrabbleGameFrame.renderRack(game.getPlayer().getRack());
-
             //brikker har blitt lagt, oppdaterer charBoard
-
             game.getBoard().addToCharBoard(move);
-            scrabbleGameFrame.boardPanel.lockTiles();
 
             game.getPlayer().addTurn(new Turn(Action.MOVE, move));
 
@@ -87,16 +79,11 @@ public class ScrabbleGame {
         } else {
             //turen avsluttes
                 game.getPlayer().addTurn(new Turn(Action.DISALLOWED));
-                scrabbleGameFrame.rackPanel.putBack(scrabbleGameFrame.boardPanel.getSquaresWithMovableTiles());
 
                 computerMove();
         }
 
-        for (Tile tile : game.getPlayer().getRack().getTiles()) {
-            if (!tile.isMovable) {
-                throw new Exception("Rack: not movable: " + tile.letter);
-            }
-        }
+        return game;
     }
 
     private boolean checkWords(Move move) {
@@ -111,15 +98,13 @@ public class ScrabbleGame {
         return true;
     }
 
-    private Move getMoveFromBoard() throws Exception {
-        //TODO: dette bør være representert annerledes senere, fra klient til server
-        ArrayList<Square> squares = scrabbleGameFrame.boardPanel.getSquaresWithMovableTiles();
-        boolean hasAnchor = squares.stream().filter(square -> game.getBoard().getAnchors(game.getBoard().getCharBoard())[square.row][square.column]).count() > 0;
+    private Move getMoveFromAddedTiles(ArrayList<Tile> addedTiles) throws Exception {
 
-        long rowCount = squares.stream().map(square -> square.row).distinct().count();
-        long columnCount = squares.stream().map(square -> square.column).distinct().count();
+        boolean hasAnchor = addedTiles.stream().filter(tile -> game.getBoard().getAnchors(game.getBoard().getCharBoard())[tile.row][tile.column]).count() > 0;
+        long rowCount = addedTiles.stream().map(tile -> tile.row).distinct().count();
+        long columnCount = addedTiles.stream().map(tile -> tile.column).distinct().count();
 
-        if (squares.isEmpty()) {
+        if (addedTiles.isEmpty()) {
             throw new Exception("Ugyldig legg (ingen brikker lagt");
         }
         if (!hasAnchor) {
@@ -129,15 +114,19 @@ public class ScrabbleGame {
             throw new Exception("Ugyldig legg (ikke på én rekke)");
         }
         //TODO: må også sjekke at legget ikke har hull
-        Square firstSquare = squares.get(0);
+        /*if (isHoleBetweenTiles(addedTiles)) {
+            throw new Exception("Ugyldig legg (legget har hull)");
+        }*/
+
+        Tile firstTile = addedTiles.get(0);
         boolean transposed = rowCount > 1;
-        int row = transposed ? firstSquare.column : firstSquare.row;
-        int startColumn = transposed ? firstSquare.row : firstSquare.column;
+        int row = transposed ? firstTile.column : firstTile.row;
+        int startColumn = transposed ? firstTile.row : firstTile.column;
         String lettersUsed = "";
         String remainingTiles = game.getPlayer().getRack().toString();
-        for (Square square : squares) {
-            lettersUsed += square.tile.letter;
-            remainingTiles = StringUtil.removeChar(remainingTiles, square.tile.letter);
+        for (Tile tile : addedTiles) {
+            lettersUsed += tile.letter;
+            remainingTiles = StringUtil.removeChar(remainingTiles, tile.letter);
         }
         return new Move(row, startColumn, transposed, lettersUsed, (transposed ? game.getBoard().getTransposedCharBoard() : game.getBoard().getCharBoard()), remainingTiles);
     }
@@ -158,9 +147,6 @@ public class ScrabbleGame {
 
         @Override
         protected void done() {
-            //while(!dictionaryIsCreated) {
-            //  System.out.println("STUCK!");
-            //}
             nameGiven = true;
             if (dictionaryIsCreated) {
                 (newGame = new NewGame()).execute();
