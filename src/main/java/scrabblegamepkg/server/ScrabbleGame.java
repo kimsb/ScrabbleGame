@@ -33,6 +33,7 @@ public class ScrabbleGame {
 
     private void checkForBingos() {
         //sjekker om player hadde bingo på hånda
+        //TODO: legge dette inn i turn, og gi beskjeden fra klienten
         if (!possibleBingos.isEmpty() || !impossibleBingos.isEmpty()) {
             String bingoMessage = "<html><body>";
             if (!possibleBingos.isEmpty()) {
@@ -118,6 +119,7 @@ public class ScrabbleGame {
             throw new Exception("Ugyldig legg (legget har hull)");
         }*/
 
+        //TODO: dette feiler når firste Tile er påbygg av allerede lagte bokstaver, siden row bare er firste tiles row...
         Tile firstTile = addedTiles.get(0);
         boolean transposed = rowCount > 1;
         int row = transposed ? firstTile.column : firstTile.row;
@@ -154,6 +156,7 @@ public class ScrabbleGame {
         }
     }
 
+    //TODO: flytte ut i egen klasse
     void createDictionary() throws IOException {
         try {
             File file = new File(this.getClass().getResource("/yeslist.txt").toURI());
