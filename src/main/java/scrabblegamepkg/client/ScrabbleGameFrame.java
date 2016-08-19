@@ -82,7 +82,7 @@ public class ScrabbleGameFrame extends JFrame {
         setResizable(false);
 
         playButton.setText("Legg");
-        playButton.setEnabled(false);
+        playButton.setEnabled(true);
         playButton.addActionListener(this::playButtonActionPerformed);
 
         challengeButton.setText("Utfordre ord");
@@ -142,19 +142,19 @@ public class ScrabbleGameFrame extends JFrame {
         );
 
         swapButton.setText("Bytt");
-        swapButton.setEnabled(false);
+        swapButton.setEnabled(true);
         swapButton.addActionListener(this::swapButtonActionPerformed);
 
         passButton.setText("Pass");
-        passButton.setEnabled(false);
+        passButton.setEnabled(true);
         passButton.addActionListener(this::passButtonActionPerformed);
 
         newGameButton.setText("Nytt spill");
-        newGameButton.setEnabled(false);
+        newGameButton.setEnabled(true);
         newGameButton.addActionListener(this::newGameButtonActionPerformed);
 
         tipsButton.setText("Tips");
-        tipsButton.setEnabled(false);
+        tipsButton.setEnabled(true);
         tipsButton.addActionListener(this::tipsButtonActionPerformed);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());

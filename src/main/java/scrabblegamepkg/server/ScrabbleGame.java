@@ -25,9 +25,8 @@ public class ScrabbleGame {
 
     public ScrabbleGame() throws IOException {
 
-        scrabbleGameFrame = new ScrabbleGameFrame(this);
-
         new DictionaryCreator().execute();
+        scrabbleGameFrame = new ScrabbleGameFrame(this);
     }
 
     private void checkForBingos() {

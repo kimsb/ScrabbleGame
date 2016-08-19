@@ -13,10 +13,9 @@ public class Game {
     //TODO: disse burde jeg vel kunne unngå?
     public boolean playerIsFirst;
     boolean computersTurn;
-    boolean firstMove = true;
     int pointlessTurns = 0;
 
-    public Game(Board board, Bag bag, String playerName, ScrabbleGame scrabbleGame) {
+    public Game(Board board, Bag bag, ScrabbleGame scrabbleGame) {
         this.board = board;
         this.bag = bag;
         this.scrabbleGame = scrabbleGame;
@@ -25,11 +24,11 @@ public class Game {
         if (new Random().nextInt(2) == 0) {
             computer = new Player("CPU", new Rack(bag.pickTiles(7)));
             scrabbleGame.rackString = computer.getRack().toString();
-            player = new Player(playerName, new Rack(bag.pickTiles(7)));
+            player = new Player("you", new Rack(bag.pickTiles(7)));
             computersTurn = true;
         } else { //hvis pl1 starter
             playerIsFirst = true;
-            player = new Player(playerName, new Rack(bag.pickTiles(7)));
+            player = new Player("you", new Rack(bag.pickTiles(7)));
             computer = new Player("CPU", new Rack(bag.pickTiles(7)));
             scrabbleGame.rackString = computer.getRack().toString();
             new TipsCalculator(scrabbleGame).execute();
