@@ -27,8 +27,7 @@ public class ScrabbleGame {
 
         scrabbleGameFrame = new ScrabbleGameFrame(this);
 
-        (dictionaryCreator = new DictionaryCreator()).execute();
-        (playerNameCreator = new PlayerNameCreator()).execute();
+        new DictionaryCreator().execute();
     }
 
     private void checkForBingos() {
@@ -133,29 +132,6 @@ public class ScrabbleGame {
         return new Move(row, startColumn, transposed, lettersUsed, (transposed ? game.getBoard().getTransposedCharBoard() : game.getBoard().getCharBoard()), remainingTiles);
     }
 
-    private class PlayerNameCreator extends SwingWorker<Void, Void> {
-
-        public PlayerNameCreator() {
-        }
-
-        @Override
-        protected Void doInBackground() throws IOException {
-            String p = JOptionPane.showInputDialog(null, "Hei, hva heter du?");
-            if (p != null) {
-                playerName = p;
-            }
-            return null;
-        }
-
-        @Override
-        protected void done() {
-            nameGiven = true;
-            if (dictionaryIsCreated) {
-                (newGame = new NewGame()).execute();
-            }
-        }
-    }
-
     //TODO: flytte ut i egen klasse
     void createDictionary() throws IOException {
         try {
@@ -201,31 +177,8 @@ public class ScrabbleGame {
         @Override
         protected void done() {
             System.out.println("dictionaryDone!");
-            dictionaryIsCreated = true;
-            if (nameGiven) {
-                (newGame = new NewGame()).execute();
-            }
         }
     }
-
-    private class NewGame extends SwingWorker<Void, Void> {
-
-        public NewGame() {
-        }
-
-        @Override
-        protected Void doInBackground() {
-            scrabbleGameFrame.enableButtons(false);
-            initGame();
-            return null;
-        }
-
-        @Override
-        protected void done() {
-            scrabbleGameFrame.enableButtons(true);
-        }
-    }
-
 
     void computerMove() {
         game.computersTurn = true;
@@ -343,17 +296,21 @@ public class ScrabbleGame {
     }
 
     public void newGameAction() {
-        Object[] options = {"Ja", "Nei"};
-        int n = JOptionPane.showOptionDialog(scrabbleGameFrame,
-                "Vil du avslutte dette spillet og starte et nytt?",
-                "Message",
-                JOptionPane.YES_NO_OPTION,
-                JOptionPane.QUESTION_MESSAGE,
-                null,     //do not use a custom Icon
-                options,  //the titles of buttons
-                options[1]); //default button title
-        if (n == 0) { //skal fjernes
-            (newGame = new NewGame()).execute();
+        if (game != null) {
+            Object[] options = {"Ja", "Nei"};
+            int n = JOptionPane.showOptionDialog(scrabbleGameFrame,
+                    "Vil du avslutte dette spillet og starte et nytt?",
+                    "Message",
+                    JOptionPane.YES_NO_OPTION,
+                    JOptionPane.QUESTION_MESSAGE,
+                    null,     //do not use a custom Icon
+                    options,  //the titles of buttons
+                    options[1]); //default button title
+            if (n == 0) { //skal fjernes
+                initGame();
+            }
+        } else {
+            initGame();
         }
     }
 
@@ -495,9 +452,7 @@ public class ScrabbleGame {
 
         Bag bag = new Bag();
 
-        game = new Game(new Board(), bag, playerName, this);
-
-        scrabbleGameFrame.rackPanel.renderRack(game.getPlayer().getRack());
+        game = new Game(new Board(), bag, this);
 
         if (game.computersTurn) {
             computerMove();
@@ -512,10 +467,6 @@ public class ScrabbleGame {
 
     Game game;
 
-    NewGame newGame;
-    DictionaryCreator dictionaryCreator;
-    PlayerNameCreator playerNameCreator;
-
     //TODO: disse må vekk
     ArrayList<String> possibleBingos = new ArrayList<>();
     ArrayList<String> impossibleBingos = new ArrayList<>();
@@ -527,16 +478,11 @@ public class ScrabbleGame {
     Square selectedSquare;
 
     double vowelRatioLeft;
-    boolean dictionaryIsCreated = false;
-    boolean nameGiven = false;
     //TODO: fjerne all bruk av disse, heller bruke game.getComputer().getRack().toString();
     String rackString = "";
     String previousRackString;
     String cpuNewlyPicked;
     String rackStringCpy = "";
     boolean newWordAdded = false;
-
-    //Innstillinger
-    String playerName = "player";
 
 }
