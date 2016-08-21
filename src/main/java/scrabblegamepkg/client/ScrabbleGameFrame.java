@@ -224,13 +224,15 @@ public class ScrabbleGameFrame extends JFrame {
     }
 
     private void renderGame(Game game) {
-        switch (game.getPlayer().getLastTurn().getAction()) {
-            case MOVE:
-                boardPanel.lockTiles();
-                break;
-            case DISALLOWED:
-            case PASS:
-            case SWAP:
+        if (game.getPlayer().getLastTurn() != null) {
+            switch (game.getPlayer().getLastTurn().getAction()) {
+                case MOVE:
+                    boardPanel.lockTiles();
+                    break;
+                case DISALLOWED:
+                case PASS:
+                case SWAP:
+            }
         }
         boardPanel.render(game.getBoard().getCharBoard());
         rackPanel.renderRack(game.getPlayer().getRack());
@@ -268,7 +270,25 @@ public class ScrabbleGameFrame extends JFrame {
     }
 
     private void newGameButtonActionPerformed(java.awt.event.ActionEvent evt) {
-        scrabbleGame.newGameAction();
+
+        if (!"".equals(bagCountLabel.getText())) {
+            Object[] options = {"Ja", "Nei"};
+            int n = JOptionPane.showOptionDialog(this,
+                    "Vil du avslutte dette spillet og starte et nytt?",
+                    "Message",
+                    JOptionPane.YES_NO_OPTION,
+                    JOptionPane.QUESTION_MESSAGE,
+                    null,     //do not use a custom Icon
+                    options,  //the titles of buttons
+                    options[1]); //default button title
+            if (n == 0) { //skal fjernes
+                renderGame(scrabbleGame.newGameAction());
+            }
+        } else {
+            renderGame(scrabbleGame.newGameAction());
+        }
+
+
     }
 
     public void enableButtons(boolean enable) {

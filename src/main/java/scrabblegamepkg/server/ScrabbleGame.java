@@ -294,23 +294,18 @@ public class ScrabbleGame {
         }
     }
 
-    public void newGameAction() {
-        if (game != null) {
-            Object[] options = {"Ja", "Nei"};
-            int n = JOptionPane.showOptionDialog(scrabbleGameFrame,
-                    "Vil du avslutte dette spillet og starte et nytt?",
-                    "Message",
-                    JOptionPane.YES_NO_OPTION,
-                    JOptionPane.QUESTION_MESSAGE,
-                    null,     //do not use a custom Icon
-                    options,  //the titles of buttons
-                    options[1]); //default button title
-            if (n == 0) { //skal fjernes
-                initGame();
-            }
-        } else {
-            initGame();
+    public Game newGameAction() {
+        newlyAddedToBoard.clear();
+        addedToThisMove.clear();
+
+        Bag bag = new Bag();
+
+        game = new Game(new Board(), bag, this);
+
+        if (game.computersTurn) {
+            computerMove();
         }
+        return game;
     }
 
     public void tipsAction() {
@@ -441,21 +436,6 @@ public class ScrabbleGame {
                 Logger.getLogger(ScrabbleGame.class.getName()).log(Level.SEVERE, null, ex);
             }
         });
-    }
-
-    void initGame() {
-        scrabbleGameFrame.boardPanel.cleanUp();
-
-        newlyAddedToBoard.clear();
-        addedToThisMove.clear();
-
-        Bag bag = new Bag();
-
-        game = new Game(new Board(), bag, this);
-
-        if (game.computersTurn) {
-            computerMove();
-        }
     }
 
     // My variables
