@@ -10,7 +10,7 @@ public class Game {
 
     ScrabbleGame scrabbleGame;
 
-    //TODO: disse burde jeg vel kunne unngå?
+    //TODO: disse burde jeg vel kunne unngÃ¥?
     public boolean playerIsFirst;
     boolean computersTurn;
     int pointlessTurns = 0;
@@ -56,5 +56,5 @@ public class Game {
     }
 
     //TODO: lage Turn-objekt.
-    //bruke dette for å avgjøre om det har vært 6 poengløse Turns på rad
+    //bruke dette for Ã¥ avgjÃ¸re om det har vÃ¦rt 6 poenglÃ¸se Turns pÃ¥ rad
 }

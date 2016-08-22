@@ -4,10 +4,10 @@ import java.util.ArrayList;
 
 public class Move {
 
-    //Dette liker jeg ikke... men om legget er vertikalt, så er 'row' raden på det transposa brettet...
+    //Dette liker jeg ikke... men om legget er vertikalt, sÃ¥ er 'row' raden pÃ¥ det transposa brettet...
     //Tilsvarende med column.
     //TODO: representere row og column kun riktig vei
-    //addedTiles kommer til å representere det faktiske brettet -> row er alltid rad på brettet riktig vei.
+    //addedTiles kommer til Ã¥ representere det faktiske brettet -> row er alltid rad pÃ¥ brettet riktig vei.
 
     public String word = "";
     public int row;
@@ -30,7 +30,7 @@ public class Move {
     }
 
     private int getMoveScore(char[][] charBoard) {
-        //TODO: trenger ikke i/j - kan bruke row, wordstart direkte - for de endres ikke på
+        //TODO: trenger ikke i/j - kan bruke row, wordstart direkte - for de endres ikke pÃ¥
         int i = row;
         int j = startColumn;
         int horizontalMultiplier = 1;
@@ -56,7 +56,7 @@ public class Move {
             k++;
         }
 
-        //TODO: dette burde løses (skjer dersom kun én brikke legges, og bare danner ord nedover...)
+        //TODO: dette burde lÃ¸ses (skjer dersom kun Ã©n brikke legges, og bare danner ord nedover...)
         if (word.length() == 1) {
             word = words.get(0);
             words.clear();

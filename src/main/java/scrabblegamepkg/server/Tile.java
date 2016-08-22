@@ -4,7 +4,7 @@ public class Tile implements Comparable<Tile>{
 
     public char letter;
     int value;
-    //TODO: isMovable er en GUI-ting og burde ikke være her
+    //TODO: isMovable er en GUI-ting og burde ikke vÃ¦re her
     public boolean isMovable = true;
 
     int row, column;

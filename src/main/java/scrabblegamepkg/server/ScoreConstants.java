@@ -30,9 +30,9 @@ public class ScoreConstants {
         letterScores.put('V', 4);
         letterScores.put('W', 8);
         letterScores.put('Y', 6);
-        letterScores.put('Æ', 6);
-        letterScores.put('Ø', 5);
-        letterScores.put('Å', 4);
+        letterScores.put('Ã†', 6);
+        letterScores.put('Ã˜', 5);
+        letterScores.put('Ã…', 4);
         letterScores.put('-', 0);
     }
 
@@ -62,9 +62,9 @@ public class ScoreConstants {
         relativeLetterScores.put('V', - 3.3475);
         relativeLetterScores.put('W', - 13.9083);
         relativeLetterScores.put('Y', - 2.8938);
-        relativeLetterScores.put('Æ', - 4.3911);
-        relativeLetterScores.put('Ø', - 2.6567);
-        relativeLetterScores.put('Å', - 3.0975);
+        relativeLetterScores.put('Ã†', - 4.3911);
+        relativeLetterScores.put('Ã˜', - 2.6567);
+        relativeLetterScores.put('Ã…', - 3.0975);
         relativeLetterScores.put('-', 5.0001);
     }
 

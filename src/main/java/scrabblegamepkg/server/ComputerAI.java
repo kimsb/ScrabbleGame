@@ -36,7 +36,7 @@ public class ComputerAI {
         this.onPlayersRack = onPlayersRack;
     }
 
-    //gjøres nå for alle ord, bør det bare gjøres for topp 10, 20, 30?
+    //gjÃ¸res nÃ¥ for alle ord, bÃ¸r det bare gjÃ¸res for topp 10, 20, 30?
     double cpuAIScore(Move posWord) {
         String casingCopy = posWord.word;
         posWord.word = posWord.word.toUpperCase();
@@ -52,7 +52,7 @@ public class ComputerAI {
             }
         }
 
-        //gir poeng for brikkene som blir igjen på racket (ok poengsum?)
+        //gir poeng for brikkene som blir igjen pÃ¥ racket (ok poengsum?)
         double leftScore = 0;
         String leftOnRack = rackStringCpy;
         for (int i = 0; i < posWord.usedFromRack.length(); i++) {
@@ -67,30 +67,30 @@ public class ComputerAI {
             leftScore += ScoreConstants.relativeLetterScore(leftOnRack.charAt(i));
         }
         //stats
-        posWord.AIString += "+" + leftScore + " for brikkene som er igjen på racket, ";
+        posWord.AIString += "+" + leftScore + " for brikkene som er igjen pÃ¥ racket, ";
 
-        //gir poeng for å bruke mange bokstaver om man har få vokaler
+        //gir poeng for Ã¥ bruke mange bokstaver om man har fÃ¥ vokaler
         if(StringUtil.vowelCount(posWord.leftOnRack) + StringUtil.vowelCount(posWord.usedFromRack) <= 1 &&
                 posWord.usedFromRack.length() >= 4) {
             score += 5;
-            posWord.AIString += "+5 for bruk av mange brikker når man har få vokaler, ";
+            posWord.AIString += "+5 for bruk av mange brikker nÃ¥r man har fÃ¥ vokaler, ";
         }
 
-        //trekk for å bruke få bokstaver med W eller C på hånda
+        //trekk for Ã¥ bruke fÃ¥ bokstaver med W eller C pÃ¥ hÃ¥nda
         if (leftOnRack.length() >= 5 && (leftOnRack.indexOf('W') != -1 || leftOnRack.indexOf('C') != -1)) {
             score -= 10;
-            posWord.AIString += "-10 for bruk av få bokstaver med W/C på hånda, ";
+            posWord.AIString += "-10 for bruk av fÃ¥ bokstaver med W/C pÃ¥ hÃ¥nda, ";
         }
 
-        //trekk for mange brikker igjen, men få vokaler
+        //trekk for mange brikker igjen, men fÃ¥ vokaler
         if (leftOnRack.length() >= 5 && StringUtil.vowelCount(leftOnRack) <= 1) {
             score -= 7.5;
-            posWord.AIString += "-7.5 for mange brikker, men få vokaler, ";
+            posWord.AIString += "-7.5 for mange brikker, men fÃ¥ vokaler, ";
         }
 
         if (leftScore == 0 && rackStringCpy.length() == 7) {
             score += 25;
-            posWord.AIString += "+25 for å legge bingo, ";
+            posWord.AIString += "+25 for Ã¥ legge bingo, ";
         }
 
         //favorisere ing, ene - gir 10p ekstra
@@ -100,7 +100,7 @@ public class ComputerAI {
                 leftOnRack.indexOf('G') != -1) {
             score += 10;
             //stats
-            posWord.AIString += "+10 for å ha igjen ING på racket, ";
+            posWord.AIString += "+10 for Ã¥ ha igjen ING pÃ¥ racket, ";
         }
         boolean ene = false;
         if (leftOnRack.length() >= 3 &&
@@ -109,11 +109,11 @@ public class ComputerAI {
                 leftOnRack.substring(leftOnRack.indexOf('E')+1).indexOf('E') != -1) {
             score += 10;
             //stats
-            posWord.AIString += "+10 for å ha igjen ENE på racket, ";
+            posWord.AIString += "+10 for Ã¥ ha igjen ENE pÃ¥ racket, ";
             ene = true;
         }
 
-        //favorisere ulike brikker på racket - trekker fra 5p for hver like brikke
+        //favorisere ulike brikker pÃ¥ racket - trekker fra 5p for hver like brikke
         boolean twoEs = false;
         boolean doubles = false;
         for (int i = 0; i < leftOnRack.length() - 1; i++) {
@@ -124,18 +124,18 @@ public class ComputerAI {
                         if (!ene) {
                             twoEs = true;
                             score += 5;
-                            posWord.AIString += "+5 for akkurat 2stk E igjen på racket, ";
+                            posWord.AIString += "+5 for akkurat 2stk E igjen pÃ¥ racket, ";
                         }
                     } else {
                         score -= 5;
                         //stats
-                        posWord.AIString += "-5 for 2stk " + leftOnRack.charAt(i) + " igjen på racket, ";
+                        posWord.AIString += "-5 for 2stk " + leftOnRack.charAt(i) + " igjen pÃ¥ racket, ";
                     }
                 }
             }
         }
 
-        //plusspoeng for bingovennlige brikker igjen på rack
+        //plusspoeng for bingovennlige brikker igjen pÃ¥ rack
         if (!doubles) {
             if (StringUtil.bingoFriendly(leftOnRack)) {
                 score += 7;
@@ -143,7 +143,7 @@ public class ComputerAI {
             }
         }
 
-        //vokal/konsonant-ratio - nå bare dersom det er minst 7 brikker i posen
+        //vokal/konsonant-ratio - nÃ¥ bare dersom det er minst 7 brikker i posen
         double optimalVowelCount = 2.63;
         double vowelCount = 0;
         boolean hasBlank = false;
@@ -172,21 +172,21 @@ public class ComputerAI {
             posWord.AIString += "-" + (5 * ratio) + " for vokal/konsonant-ratio, ";
         }
 
-        //gå ut om det gjør at cpu vinner (med mindre player ikke kan legge)
+        //gÃ¥ ut om det gjÃ¸r at cpu vinner (med mindre player ikke kan legge)
         if (bag.isEmpty() && posWord.leftOnRack.length() == 0 &&
                 (computerScore + posWord.moveScore) > playerScore &&
                 pointlessTurns == 0) {
             score += 100;
             //stats
-            posWord.AIString += "går ut fordi cpu vinner (+100), ";
+            posWord.AIString += "gÃ¥r ut fordi cpu vinner (+100), ";
         } else if (bag.isEmpty()) {
-            //gir ekstra poeng for brikkene som brukes (så ikke motstander får dem som pluss)
+            //gir ekstra poeng for brikkene som brukes (sÃ¥ ikke motstander fÃ¥r dem som pluss)
             int extraScore = 0;
             for (int i = 0; i < posWord.usedFromRack.length(); i++) {
                 extraScore += ScoreConstants.relativeLetterScore(posWord.usedFromRack.charAt(i)) * 2;
             }
             score += extraScore;
-            posWord.AIString += "+" + extraScore + " for å kvitte seg med bokstaver når posen er tom, ";
+            posWord.AIString += "+" + extraScore + " for Ã¥ kvitte seg med bokstaver nÃ¥r posen er tom, ";
         }
 
         //bonus for bruk av toveis DL, TL, DW, TW
@@ -209,22 +209,22 @@ public class ComputerAI {
             }
         }
 
-        //trekk for å legge opp toveis DL, TL, DW, TW (om de kan brukes)
-        //denne sjekker nå om en enkelt bokstav kan brukes på MultiplierFeltet for å lage ord begge veier
+        //trekk for Ã¥ legge opp toveis DL, TL, DW, TW (om de kan brukes)
+        //denne sjekker nÃ¥ om en enkelt bokstav kan brukes pÃ¥ MultiplierFeltet for Ã¥ lage ord begge veier
         score += toWayMultiplierSetUpPenalty(posWord);
 
-        //trekk for å lage åpninger langs TW-radene + DW * DW
+        //trekk for Ã¥ lage Ã¥pninger langs TW-radene + DW * DW
         score += openingTWPenalty(posWord);
 
         //sluttspilltaktikk
 
-        //bytte om mulige trekk er for dårlige
+        //bytte om mulige trekk er for dÃ¥rlige
 
-        //større forskjell på brikker som er igjen på racket
+        //stÃ¸rre forskjell pÃ¥ brikker som er igjen pÃ¥ racket
 
-        //minus for å legge åpen e
+        //minus for Ã¥ legge Ã¥pen e
 
-        //lavere terskel for å bytte første legg
+        //lavere terskel for Ã¥ bytte fÃ¸rste legg
 
         posWord.word = casingCopy;
         return score;
@@ -236,14 +236,14 @@ public class ComputerAI {
         }
         double score = 0;
 
-        //hvis starter på første rad
+        //hvis starter pÃ¥ fÃ¸rste rad
         if (posWord.startColumn == 0) {
             boolean upperOpening = false;
             boolean upperMiddleOpening = false;
             boolean lowerMiddleOpening = false;
             boolean lowerOpening = false;
 
-            //øverst hjørne
+            //Ã¸verst hjÃ¸rne
             if (posWord.row > 0 && posWord.row < 5) {
                 upperOpening = true;
                 for (int i = 0; i <= posWord.row+1; i++) {
@@ -277,21 +277,21 @@ public class ComputerAI {
                     }
                 }
             }
-            //har laget åpning på venstre side
+            //har laget Ã¥pning pÃ¥ venstre side
             if (upperOpening || upperMiddleOpening || lowerMiddleOpening || lowerOpening) {
                 score -= 15;
-                posWord.AIString += "-15 for å legge på første av TW-rad, ";
+                posWord.AIString += "-15 for Ã¥ legge pÃ¥ fÃ¸rste av TW-rad, ";
             }
         }
 
-        //hvis ender på siste rad
+        //hvis ender pÃ¥ siste rad
         if (posWord.startColumn + posWord.word.length() == 15) {
             boolean upperOpening = false;
             boolean upperMiddleOpening = false;
             boolean lowerMiddleOpening = false;
             boolean lowerOpening = false;
 
-            //øverst hjørne
+            //Ã¸verst hjÃ¸rne
             if (posWord.row > 0 && posWord.row < 5) {
                 upperOpening = true;
                 for (int i = 0; i <= posWord.row+1; i++) {
@@ -325,23 +325,23 @@ public class ComputerAI {
                     }
                 }
             }
-            //har laget åpning på høyre side
+            //har laget Ã¥pning pÃ¥ hÃ¸yre side
             if (upperOpening || upperMiddleOpening || lowerMiddleOpening || lowerOpening) {
                 score -= 15;
-                posWord.AIString += "-15 for å legge på siste av TW-rad, ";
+                posWord.AIString += "-15 for Ã¥ legge pÃ¥ siste av TW-rad, ";
             }
         }
 
-        //for åpninger på venstre side
+        //for Ã¥pninger pÃ¥ venstre side
         if (posWord.startColumn == 1) {
             int playerOpenings = 0;
             int cpuOpenings = 0;
             for (int i = 0; i < 29; i++) {
                 if (dictionary.contains(StringUtil.alphaString().charAt(i) + posWord.word)) {
-                    //straff for åpning
+                    //straff for Ã¥pning
                     if (bag.containsLetterOrBlank(StringUtil.alphaString().charAt(i))) {
                         playerOpenings++;
-                        //bonus for åpning som ikke kan brukes av player
+                        //bonus for Ã¥pning som ikke kan brukes av player
                     } else if (rackString.indexOf(StringUtil.alphaString().charAt(i)) != -1) {
                         cpuOpenings++;
                     }
@@ -352,7 +352,7 @@ public class ComputerAI {
                 boolean upperMiddleOpening = false;
                 boolean lowerMiddleOpening = false;
                 boolean lowerOpening = false;
-                //øverst hjørne
+                //Ã¸verst hjÃ¸rne
                 if (posWord.row < 7) {
                     upperOpening = true;
                     for (int i = 0; i <= posWord.row +1; i++) {
@@ -384,29 +384,29 @@ public class ComputerAI {
                         }
                     }
                 }
-                //har funnet åpning på venstre side
+                //har funnet Ã¥pning pÃ¥ venstre side
                 if (upperOpening || upperMiddleOpening || lowerMiddleOpening || lowerOpening) {
                     if (cpuOpenings > playerOpenings) {
                         score += 15;
-                        posWord.AIString += "+15 for CPU-åpning av TW-rad (foran), ";
+                        posWord.AIString += "+15 for CPU-Ã¥pning av TW-rad (foran), ";
                     } else if (playerOpenings > 0) {
                         score -= 15;
-                        posWord.AIString += "-15 for player-åpning av TW-rad (foran), ";
+                        posWord.AIString += "-15 for player-Ã¥pning av TW-rad (foran), ";
                     }
                 }
             }
         }
 
-        // for åpninger på høyre side
+        // for Ã¥pninger pÃ¥ hÃ¸yre side
         if (posWord.startColumn + posWord.word.length() == 14) {
             int playerOpenings = 0;
             int cpuOpenings = 0;
             for (int i = 0; i < 29; i++) {
                 if (dictionary.contains(posWord.word + StringUtil.alphaString().charAt(i))) {
-                    //straff for åpning
+                    //straff for Ã¥pning
                     if (bag.containsLetterOrBlank(StringUtil.alphaString().charAt(i))) {
                         playerOpenings++;
-                        //bonus for åpning som ikke kan brukes av player
+                        //bonus for Ã¥pning som ikke kan brukes av player
                     } else if (rackString.indexOf(StringUtil.alphaString().charAt(i)) != -1) {
                         cpuOpenings++;
                     }
@@ -417,7 +417,7 @@ public class ComputerAI {
                 boolean upperMiddleOpening = false;
                 boolean lowerMiddleOpening = false;
                 boolean lowerOpening = false;
-                //øverst hjørne
+                //Ã¸verst hjÃ¸rne
                 if (posWord.row < 7) {
                     upperOpening = true;
                     for (int i = 0; i <= posWord.row +1; i++) {
@@ -449,29 +449,29 @@ public class ComputerAI {
                         }
                     }
                 }
-                //har funnet åpning på høyre side
+                //har funnet Ã¥pning pÃ¥ hÃ¸yre side
                 if (upperOpening || upperMiddleOpening || lowerMiddleOpening || lowerOpening) {
                     if (cpuOpenings > playerOpenings) {
                         score += 15;
-                        posWord.AIString += "+15 for CPU-åpning av TW-rad (bak), ";
+                        posWord.AIString += "+15 for CPU-Ã¥pning av TW-rad (bak), ";
                     } else if (playerOpenings > 0) {
                         score -= 15;
-                        posWord.AIString += "-15 for player-åpning av TW-rad (bak), ";
+                        posWord.AIString += "-15 for player-Ã¥pning av TW-rad (bak), ";
                     }
                 }
             }
         }
 
-        // for åpninger med ord foran midtlinja
+        // for Ã¥pninger med ord foran midtlinja
         if (posWord.startColumn + posWord.word.length() == 7) {
             int playerOpenings = 0;
             int cpuOpenings = 0;
             for (int i = 0; i < 29; i++) {
                 if (dictionary.contains(posWord.word + StringUtil.alphaString().charAt(i))) {
-                    //straff for åpning
+                    //straff for Ã¥pning
                     if (bag.containsLetterOrBlank(StringUtil.alphaString().charAt(i))) {
                         playerOpenings++;
-                        //bonus for åpning som ikke kan brukes av player
+                        //bonus for Ã¥pning som ikke kan brukes av player
                     } else if (rackString.indexOf(StringUtil.alphaString().charAt(i)) != -1) {
                         cpuOpenings++;
                     }
@@ -498,28 +498,28 @@ public class ComputerAI {
                     }
                 }
 
-                //har funnet åpning på midtlinja med ord foran
+                //har funnet Ã¥pning pÃ¥ midtlinja med ord foran
                 if (upperOpening || lowerOpening) {
                     if (cpuOpenings > playerOpenings) {
                         score += 15;
-                        posWord.AIString += "+15 for CPU-åpning av TW-rad (midten, ord foran), ";
+                        posWord.AIString += "+15 for CPU-Ã¥pning av TW-rad (midten, ord foran), ";
                     } else if (playerOpenings > 0) {
                         score -= 15;
-                        posWord.AIString += "-15 for player-åpning av TW-rad (midten, ord foran), ";
+                        posWord.AIString += "-15 for player-Ã¥pning av TW-rad (midten, ord foran), ";
                     }
                 }
             }
         }
-        // for åpninger med ord bak midtlinja
+        // for Ã¥pninger med ord bak midtlinja
         if (posWord.startColumn == 8) {
             int playerOpenings = 0;
             int cpuOpenings = 0;
             for (int i = 0; i < 29; i++) {
                 if (dictionary.contains(StringUtil.alphaString().charAt(i) + posWord.word)) {
-                    //straff for åpning
+                    //straff for Ã¥pning
                     if (bag.containsLetterOrBlank(StringUtil.alphaString().charAt(i))) {
                         playerOpenings++;
-                        //bonus for åpning som ikke kan brukes av player
+                        //bonus for Ã¥pning som ikke kan brukes av player
                     } else if (rackString.indexOf(StringUtil.alphaString().charAt(i)) != -1) {
                         cpuOpenings++;
                     }
@@ -545,20 +545,20 @@ public class ComputerAI {
                         }
                     }
                 }
-                //har funnet åpning på midtlinja med ord bak
+                //har funnet Ã¥pning pÃ¥ midtlinja med ord bak
                 if (upperOpening || lowerOpening) {
                     if (cpuOpenings > playerOpenings) {
                         score += 15;
-                        posWord.AIString += "+15 for CPU-åpning av TW-rad (midten, ord bak), ";
+                        posWord.AIString += "+15 for CPU-Ã¥pning av TW-rad (midten, ord bak), ";
                     } else if (playerOpenings > 0) {
                         score -= 15;
-                        posWord.AIString += "-15 for player-åpning av TW-rad (midten, ord bak), ";
+                        posWord.AIString += "-15 for player-Ã¥pning av TW-rad (midten, ord bak), ";
                     }
                 }
             }
         }
 
-        // hvis legges på rad 1 (og åpner for øverste rad)
+        // hvis legges pÃ¥ rad 1 (og Ã¥pner for Ã¸verste rad)
         if (posWord.row == 1) {
             if (posWord.startColumn >= 0 && posWord.startColumn <= 6) {
                 boolean leftOpening = false;
@@ -618,10 +618,10 @@ public class ComputerAI {
                 }
                 if (leftOpening || middleOpening) {
                     score -= 15;
-                    posWord.AIString += "-15 for åpning av TW-rad (rad 1, venstre eller midten), ";
+                    posWord.AIString += "-15 for Ã¥pning av TW-rad (rad 1, venstre eller midten), ";
                 }
             }
-            //sjekker mot midten og mot høyre
+            //sjekker mot midten og mot hÃ¸yre
             if ((posWord.startColumn + posWord.word.length()) >= 9 && (posWord.startColumn + posWord.word.length()) <= 15) {
                 boolean middleOpening = false;
                 boolean rightOpening = false;
@@ -650,7 +650,7 @@ public class ComputerAI {
                         }
                     }
                 }
-                //sjekker mot høyre
+                //sjekker mot hÃ¸yre
                 int wordStop = posWord.startColumn + posWord.word.length() - 1;
                 if (charBoard[0][wordStop] == '-' &&  charBoard[0][wordStop-1] == '-') {
                     String vertSuffix = "" + posWord.word.charAt(posWord.word.length()-1);
@@ -678,12 +678,12 @@ public class ComputerAI {
                 }
                 if (middleOpening || rightOpening) {
                     score -= 15;
-                    posWord.AIString += "-15 for åpning av TW-rad (rad 1, midten eller høyre), ";
+                    posWord.AIString += "-15 for Ã¥pning av TW-rad (rad 1, midten eller hÃ¸yre), ";
                 }
             }
         }
 
-        // hvis legges på rad 8 (og åpner for midterste rad)
+        // hvis legges pÃ¥ rad 8 (og Ã¥pner for midterste rad)
         if (posWord.row == 8) {
             if (posWord.startColumn >= 0 && posWord.startColumn < 7) {
                 boolean leftOpening = false;
@@ -720,13 +720,13 @@ public class ComputerAI {
                 }
                 if (leftOpening) {
                     score -= 15;
-                    posWord.AIString += "-15 for åpning av TW-rad (rad 8, venstre), ";
+                    posWord.AIString += "-15 for Ã¥pning av TW-rad (rad 8, venstre), ";
                 }
             }
-            //sjekker mot høyre
+            //sjekker mot hÃ¸yre
             if ((posWord.startColumn + posWord.word.length()) >= 9 && (posWord.startColumn + posWord.word.length()) <= 14) {
                 boolean rightOpening = false;
-                //sjekker mot høyre
+                //sjekker mot hÃ¸yre
                 int wordStop = posWord.startColumn + posWord.word.length() - 1;
                 if (charBoard[7][wordStop] == '-' && charBoard[7][wordStop-1] == '-') {
                     String vertSuffix = "" + posWord.word.charAt(posWord.word.length()-1);
@@ -760,12 +760,12 @@ public class ComputerAI {
                 }
                 if (rightOpening) {
                     score -= 15;
-                    posWord.AIString += "-15 for åpning av TW-rad (rad 8, høyre), ";
+                    posWord.AIString += "-15 for Ã¥pning av TW-rad (rad 8, hÃ¸yre), ";
                 }
             }
 
         }
-        // hvis legges på rad 6 (og åpner for midterste rad)
+        // hvis legges pÃ¥ rad 6 (og Ã¥pner for midterste rad)
         if (posWord.row == 6) {
             if (posWord.startColumn >= 1 && posWord.startColumn < 7) {
                 boolean leftOpening = false;
@@ -802,13 +802,13 @@ public class ComputerAI {
                 }
                 if (leftOpening) {
                     score -= 15;
-                    posWord.AIString += "-15 for åpning av TW-rad (rad 6, venstre), ";
+                    posWord.AIString += "-15 for Ã¥pning av TW-rad (rad 6, venstre), ";
                 }
             }
-            //sjekker mot høyre
+            //sjekker mot hÃ¸yre
             if ((posWord.startColumn + posWord.word.length()) >= 9 && (posWord.startColumn + posWord.word.length()) <= 14) {
                 boolean rightOpening = false;
-                //sjekker mot høyre
+                //sjekker mot hÃ¸yre
                 int wordStop = posWord.startColumn + posWord.word.length() - 1;
                 if (charBoard[7][wordStop] == '-' && charBoard[7][wordStop-1] == '-') {
                     String vertSuffix = "";
@@ -842,11 +842,11 @@ public class ComputerAI {
                 }
                 if (rightOpening) {
                     score -= 15;
-                    posWord.AIString += "-15 for åpning av TW-rad (rad 6, høyre), ";
+                    posWord.AIString += "-15 for Ã¥pning av TW-rad (rad 6, hÃ¸yre), ";
                 }
             }
         }
-        // hvis legges på rad 13 (og åpner for nederst rad)
+        // hvis legges pÃ¥ rad 13 (og Ã¥pner for nederst rad)
         if (posWord.row == 13) {
             if (posWord.startColumn >= 0 && posWord.startColumn < 7) {
                 boolean leftOpening = false;
@@ -906,10 +906,10 @@ public class ComputerAI {
                 }
                 if (leftOpening || middleOpening) {
                     score -= 15;
-                    posWord.AIString += "-15 for åpning av TW-rad (rad 13, venstre eller midten), ";
+                    posWord.AIString += "-15 for Ã¥pning av TW-rad (rad 13, venstre eller midten), ";
                 }
             }
-            //sjekker mot midten og mot høyre
+            //sjekker mot midten og mot hÃ¸yre
             if ((posWord.startColumn + posWord.word.length()) >= 9 && (posWord.startColumn + posWord.word.length()) <= 15) {
                 boolean middleOpening = false;
                 boolean rightOpening = false;
@@ -938,7 +938,7 @@ public class ComputerAI {
                         }
                     }
                 }
-                //sjekker mot høyre
+                //sjekker mot hÃ¸yre
                 int wordStop = posWord.startColumn + posWord.word.length() - 1;
                 if (charBoard[14][wordStop] == '-' && charBoard[14][wordStop-1] == '-') {
                     String vertPrefix = "" + posWord.word.charAt(posWord.word.length()-1);
@@ -966,19 +966,19 @@ public class ComputerAI {
                 }
                 if (middleOpening || rightOpening) {
                     score -= 15;
-                    posWord.AIString += "-15 for åpning av TW-rad (rad 13, midten eller høyre), ";
+                    posWord.AIString += "-15 for Ã¥pning av TW-rad (rad 13, midten eller hÃ¸yre), ";
                 }
             }
         }
 
-        //sjekker om åpner for midtTW og dobbel
+        //sjekker om Ã¥pner for midtTW og dobbel
         //oppe
         if (posWord.row == 2 && posWord.startColumn <= 7 &&
                 posWord.startColumn + posWord.word.length() >= 8) {
             if (charBoard[0][6] == '-' && charBoard[0][7] == '-' && charBoard[0][8] == '-' &&
                     charBoard[1][7] == '-' && charBoard[3][7] == '-' && charBoard[4][7] == '-') {
                 score -= 15;
-                posWord.AIString += "-15 for åpning av øverste TW og dobbel, ";
+                posWord.AIString += "-15 for Ã¥pning av Ã¸verste TW og dobbel, ";
             }
         }
         if (posWord.row == 4 && posWord.startColumn <= 7 &&
@@ -986,7 +986,7 @@ public class ComputerAI {
             if (charBoard[0][6] == '-' && charBoard[0][7] == '-' && charBoard[0][8] == '-' &&
                     charBoard[1][7] == '-' && charBoard[2][7] == '-' && charBoard[3][7] == '-' && charBoard[5][7] == '-') {
                 score -= 15;
-                posWord.AIString += "-15 for åpning av øverste TW og dobbel, ";
+                posWord.AIString += "-15 for Ã¥pning av Ã¸verste TW og dobbel, ";
             }
         }
         //nede
@@ -995,7 +995,7 @@ public class ComputerAI {
             if (charBoard[14][6] == '-' && charBoard[14][7] == '-' && charBoard[14][8] == '-' &&
                     charBoard[10][7] == '-' && charBoard[11][7] == '-' && charBoard[13][7] == '-') {
                 score -= 15;
-                posWord.AIString += "-15 for åpning av nederste TW og dobbel, ";
+                posWord.AIString += "-15 for Ã¥pning av nederste TW og dobbel, ";
             }
         }
         if (posWord.row == 10 && posWord.startColumn <= 7 &&
@@ -1003,12 +1003,12 @@ public class ComputerAI {
             if (charBoard[14][6] == '-' && charBoard[14][7] == '-' && charBoard[14][8] == '-' &&
                     charBoard[9][7] == '-' && charBoard[11][7] == '-' && charBoard[12][7] == '-' && charBoard[13][7] == '-') {
                 score -= 15;
-                posWord.AIString += "-15 for åpning av øverste TW og dobbel, ";
+                posWord.AIString += "-15 for Ã¥pning av Ã¸verste TW og dobbel, ";
             }
         }
 
         //sjekker om legger gjennom DW*DW
-        //trekker 10p bare hvis bokstaven som åpner er bingofriendly
+        //trekker 10p bare hvis bokstaven som Ã¥pner er bingofriendly
         if (posWord.startColumn <= 4 && posWord.startColumn + posWord.word.length() >= 5 &&
                 posWord.row >= 5 && posWord.row <= 9) {
             if (charBoard[4][4] == '-' && charBoard[5][4] == '-' && charBoard[6][4] == '-' &&
@@ -1016,7 +1016,7 @@ public class ComputerAI {
                     charBoard[10][4] == '-') {
                 if (StringUtil.isBingoFriendlyChar(posWord.word.charAt(4 - posWord.startColumn))) {
                     score -= 10;
-                    posWord.AIString += "-10 for åpning av DW * DW, ";
+                    posWord.AIString += "-10 for Ã¥pning av DW * DW, ";
                 }
             }
         }
@@ -1042,7 +1042,7 @@ public class ComputerAI {
                 }
                 if (hasWord) {
                     score -= 10;
-                    posWord.AIString += "-10 for åpning bak DW * DW, ";
+                    posWord.AIString += "-10 for Ã¥pning bak DW * DW, ";
                 }
             }
         }
@@ -1053,7 +1053,7 @@ public class ComputerAI {
                     charBoard[10][10] == '-') {
                 if (StringUtil.isBingoFriendlyChar(posWord.word.charAt(10 - posWord.startColumn))) {
                     score -= 10;
-                    posWord.AIString += "-10 for åpning av DW * DW, ";
+                    posWord.AIString += "-10 for Ã¥pning av DW * DW, ";
                 }
             }
         }
@@ -1079,7 +1079,7 @@ public class ComputerAI {
                 }
                 if (hasWord) {
                     score -= 10;
-                    posWord.AIString += "-10 for åpning foran DW * DW, ";
+                    posWord.AIString += "-10 for Ã¥pning foran DW * DW, ";
                 }
             }
         }
@@ -1125,7 +1125,7 @@ public class ComputerAI {
             if (openingScore > 0) {
                 double addedScore = multiplierPenalty(posWord.row, posWord.startColumn, openingScore);
                 if (addedScore > 0) {
-                    posWord.AIString += "-" + addedScore + " for åpning foran, ";
+                    posWord.AIString += "-" + addedScore + " for Ã¥pning foran, ";
                     score -= addedScore;
                 }
             }
@@ -1167,7 +1167,7 @@ public class ComputerAI {
             if (openingScore > 0) {
                 double addedScore = multiplierPenalty(posWord.row, posWord.startColumn+posWord.word.length(), openingScore);
                 if (addedScore > 0) {
-                    posWord.AIString += "-" + addedScore + " for åpning bak, ";
+                    posWord.AIString += "-" + addedScore + " for Ã¥pning bak, ";
                     score -= addedScore;
                 }
             }
@@ -1225,11 +1225,11 @@ public class ComputerAI {
                         if (rackStringCpy.indexOf(posWord.word.charAt(j - posWord.startColumn)) != -1) {
                             double letterScore = (double) ScoreConstants.letterScore(posWord.word.charAt(j - posWord.startColumn)) / 2;
                             score -= letterScore;
-                            posWord.AIString += "-" + letterScore + " for bokstaven som åpner, ";
+                            posWord.AIString += "-" + letterScore + " for bokstaven som Ã¥pner, ";
                         }
                         double addedScore = multiplierPenalty(posWord.row-l, j, openingScore);
                         if (addedScore > 0) {
-                            posWord.AIString += "-" + addedScore + " for åpning over, ";
+                            posWord.AIString += "-" + addedScore + " for Ã¥pning over, ";
                             score -= addedScore;
                         }
                     }
@@ -1289,11 +1289,11 @@ public class ComputerAI {
                         if (rackStringCpy.indexOf(posWord.word.charAt(j - posWord.startColumn)) != -1) {
                             double letterScore = (double) ScoreConstants.letterScore(posWord.word.charAt(j - posWord.startColumn)) / 2;
                             score -= letterScore;
-                            posWord.AIString += "-" + letterScore + " for bokstaven som åpner, ";
+                            posWord.AIString += "-" + letterScore + " for bokstaven som Ã¥pner, ";
                         }
                         double addedScore = multiplierPenalty(posWord.row+l, j, openingScore);
                         if (addedScore > 0) {
-                            posWord.AIString += "-" + addedScore + " for åpning under, ";
+                            posWord.AIString += "-" + addedScore + " for Ã¥pning under, ";
                             score -= addedScore;
                         }
                     }

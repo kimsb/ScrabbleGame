@@ -28,7 +28,7 @@ public class Bag {
         if (!isEmpty()) {
             return tiles.remove(new Random().nextInt(tileCount()));
         }
-        System.out.println("prøver å trekke brikke fra tom pose");
+        System.out.println("prÃ¸ver Ã¥ trekke brikke fra tom pose");
         return null;
     }
 
@@ -58,9 +58,9 @@ public class Bag {
         tiles.addAll(createTiles(3, 'V'));
         tiles.addAll(createTiles(1, 'W'));
         tiles.addAll(createTiles(1, 'Y'));
-        tiles.addAll(createTiles(1, 'Æ'));
-        tiles.addAll(createTiles(2, 'Ø'));
-        tiles.addAll(createTiles(2, 'Å'));
+        tiles.addAll(createTiles(1, 'Ã†'));
+        tiles.addAll(createTiles(2, 'Ã˜'));
+        tiles.addAll(createTiles(2, 'Ã…'));
         tiles.addAll(createTiles(2, '-'));
 
         return tiles;

@@ -28,7 +28,7 @@ public class TipsCalculator extends SwingWorker<Void, Void> {
         String playerRack = scrabbleGame.game.getPlayer().getRack().toString();
         scrabbleGame.tipsWords.clear();
 
-        //bruker nye metoden for å finne ord
+        //bruker nye metoden for Ã¥ finne ord
         MoveFinder moveFinder = new MoveFinder();
         ArrayList<Move> allMoves = moveFinder.findAllMoves(scrabbleGame.dictionary, scrabbleGame.game.getBoard(), playerRack);
 

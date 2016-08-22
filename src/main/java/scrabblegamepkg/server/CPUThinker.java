@@ -11,8 +11,8 @@ import java.util.TreeMap;
 
 import static scrabblegamepkg.server.ScrabbleGame.*;
 
-//TODO: her er det mye å ta tak i!
-// - skal ikke gjøre frontend-ting
+//TODO: her er det mye Ã¥ ta tak i!
+// - skal ikke gjÃ¸re frontend-ting
 // - endrer mange variabler i scrabblegame direkte...
 public class CPUThinker extends SwingWorker<Void, Void> {
 
@@ -67,7 +67,7 @@ public class CPUThinker extends SwingWorker<Void, Void> {
             sjekkAtBoardErOK();
 
 
-            //bruker nye metoden for å finne ord
+            //bruker nye metoden for Ã¥ finne ord
             MoveFinder moveFinder = new MoveFinder();
             ArrayList<Move> allMoves = moveFinder.findAllMoves(scrabbleGame.dictionary, game.getBoard(), scrabbleGame.rackString);
 
@@ -102,7 +102,7 @@ public class CPUThinker extends SwingWorker<Void, Void> {
                 System.out.println("CPU kan ikke legge");
                 scrabbleGame.addedToThisMove.clear();
 
-                //MÅ BYTTE OM MULIG
+                //MÃ¥ BYTTE OM MULIG
                 if (game.getBag().tileCount() >= 7) {
                     //bytter alle
                     computerSwap(scrabbleGame.rackString);
@@ -113,7 +113,7 @@ public class CPUThinker extends SwingWorker<Void, Void> {
                 return;
             }
 
-            //velge legg og skrive ut på skjerm + legge til brikkene i charBoard
+            //velge legg og skrive ut pÃ¥ skjerm + legge til brikkene i charBoard
             Move topScoreWord = newPossibleWords.firstEntry().getValue();
 
             //TEST
@@ -135,31 +135,31 @@ public class CPUThinker extends SwingWorker<Void, Void> {
             //TEST SLUTT
 
             //hvis beste legg ikke er noe godt legg => bytte brikker
-            //har lavere terskel for å bytte om det er første trekk
+            //har lavere terskel for Ã¥ bytte om det er fÃ¸rste trekk
             if (game.isFirstMove()) {
                 //bytter hvis ordets score er negativ, eller gir mindre enn 10 poeng
                 //eller hvis cpu blir sittende igjen med minst tre bokstaver og alle er konsonanter
                 if (newPossibleWords.firstEntry().getKey() < 0 || topScoreWord.moveScore < 10 ||
                         (topScoreWord.leftOnRack.length() >= 3 && !StringUtil.containsVowel(topScoreWord.leftOnRack)) ||
                         (topScoreWord.leftOnRack.length() >= 5 && StringUtil.vowelCount(topScoreWord.leftOnRack) == 1)) {
-                    System.out.println("bytter ved på første trekk");
+                    System.out.println("bytter ved pÃ¥ fÃ¸rste trekk");
                     cpuMakeSwap();
                     scrabbleGame.addedToThisMove.clear();
                     return;
                 }
-                //hvis det ikker er første legg
+                //hvis det ikker er fÃ¸rste legg
             } else {
-                //kriterier for å bytte: negativ score eller kun konsonanter
+                //kriterier for Ã¥ bytte: negativ score eller kun konsonanter
                 if (game.getBag().tileCount() >= 7 && newPossibleWords.firstEntry().getKey() < 0) {
-                    System.out.println("bytter pga for dårlig bestelegg");
+                    System.out.println("bytter pga for dÃ¥rlig bestelegg");
                     cpuMakeSwap();
                     scrabbleGame.addedToThisMove.clear();
                     return;
                 }
             }
 
-            //legg brikker på brettet
-            //TODO: Move burde ha være en bedre representasjon av et trekk -> "disse brikkene på disse feltene"
+            //legg brikker pÃ¥ brettet
+            //TODO: Move burde ha vÃ¦re en bedre representasjon av et trekk -> "disse brikkene pÃ¥ disse feltene"
             scrabbleGame.scrabbleGameFrame.boardPanel.placeMove(topScoreWord);
             removeFromCPURack(topScoreWord);
             game.getBoard().addToCharBoard(topScoreWord);
@@ -175,7 +175,7 @@ public class CPUThinker extends SwingWorker<Void, Void> {
                 scrabbleGame.rackString += t.letter;
                 scrabbleGame.cpuNewlyPicked += t.letter;
             }
-            //hvis CPU går ut
+            //hvis CPU gÃ¥r ut
             if (scrabbleGame.rackString.length() == 0) {
                 System.out.println("kaller finishGame fra CPU");
                 scrabbleGame.finishGame();
@@ -228,7 +228,7 @@ public class CPUThinker extends SwingWorker<Void, Void> {
         if (!StringUtil.containsVowel(scrabbleGame.rackString)) {
             toSwap = scrabbleGame.rackString;
         } else {
-            //sparer på vokaler og bingovennlige brikker (maks en av hver) - burde vært to av E?
+            //sparer pÃ¥ vokaler og bingovennlige brikker (maks en av hver) - burde vÃ¦rt to av E?
             for (int i = 0; i < 7; i++) {
                 char c = scrabbleGame.rackString.charAt(i);
                 if (StringUtil.isVowel(c) && tilesKept.indexOf(c) == -1) {
@@ -241,7 +241,7 @@ public class CPUThinker extends SwingWorker<Void, Void> {
                     toSwap += c;
                 }
             }
-            //sjekker konsonant/vokal-ratio på brikkene som skal spares
+            //sjekker konsonant/vokal-ratio pÃ¥ brikkene som skal spares
             double vowelRatio = StringUtil.vowelRatio(tilesKept);
             while (tilesKept.length() > 1 &&
                     (vowelRatio < 0.33 || vowelRatio > 0.67)) {
@@ -270,21 +270,21 @@ public class CPUThinker extends SwingWorker<Void, Void> {
         JOptionPane.showMessageDialog(null, "CPU bytter " + toSwap.length() + " brikker");
         System.out.println("CPU kaller swap med " + toSwap + ", rackString er " + scrabbleGame.rackString + "<-slutt");
         if (scrabbleGame.game.getBag().tileCount() < 7) {
-            System.out.println("CPU prøver å bytte med for lite i posen");
+            System.out.println("CPU prÃ¸ver Ã¥ bytte med for lite i posen");
         } else {
             //trekker brikker
             for (int i = 0; i < toSwap.length(); i++) {
                 Tile t = scrabbleGame.game.getBag().pickTile();
                 scrabbleGame.rackString += t.letter;
             }
-            System.out.println("etter å ha trukket opp: " + scrabbleGame.rackString);
+            System.out.println("etter Ã¥ ha trukket opp: " + scrabbleGame.rackString);
             //legger gamle brikker tilbake i posen
             for (int i = 0; i < toSwap.length(); i++) {
                 char c = toSwap.charAt(i);
                 scrabbleGame.rackString = scrabbleGame.rackString.substring(0,scrabbleGame.rackString.indexOf(c)) + scrabbleGame.rackString.substring(scrabbleGame.rackString.indexOf(c)+1);
                 scrabbleGame.game.getBag().add(new Tile(c));
             }
-            System.out.println("etter å ha lagt tilbake: " + scrabbleGame.rackString);
+            System.out.println("etter Ã¥ ha lagt tilbake: " + scrabbleGame.rackString);
         }
     }
 }

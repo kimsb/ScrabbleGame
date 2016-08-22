@@ -48,10 +48,10 @@ public class MoveFinderTest {
     public void finds_both_bingos_with_blank() {
         MoveFinder moveFinder = new MoveFinder();
 
-        ArrayList<Move> allMoves = moveFinder.findAllMoves(dictionary, board, "HÅTASK-");
+        ArrayList<Move> allMoves = moveFinder.findAllMoves(dictionary, board, "HÃ…TASK-");
 
-        assertThat(allMoves.stream().filter(move -> move.word.equals("HÅTASKe")).findAny().get()).isNotNull();
-        assertThat(allMoves.stream().filter(move -> move.word.equals("HÅTASKa")).findAny().get()).isNotNull();
+        assertThat(allMoves.stream().filter(move -> move.word.equals("HÃ…TASKe")).findAny().get()).isNotNull();
+        assertThat(allMoves.stream().filter(move -> move.word.equals("HÃ…TASKa")).findAny().get()).isNotNull();
 
     }
 

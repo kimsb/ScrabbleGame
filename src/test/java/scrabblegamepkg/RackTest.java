@@ -60,7 +60,7 @@ public class RackTest {
         rack.removeTile('A');
         assertThat(rack.tileCount()).isEqualTo(6);
 
-        //TODO: spillflyten antar at tile har blitt lagt på brett (er altså allerede fjernet fra square)
+        //TODO: spillflyten antar at tile har blitt lagt pÃ¥ brett (er altsÃ¥ allerede fjernet fra square)
         //assertThat(tiles_er_lik_squares(rack)).isTrue();
     }
 
@@ -72,7 +72,7 @@ public class RackTest {
         rack.removeTile('A');
         assertThat(rack.contains('A')).isFalse();
 
-        //TODO: spillflyten antar at tile har blitt lagt på brett (er altså allerede fjernet fra square)
+        //TODO: spillflyten antar at tile har blitt lagt pÃ¥ brett (er altsÃ¥ allerede fjernet fra square)
         //assertThat(tiles_er_lik_squares(rack)).isTrue();
     }
 
@@ -86,7 +86,7 @@ public class RackTest {
         assertThat(tiles_er_lik_squares(rack)).isTrue();
     }
 
-    //TODO: fjerne denne testen når square er fjernet fra Rack
+    //TODO: fjerne denne testen nÃ¥r square er fjernet fra Rack
     private boolean tiles_er_lik_squares(Rack rack) {
         int squaresWithTiles = (int) rack.squares.stream().filter(square -> square.tile != null).count();
         if (rack.tiles.size() != squaresWithTiles) {

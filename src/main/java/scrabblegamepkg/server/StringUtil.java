@@ -3,7 +3,7 @@ package scrabblegamepkg.server;
 public class StringUtil {
 
     static String alphaString() {
-        return "ABCDEFGHIJKLMNOPQRSTUVWXYZ∆ÿ≈-";
+        return "ABCDEFGHIJKLMNOPQRSTUVWXYZ√Ü√ò√Ö-";
     }
 
     static String removeChar(String s, char c) {
@@ -122,8 +122,8 @@ public class StringUtil {
     }
 
     static boolean isVowel(char c) {
-        if (c == 'E' || c == 'A' || c == 'I' || c == 'O' || c == 'U' || c == '≈' ||
-                c == 'ÿ' || c == '∆' || c == 'Y' || c == '-') {
+        if (c == 'E' || c == 'A' || c == 'I' || c == 'O' || c == 'U' || c == '√Ü' ||
+                c == '√ò' || c == '√Ö' || c == 'Y' || c == '-') {
             return true;
         }
         return false;

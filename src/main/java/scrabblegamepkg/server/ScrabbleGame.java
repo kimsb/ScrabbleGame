@@ -30,7 +30,7 @@ public class ScrabbleGame {
     }
 
     private void checkForBingos() {
-        //sjekker om player hadde bingo på hånda
+        //sjekker om player hadde bingo pÃ¥ hÃ¥nda
         //TODO: legge dette inn i turn, og gi beskjeden fra klienten
         if (!possibleBingos.isEmpty() || !impossibleBingos.isEmpty()) {
             String bingoMessage = "<html><body>";
@@ -110,14 +110,14 @@ public class ScrabbleGame {
             throw new Exception("Ugyldig legg (ingen anchor)");
         }
         if (rowCount > 1 && columnCount > 1) {
-            throw new Exception("Ugyldig legg (ikke på én rekke)");
+            throw new Exception("Ugyldig legg (ikke pÃ¥ Ã©n rekke)");
         }
-        //TODO: må også sjekke at legget ikke har hull
+        //TODO: mÃ¥ ogsÃ¥ sjekke at legget ikke har hull
         /*if (isHoleBetweenTiles(addedTiles)) {
             throw new Exception("Ugyldig legg (legget har hull)");
         }*/
 
-        //TODO: dette feiler når firste Tile er påbygg av allerede lagte bokstaver, siden row bare er firste tiles row...
+        //TODO: dette feiler nÃ¥r firste Tile er pÃ¥bygg av allerede lagte bokstaver, siden row bare er firste tiles row...
         Tile firstTile = addedTiles.get(0);
         boolean transposed = rowCount > 1;
         int row = transposed ? firstTile.column : firstTile.row;
@@ -186,7 +186,7 @@ public class ScrabbleGame {
 
     public void challengeAction() {
 
-        System.out.println("challenge funker ikke nå - bruk Turns når dette er implementert");
+        System.out.println("challenge funker ikke nÃ¥ - bruk Turns nÃ¥r dette er implementert");
 
         /*
         boolean wordRemoved = false;
@@ -226,7 +226,7 @@ public class ScrabbleGame {
             for (int i = 0; i < cpuNewlyPicked.length(); i++) {
                 game.getBag().add(new Tile(cpuNewlyPicked.charAt(i)));
             }
-            //omgjør rack til forrige rack
+            //omgjÃ¸r rack til forrige rack
             rackString =    previousRackString;
             //fjerner fra brett og oppdaterer charBoard
             for (int i = 0; i < 15; i++) {
@@ -240,7 +240,7 @@ public class ScrabbleGame {
             }
             //fjerner fra computerScore
             game.getComputer().removeScore(previousCPUMoveScore);
-            //oppdaterer gjenværende brikker
+            //oppdaterer gjenvÃ¦rende brikker
             tilesLeft = previousTilesLeft;
             scrabbleGameFrame.remainingLabel.setText(tilesLeft);
             //oppdaterer cpuNotes
@@ -316,7 +316,7 @@ public class ScrabbleGame {
         if (tipsWords.isEmpty()) {
             tipsString += "Det finnes ingen mulige legg";
         } else {
-            tipsString += "<b><u>Høyest scorende legg:</u></b>";
+            tipsString += "<b><u>HÃ¸yest scorende legg:</u></b>";
         }
         for (Map.Entry<Double, Move> entry : tipsWords.entrySet()) {
             Move poss = entry.getValue();
@@ -333,13 +333,13 @@ public class ScrabbleGame {
         JOptionPane.showMessageDialog(null, tipsString);
     }
 
-    //TODO: fjerne computer-boolean, men nå har jeg i hvert fall fjernet global variabel
+    //TODO: fjerne computer-boolean, men nÃ¥ har jeg i hvert fall fjernet global variabel
     public void pass(boolean computersTurn) {
         if (computersTurn) {
             game.getComputer().addTurn(new Turn(Action.PASS));
             addedToThisMove.clear();
         } else {
-            //legger evt brikker tilbake på racken
+            //legger evt brikker tilbake pÃ¥ racken
             scrabbleGameFrame.rackPanel.putBack(newlyAddedToBoard);
             game.getPlayer().getRack().alphabetize();
 
@@ -354,7 +354,7 @@ public class ScrabbleGame {
         if (!dictionary.contains(word.toUpperCase())) {
             Object[] options = {"OK", "Legg til ord"};
             int n = JOptionPane.showOptionDialog(scrabbleGameFrame,
-                    word + " står ikke i ordlisten",
+                    word + " stÃ¥r ikke i ordlisten",
                     "Message",
                     JOptionPane.YES_NO_OPTION,
                     JOptionPane.QUESTION_MESSAGE,
@@ -446,7 +446,7 @@ public class ScrabbleGame {
 
     Game game;
 
-    //TODO: disse må vekk
+    //TODO: disse mÃ¥ vekk
     ArrayList<String> possibleBingos = new ArrayList<>();
     ArrayList<String> impossibleBingos = new ArrayList<>();
     TreeMap<Double, Move> tipsWords = new TreeMap<>(Collections.reverseOrder());

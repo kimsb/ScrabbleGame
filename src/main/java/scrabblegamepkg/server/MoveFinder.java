@@ -169,10 +169,10 @@ public class MoveFinder {
         }
     }
 
-    //denne kan gjøres raskere, nå sjekker jeg alle felter
+    //denne kan gjÃ¸res raskere, nÃ¥ sjekker jeg alle felter
     private String[][] findCrossChecks(MDAG dictionary, char[][] charBoard) {
 
-        String alphaString = "ABCDEFGHIJKLMNOPQRSTUVWXYZÆØÅ-";
+        String alphaString = "ABCDEFGHIJKLMNOPQRSTUVWXYZÃ†Ã˜Ã…-";
         String[][] crossChecks = new String[15][15];
 
         for (int i = 0; i < 15; i++) {

@@ -246,7 +246,7 @@ public class ScrabbleGameFrame extends JFrame {
         firstPlayerLabel.setText(game.playerIsFirst ? Notes.getPlayerNotes(game.getPlayer()) : Notes.getPlayerNotes(game.getComputer()));
         secondPlayerLabel.setText(game.playerIsFirst ? Notes.getPlayerNotes(game.getComputer()) : Notes.getPlayerNotes(game.getPlayer()));
 
-        tilesLeftTitleLabel.setText("<html><body><b><u>Gjenværende brikker:</u></b></body></html>");
+        tilesLeftTitleLabel.setText("<html><body><b><u>GjenvÃ¦rende brikker:</u></b></body></html>");
         bagCountLabel.setText("Brikker igjen i posen: " + game.getBag().tileCount());
 
         firstPlayerScrollPane.getVerticalScrollBar().setValue(firstPlayerScrollPane.getVerticalScrollBar().getMaximum());

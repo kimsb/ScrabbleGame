@@ -31,7 +31,7 @@ public class BoardPanel extends JPanel {
         for (int i = 0; i < move.word.length(); i++) {
             Square square = move.vertical ? squareGrid[move.startColumn + i][move.row] : squareGrid[move.row][move.startColumn + i];
 
-            //hvis bokstaven ikke er på brettet
+            //hvis bokstaven ikke er pÃ¥ brettet
             if (square.tile == null) {
                 char letter = move.word.charAt(i);
                 Tile tile;

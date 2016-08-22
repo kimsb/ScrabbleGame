@@ -11,7 +11,7 @@ public class Notes {
 
         String tilesLeft = "<html><body>AAAAAAA EEEEEEEEE<br>" +
                 "IIIII OOOO UUU<br>" +
-                "Y ∆ ÿÿ ≈≈<br>" +
+                "Y √Ü √ò√ò √Ö√Ö<br>" +
                 "BBB C DDDDD FFFF<br>" +
                 "GGGG HHH JJ KKKK<br>" +
                 "LLLLL MMM NNNNNN<br>" +

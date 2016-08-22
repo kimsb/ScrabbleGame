@@ -63,7 +63,7 @@ public class MoveTest {
 
         Move firstMove = new Move(7, 6, false, "BA", board.getCharBoard(), "KIMBO");
         board.addToCharBoard(firstMove);
-        Move secondMove = new Move(8, 5, false, "LØP", board.getCharBoard(), "KIMB");
+        Move secondMove = new Move(8, 5, false, "LÃ˜P", board.getCharBoard(), "KIMB");
         board.addToCharBoard(secondMove);
 
         Move move = new Move(6, 7, false, "T", board.getCharBoard(), "KIMBOW");
