@@ -1,18 +1,18 @@
 package scrabblegamepkg.client;
 
 import scrabblegamepkg.server.*;
-import scrabblegamepkg.server.Action;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
+import java.util.Map;
 
 public class ScrabbleGameFrame extends JFrame {
 
     ScrabbleGame scrabbleGame;
 
     private javax.swing.JLabel bagCountLabel;
-    public javax.swing.JButton challengeButton;
+    public javax.swing.JButton analyzeButton;
     private javax.swing.JLabel firstPlayerLabel;
     private javax.swing.JScrollPane firstPlayerScrollPane;
     private javax.swing.JPanel jPanel1;
@@ -26,8 +26,10 @@ public class ScrabbleGameFrame extends JFrame {
     private javax.swing.JLabel tilesLeftTitleLabel;
     public javax.swing.JButton tipsButton;
 
+
     public RackPanel rackPanel;
     public BoardPanel boardPanel;
+    private boolean isAnalyzing;
 
     public ScrabbleGameFrame(ScrabbleGame scrabbleGame) {
         this.scrabbleGame = scrabbleGame;
@@ -63,7 +65,7 @@ public class ScrabbleGameFrame extends JFrame {
         boardPanel = new BoardPanel(scrabbleGame);
         rackPanel = new RackPanel(scrabbleGame);
         playButton = new javax.swing.JButton();
-        challengeButton = new javax.swing.JButton();
+        analyzeButton = new javax.swing.JButton();
         jPanel1 = new javax.swing.JPanel();
         tilesLeftTitleLabel = new javax.swing.JLabel();
         remainingLabel = new javax.swing.JLabel();
@@ -82,12 +84,12 @@ public class ScrabbleGameFrame extends JFrame {
         setResizable(false);
 
         playButton.setText("Legg");
-        playButton.setEnabled(true);
+        playButton.setEnabled(false);
         playButton.addActionListener(this::playButtonActionPerformed);
 
-        challengeButton.setText("Utfordre ord");
-        challengeButton.setEnabled(false);
-        challengeButton.addActionListener(this::challengeButtonActionPerformed);
+        analyzeButton.setText("Start Analyse");
+        analyzeButton.setEnabled(true);
+        analyzeButton.addActionListener(this::analyzeButtonActionPerformed);
 
         remainingLabel.setFont(new java.awt.Font("Courier New", 0, 18)); // NOI18N
         remainingLabel.setVerticalAlignment(javax.swing.SwingConstants.TOP);
@@ -142,11 +144,11 @@ public class ScrabbleGameFrame extends JFrame {
         );
 
         swapButton.setText("Bytt");
-        swapButton.setEnabled(true);
+        swapButton.setEnabled(false);
         swapButton.addActionListener(this::swapButtonActionPerformed);
 
         passButton.setText("Pass");
-        passButton.setEnabled(true);
+        passButton.setEnabled(false);
         passButton.addActionListener(this::passButtonActionPerformed);
 
         newGameButton.setText("Nytt spill");
@@ -154,7 +156,7 @@ public class ScrabbleGameFrame extends JFrame {
         newGameButton.addActionListener(this::newGameButtonActionPerformed);
 
         tipsButton.setText("Tips");
-        tipsButton.setEnabled(true);
+        tipsButton.setEnabled(false);
         tipsButton.addActionListener(this::tipsButtonActionPerformed);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -166,7 +168,7 @@ public class ScrabbleGameFrame extends JFrame {
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                         .addGroup(layout.createSequentialGroup()
                                                 .addGap(0, 22, Short.MAX_VALUE)
-                                                .addComponent(challengeButton)
+                                                .addComponent(analyzeButton)
                                                 .addGap(18, 18, 18)
                                                 .addComponent(rackPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                                 .addGap(38, 38, 38)
@@ -201,7 +203,7 @@ public class ScrabbleGameFrame extends JFrame {
                                                                 .addComponent(swapButton)
                                                                 .addComponent(passButton)
                                                                 .addComponent(playButton)
-                                                                .addComponent(challengeButton)
+                                                                .addComponent(analyzeButton)
                                                                 .addComponent(newGameButton)
                                                                 .addComponent(tipsButton)))))
                                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
@@ -253,8 +255,21 @@ public class ScrabbleGameFrame extends JFrame {
         secondPlayerScrollPane.getVerticalScrollBar().setValue(secondPlayerScrollPane.getVerticalScrollBar().getMaximum());
     }
 
-    private void challengeButtonActionPerformed(java.awt.event.ActionEvent evt) {
-        scrabbleGame.challengeAction();
+    private void clearNotes() {
+        remainingLabel.setText("");
+        firstPlayerLabel.setText("");
+        secondPlayerLabel.setText("");
+        tilesLeftTitleLabel.setText("");
+        bagCountLabel.setText("");
+    }
+
+    private void analyzeButtonActionPerformed(java.awt.event.ActionEvent evt) {
+        clearNotes();
+        isAnalyzing = true;
+        enableGameButtons(false);
+        boardPanel.cleanUp();
+        rackPanel.cleanUp();
+        tipsButton.setEnabled(true);
     }
 
     private void swapButtonActionPerformed(ActionEvent evt) {
@@ -266,11 +281,37 @@ public class ScrabbleGameFrame extends JFrame {
     }
 
     private void tipsButtonActionPerformed(java.awt.event.ActionEvent evt) {
-        scrabbleGame.tipsAction();
+        if (isAnalyzing()) {
+            renderTips(scrabbleGame.analyzeTipsAction(boardPanel.getCharBoard(), rackPanel.toString()));
+        } else {
+            renderTips(scrabbleGame.tipsAction());
+        }
+    }
+
+    private void renderTips(TipsCalculator tipsCalculator) {
+        int count = 0;
+        String tipsString = "<html><body>";
+        ArrayList<String> tipsGiven = new ArrayList<>();
+        if (tipsCalculator.tipsWords.isEmpty()) {
+            tipsString += "Det finnes ingen mulige legg";
+        } else {
+            tipsString += "<b><u>Høyest scorende legg:</u></b>";
+        }
+        for (Map.Entry<Double, Move> entry : tipsCalculator.tipsWords.entrySet()) {
+            Move poss = entry.getValue();
+
+            if (count < 10) {
+                tipsString += ("<br>" + poss.moveScore + ": " + poss.word + poss.getTipsPlacementString());
+                count++;
+                tipsGiven.add(poss.word);
+            }
+        }
+        tipsString += "</body></html>";
+        JOptionPane.showMessageDialog(null, tipsString);
     }
 
     private void newGameButtonActionPerformed(java.awt.event.ActionEvent evt) {
-
+        isAnalyzing = false;
         if (!"".equals(bagCountLabel.getText())) {
             Object[] options = {"Ja", "Nei"};
             int n = JOptionPane.showOptionDialog(this,
@@ -287,16 +328,18 @@ public class ScrabbleGameFrame extends JFrame {
         } else {
             renderGame(scrabbleGame.newGameAction());
         }
-
+        enableGameButtons(true);
 
     }
 
-    public void enableButtons(boolean enable) {
-        challengeButton.setEnabled(enable);
+    public void enableGameButtons(boolean enable) {
         playButton.setEnabled(enable);
         swapButton.setEnabled(enable);
         passButton.setEnabled(enable);
-        newGameButton.setEnabled(enable);
         tipsButton.setEnabled(enable);
+    }
+
+    public boolean isAnalyzing() {
+        return isAnalyzing;
     }
 }

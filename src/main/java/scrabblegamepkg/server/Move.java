@@ -102,4 +102,12 @@ public class Move {
     public ArrayList<String> getWords() {
         return words;
     }
+
+    public String getTipsPlacementString() {
+
+        int boardRow = vertical ? startColumn + 1 : row + 1;
+        int boardColumn = vertical ? row : startColumn;
+        String arrow = vertical ? "&darr;" : "&rarr;";
+        return " (" + "ABCDEFGHIJKLMNO".charAt(boardColumn) + "  " + boardRow + ") " + arrow;
+    }
 }

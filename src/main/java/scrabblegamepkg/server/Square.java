@@ -4,6 +4,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
 
 public class Square extends javax.swing.JLabel {
     public int row;
@@ -19,11 +20,15 @@ public class Square extends javax.swing.JLabel {
         this.column = column;
 
         setBackground();
-        setPreferredSize(new Dimension(35, 35)); //endre 50, 50 for å endre størrelse
+        setPreferredSize(new Dimension(35, 35)); //endre 50, 50 for Ã¥ endre stÃ¸rrelse
         setOpaque(true);
         addMouseListener(new MouseAdapter() {
             public void mousePressed(MouseEvent e) {
+                if (scrabbleGame.scrabbleGameFrame.isAnalyzing()) {
+                    analyzeClick();
+                } else {
                     squareClicked();
+                }
             }
         });
     }
@@ -46,14 +51,14 @@ public class Square extends javax.swing.JLabel {
         ImageIcon imageIcon;
         imageIcon = new javax.swing.ImageIcon(getClass().getResource("/" + (tile.isBlank() ? '-' : tile.letter) + ".png"));
         Image img = imageIcon.getImage();
-        Image newimg = img.getScaledInstance(35, 35, java.awt.Image.SCALE_SMOOTH); //endre 50, 50 for å endre størrelse
+        Image newimg = img.getScaledInstance(35, 35, java.awt.Image.SCALE_SMOOTH); //endre 50, 50 for Ã¥ endre stÃ¸rrelse
         return new ImageIcon(newimg);
     }
 
     public boolean placeTile(Tile t) {
         if (onBoard) {
             if (!scrabbleGame.game.computersTurn && t.isBlank()) {
-                //brikken er blank å må få verdi
+                //brikken er blank og mÃ¥ fÃ¥ verdi
                 boolean hasValue = false;
                 while (!hasValue) {
                     String blankString = JOptionPane.showInputDialog(null, "Velg bokstav for blank brikke");
@@ -63,11 +68,11 @@ public class Square extends javax.swing.JLabel {
                     blankString = blankString.toUpperCase().replaceAll("\\s","");
                     char blankLetter = blankString.charAt(0);
                     if (blankString.length() == 1 && Character.isLetter(blankLetter)) {
-                        System.out.println("blanke er nå " + blankLetter);
+                        System.out.println("blanke er nÃ¥ " + blankLetter);
                         t.letter = Character.toLowerCase(blankLetter);
                         hasValue = true;
                     } else {
-                        JOptionPane.showMessageDialog(null, "Blanke kan bare være en bokstav");
+                        JOptionPane.showMessageDialog(null, "Blanke kan bare vÃ¦re en bokstav");
                     }
                 }
             }
@@ -85,7 +90,7 @@ public class Square extends javax.swing.JLabel {
     }
 
     //TODO: kan refaktorere denne,
-    //men burde uansett heller bruke en form form GUI for Tile som kan trykkes på og flyttes
+    //men burde uansett heller bruke en form form GUI for Tile som kan trykkes pÃ¥ og flyttes
     void squareClicked() {
         if (tile != null) {
             if (tile.isMovable) {
@@ -97,7 +102,7 @@ public class Square extends javax.swing.JLabel {
                         scrabbleGame.selectedSquare = null;
                     }
                 } else {
-                    scrabbleGame.selectedSquare = this; //bør markeres
+                    scrabbleGame.selectedSquare = this; //bÃ¸r markeres
                 }
             }
         } else {
@@ -106,6 +111,43 @@ public class Square extends javax.swing.JLabel {
                     scrabbleGame.selectedSquare.cleanUp();
                 }
                 scrabbleGame.selectedSquare = null;
+            }
+        }
+    }
+
+    private void analyzeClick() {
+        if (onBoard) {
+
+            Object[] options = {"Avbryt", "Nedover", "Bortover" };
+
+            JPanel panel = new JPanel();
+            panel.add(new JLabel("Ord som skal legges:"));
+            JTextField textField = new JTextField(15);
+            panel.add(textField);
+
+            int result = JOptionPane.showOptionDialog(null, panel, "Legg et ord",
+                    JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE,
+                    null, options,null);
+            if (result == 2){
+                scrabbleGame.scrabbleGameFrame.boardPanel.addWord(textField.getText().toUpperCase(), row, column, false);
+            } else if (result == 1) {
+                scrabbleGame.scrabbleGameFrame.boardPanel.addWord(textField.getText().toUpperCase(), row, column, true);
+            }
+        } else {
+            String rackString = JOptionPane.showInputDialog(null, "Velg bokstaver for racket");
+            if (rackString == null) {
+                return;
+            }
+            rackString = rackString.toUpperCase();
+            if (rackString.length() <= 7) {
+                ArrayList<Tile> tiles = new ArrayList<>();
+                for (int i = 0; i < rackString.length(); i++) {
+                    char letter = rackString.charAt(i);
+                    tiles.add(new Tile(letter));
+                }
+                scrabbleGame.scrabbleGameFrame.rackPanel.renderRack(new Rack(tiles));
+            } else {
+                JOptionPane.showMessageDialog(null, "Racket kan ha maks 7 brikker");
             }
         }
     }

@@ -2,10 +2,26 @@
 <project version="4">
   <component name="Encoding" defaultCharsetForPropertiesFiles="UTF-8">
     <file url="file://$PROJECT_DIR$/godkjent.txt" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/ikkeGodkjent.txt" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/src/main/java/scrabblegamepkg/client/RackPanel.java" charset="ISO-8859-1" />
-    <file url="file://$PROJECT_DIR$/src/main/java/scrabblegamepkg/server/ComputerAI.java" charset="ISO-8859-1" />
+    <file url="file://$PROJECT_DIR$/src/main/java/scrabblegamepkg/server/Action.java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/main/java/scrabblegamepkg/server/Bag.java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/main/java/scrabblegamepkg/server/Board.java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/main/java/scrabblegamepkg/server/BoardConstants.java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/main/java/scrabblegamepkg/server/CPUThinker.java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/main/java/scrabblegamepkg/server/ComputerAI.java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/main/java/scrabblegamepkg/server/Game.java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/main/java/scrabblegamepkg/server/Move.java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/main/java/scrabblegamepkg/server/MoveFinder.java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/main/java/scrabblegamepkg/server/Player.java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/main/java/scrabblegamepkg/server/Rack.java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/main/java/scrabblegamepkg/server/ScoreConstants.java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/src/main/java/scrabblegamepkg/server/ScrabbleGame.java" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/src/main/java/scrabblegamepkg/server/Square.java" charset="ISO-8859-1" />
+    <file url="file://$PROJECT_DIR$/src/main/java/scrabblegamepkg/server/Square.java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/main/java/scrabblegamepkg/server/StringUtil.java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/main/java/scrabblegamepkg/server/Tile.java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/main/java/scrabblegamepkg/server/TipsCalculator.java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/src/main/java/scrabblegamepkg/server/Turn.java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/src/main/resources/yeslist.txt" charset="ISO-8859-1" />
     <file url="PROJECT" charset="UTF-8" />
   </component>

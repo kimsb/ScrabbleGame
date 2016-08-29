@@ -106,4 +106,41 @@ public class BoardPanel extends JPanel {
         }
 
     }
+
+    public char[][] getCharBoard() {
+        char[][] charBoard = new char[15][15];
+        for (int i = 0; i < 15; i++) {
+            for (int j = 0; j < 15; j++) {
+                if (squareGrid[i][j].tile != null) {
+                    charBoard[i][j] = squareGrid[i][j].tile.letter;
+                } else {
+                    charBoard[i][j] = '-';
+                }
+            }
+        }
+        return charBoard;
+    }
+
+    public void addWord(String feltString, int row, int column, boolean vertical) {
+        if (vertical) {
+            for (int i = 0; i < 15 && i < feltString.length(); i++) {
+                Square square = squareGrid[row+i][column];
+                decideTile(square, feltString.charAt(i));
+            }
+        } else {
+            for (int j = 0; j < 15 && j < feltString.length(); j++) {
+                Square square = squareGrid[row][column+j];
+                decideTile(square, feltString.charAt(j));
+            }
+        }
+    }
+
+    private void decideTile(Square square, char letter) {
+        if (letter == ' ') {
+            square.cleanUp();
+        } else if (Character.isAlphabetic(letter)) {
+            square.tile = new Tile(letter);
+            square.setIcon(square.createTileIcon());
+        }
+    }
 }

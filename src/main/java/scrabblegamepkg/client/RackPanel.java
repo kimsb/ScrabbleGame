@@ -53,4 +53,15 @@ public class RackPanel extends JPanel {
             squares.get(i).placeTile(tiles.get(i));
         }
     }
+
+    public void cleanUp() {
+        squares.forEach(Square::cleanUp);
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder stringBuilder = new StringBuilder();
+        squares.stream().filter(square -> square.tile != null).forEach(square -> stringBuilder.append(square.tile.letter));
+        return stringBuilder.toString();
+    }
 }

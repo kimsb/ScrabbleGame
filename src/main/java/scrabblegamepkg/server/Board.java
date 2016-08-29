@@ -2,10 +2,14 @@ package scrabblegamepkg.server;
 
 public class Board {
 
-    private char[][] charBoard;
+    public char[][] charBoard;
 
     Board() {
         charBoard = getEmptyCharBoard();
+    }
+
+    Board(char[][] charBoard) {
+        this.charBoard = charBoard;
     }
 
     public char[][] getCharBoard() {

@@ -7,19 +7,14 @@
 package scrabblegamepkg.server;
 
 import com.BoxOfC.MDAG.MDAG;
-import com.BoxOfC.MDAG.MDAGNode;
-import scrabblegamepkg.client.BoardPanel;
-import scrabblegamepkg.client.RackPanel;
 import scrabblegamepkg.client.ScrabbleGameFrame;
 
 import javax.swing.*;
-import java.awt.event.ActionEvent;
 import java.io.*;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class ScrabbleGame {
 
@@ -32,7 +27,7 @@ public class ScrabbleGame {
     private void checkForBingos() {
         //sjekker om player hadde bingo på hånda
         //TODO: legge dette inn i turn, og gi beskjeden fra klienten
-        if (!possibleBingos.isEmpty() || !impossibleBingos.isEmpty()) {
+       /* if (!possibleBingos.isEmpty() || !impossibleBingos.isEmpty()) {
             String bingoMessage = "<html><body>";
             if (!possibleBingos.isEmpty()) {
                 bingoMessage += "<b><u>Du kunne lagt bingo:</u></b>";
@@ -51,7 +46,7 @@ public class ScrabbleGame {
             }
             bingoMessage += "</body></html>";
             JOptionPane.showMessageDialog(null, bingoMessage);
-        }
+        }*/
     }
 
     public Game playAction(ArrayList<Tile> addedTiles) throws Exception {
@@ -184,81 +179,6 @@ public class ScrabbleGame {
         new CPUThinker(this).execute();
     }
 
-    public void challengeAction() {
-
-        System.out.println("challenge funker ikke nå - bruk Turns når dette er implementert");
-
-        /*
-        boolean wordRemoved = false;
-        for (String s : cpuLastWord.getWords()) {
-            Object[] options = {"Ja", "Nei"};
-            int n = JOptionPane.showOptionDialog(scrabbleGameFrame,
-                    "Fjerne " + s + " fra ordlisten?",
-                    "Message",
-                    JOptionPane.YES_NO_OPTION,
-                    JOptionPane.QUESTION_MESSAGE,
-                    null,     //do not use a custom Icon
-                    options,  //the titles of buttons
-                    options[1]); //default button title
-            if (n == 0) { //skal fjernes
-                //fjerner ordet fra dictionary
-                //TEST
-                System.out.println("kommer til fjerning");
-                wordRemoved = true;
-                try {
-                    PrintWriter ikkeGodkjent = new PrintWriter(new BufferedWriter(new FileWriter("ikkeGodkjent.txt", true)));
-                    ikkeGodkjent.println(s);
-                    ikkeGodkjent.close();
-                    dictionary.removeString(s);
-                } catch (IOException ex) {
-                    System.out.println("fjerne ord fra dictionary - exception!");
-                    Logger.getLogger(ScrabbleGame.class.getName()).log(Level.SEVERE, null, ex);
-                }
-
-            }
-        }
-        if (wordRemoved) {
-
-            //TEST
-            System.out.println("kommer til wordRemoved");
-
-            //legger tilbake i posen
-            for (int i = 0; i < cpuNewlyPicked.length(); i++) {
-                game.getBag().add(new Tile(cpuNewlyPicked.charAt(i)));
-            }
-            //omgjør rack til forrige rack
-            rackString =    previousRackString;
-            //fjerner fra brett og oppdaterer charBoard
-            for (int i = 0; i < 15; i++) {
-                for (int j = 0; j < 15; j++) {
-                    if (game.getBoard().charBoardBeforeLastMove[i][j] != game.getBoard().charBoard[i][j]) {
-                        game.getBoard().charBoard[i][j] = game.getBoard().charBoardBeforeLastMove[i][j];
-                        scrabbleGameFrame.boardPanel.squareGrid[i][j].tile = null;
-                        scrabbleGameFrame.boardPanel.squareGrid[i][j].setIcon(null);
-                    }
-                }
-            }
-            //fjerner fra computerScore
-            game.getComputer().removeScore(previousCPUMoveScore);
-            //oppdaterer gjenværende brikker
-            tilesLeft = previousTilesLeft;
-            scrabbleGameFrame.remainingLabel.setText(tilesLeft);
-            //oppdaterer cpuNotes
-            cpuNotes = previousCPUNotes;
-            JLabel noteLabel = scrabbleGameFrame.firstPlayerLabel;
-            JScrollPane scrollPane = scrabbleGameFrame.firstPlayerScrollPane;
-            if (game.playerIsFirst) {
-                noteLabel = scrabbleGameFrame.secondPlayerLabel;
-                scrollPane = scrabbleGameFrame.secondPlayerScrollPane;
-            }
-            noteLabel.setText("<html><body>" + cpuNotes + "<b>" + game.getComputer().getScore() + "</b></body></html>");
-            JScrollBar verticalScrollBar = scrollPane.getVerticalScrollBar();
-            verticalScrollBar.setValue(verticalScrollBar.getMaximum());
-            computerMove();
-        }
-        */
-    }
-
     public void swapAction() {
         System.out.println("Bytter");
 
@@ -308,29 +228,13 @@ public class ScrabbleGame {
         return game;
     }
 
-    public void tipsAction() {
-        //TODO: flytte dette inn i klient
-        int count = 0;
-        String tipsString = "<html><body>";
-        ArrayList<String> tipsGiven = new ArrayList<>();
-        if (tipsWords.isEmpty()) {
-            tipsString += "Det finnes ingen mulige legg";
-        } else {
-            tipsString += "<b><u>Høyest scorende legg:</u></b>";
-        }
-        for (Map.Entry<Double, Move> entry : tipsWords.entrySet()) {
-            Move poss = entry.getValue();
+    public TipsCalculator analyzeTipsAction(char[][] charBoard, String rackString) {
+        Board board = new Board(charBoard);
+        return new TipsCalculator(this).calculateTips(board, rackString);
+    }
 
-            if (count < 5) {
-                if (!tipsGiven.contains(poss.word)) {
-                    tipsString += ("<br>" + poss.moveScore + ", " + poss.word);
-                    count++;
-                    tipsGiven.add(poss.word);
-                }
-            }
-        }
-        tipsString += "</body></html>";
-        JOptionPane.showMessageDialog(null, tipsString);
+    public TipsCalculator tipsAction() {
+        return new TipsCalculator(this).calculateTips(game.getBoard(), game.getPlayer().getRack().toString());
     }
 
     //TODO: fjerne computer-boolean, men nå har jeg i hvert fall fjernet global variabel
@@ -420,7 +324,7 @@ public class ScrabbleGame {
             JOptionPane.showMessageDialog(null, "DU VANT!");
         }
 
-        scrabbleGameFrame.enableButtons(false);
+        scrabbleGameFrame.enableGameButtons(false);
         scrabbleGameFrame.newGameButton.setEnabled(true);
     }
 
@@ -445,12 +349,6 @@ public class ScrabbleGame {
     ArrayList<Square> newlyAddedToBoard = new ArrayList<>();
 
     Game game;
-
-    //TODO: disse må vekk
-    ArrayList<String> possibleBingos = new ArrayList<>();
-    ArrayList<String> impossibleBingos = new ArrayList<>();
-    TreeMap<Double, Move> tipsWords = new TreeMap<>(Collections.reverseOrder());
-
 
     ArrayList<Square> addedToThisMove = new ArrayList<>();
 

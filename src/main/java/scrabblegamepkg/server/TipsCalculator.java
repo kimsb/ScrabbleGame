@@ -1,57 +1,50 @@
 package scrabblegamepkg.server;
 
-import javax.swing.*;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Map;
+import java.util.TreeMap;
 
-public class TipsCalculator extends SwingWorker<Void, Void> {
+public class TipsCalculator {
 
     private ScrabbleGame scrabbleGame;
+    public ArrayList<String> possibleBingos = new ArrayList<>();
+    public ArrayList<String> impossibleBingos = new ArrayList<>();
+    public TreeMap<Double, Move> tipsWords = new TreeMap<>(Collections.reverseOrder());
 
     public TipsCalculator(ScrabbleGame scrabbleGame) {
         this.scrabbleGame = scrabbleGame;
     }
 
-    @Override
-    protected Void doInBackground() {
-        calculateTips();
-        return null;
-    }
+    public TipsCalculator calculateTips(Board board, String rackString) {
 
-    @Override
-    protected void done() {
-        scrabbleGame.scrabbleGameFrame.tipsButton.setEnabled(true);
-    }
-
-    void calculateTips() {
-
-        String playerRack = scrabbleGame.game.getPlayer().getRack().toString();
-        scrabbleGame.tipsWords.clear();
+        tipsWords.clear();
 
         //bruker nye metoden for å finne ord
         MoveFinder moveFinder = new MoveFinder();
-        ArrayList<Move> allMoves = moveFinder.findAllMoves(scrabbleGame.dictionary, scrabbleGame.game.getBoard(), playerRack);
+        ArrayList<Move> allMoves = moveFinder.findAllMoves(scrabbleGame.dictionary, board, rackString);
 
         for (int i = 0; i < allMoves.size(); i++) {
-            scrabbleGame.tipsWords.put(allMoves.get(i).moveScore + (i * 0.0000001), allMoves.get(i));
+            tipsWords.put(allMoves.get(i).moveScore + (i * 0.0000001), allMoves.get(i));
         }
 
-        scrabbleGame.possibleBingos.clear();
-        for (Map.Entry<Double, Move> entry : scrabbleGame.tipsWords.entrySet()) {
+        possibleBingos.clear();
+        for (Map.Entry<Double, Move> entry : tipsWords.entrySet()) {
             Move poss = entry.getValue();
             if (poss.usedFromRack.length() == 7) {
-                if (!scrabbleGame.possibleBingos.contains(poss.word)) {
-                    scrabbleGame.possibleBingos.add(poss.word);
+                if (!possibleBingos.contains(poss.word)) {
+                    possibleBingos.add(poss.word);
                 }
             }
         }
 
-        scrabbleGame.impossibleBingos.clear();
-        ArrayList<Move> wordsOnRack = moveFinder.findAllMoves(scrabbleGame.dictionary, new Board(), playerRack);
+        impossibleBingos.clear();
+        ArrayList<Move> wordsOnRack = moveFinder.findAllMoves(scrabbleGame.dictionary, new Board(), rackString);
         wordsOnRack.forEach(bingo -> {
-            if (bingo.word.length() == 7 && !scrabbleGame.possibleBingos.contains(bingo.word)) {
-                scrabbleGame.impossibleBingos.add(bingo.word);
+            if (bingo.word.length() == 7 && !possibleBingos.contains(bingo.word)) {
+                impossibleBingos.add(bingo.word);
             }
         });
+        return this;
     }
 }

@@ -31,7 +31,6 @@ public class Game {
             player = new Player("you", new Rack(bag.pickTiles(7)));
             computer = new Player("CPU", new Rack(bag.pickTiles(7)));
             scrabbleGame.rackString = computer.getRack().toString();
-            new TipsCalculator(scrabbleGame).execute();
         }
     }
 

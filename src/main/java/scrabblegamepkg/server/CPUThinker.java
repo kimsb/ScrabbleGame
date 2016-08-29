@@ -1,15 +1,10 @@
 package scrabblegamepkg.server;
 
-import com.BoxOfC.MDAG.MDAG;
-import scrabblegamepkg.client.BoardPanel;
-
 import javax.swing.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Map;
 import java.util.TreeMap;
-
-import static scrabblegamepkg.server.ScrabbleGame.*;
 
 //TODO: her er det mye å ta tak i!
 // - skal ikke gjøre frontend-ting
@@ -24,16 +19,14 @@ public class CPUThinker extends SwingWorker<Void, Void> {
 
     @Override
     protected Void doInBackground() {
-        scrabbleGame.scrabbleGameFrame.enableButtons(false);
+        scrabbleGame.scrabbleGameFrame.enableGameButtons(false);
         computerAI();
         return null;
     }
 
     @Override
     protected void done() {
-        scrabbleGame.scrabbleGameFrame.enableButtons(true);
-        scrabbleGame.scrabbleGameFrame.tipsButton.setEnabled(false);
-        new TipsCalculator(scrabbleGame).execute();
+        scrabbleGame.scrabbleGameFrame.enableGameButtons(true);
         scrabbleGame.game.computersTurn = false;
     }
 

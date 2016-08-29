@@ -5,7 +5,7 @@ import java.util.ArrayList;
 public class Player {
 
     private final String name;
-    private Rack rack;
+    public Rack rack;
     private int score;
     private ArrayList<Turn> turns = new ArrayList<>();
 
