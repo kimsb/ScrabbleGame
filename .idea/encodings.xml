@@ -4,6 +4,7 @@
     <file url="file://$PROJECT_DIR$/godkjent.txt" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/ikkeGodkjent.txt" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/src/main/java/scrabblegamepkg/client/RackPanel.java" charset="ISO-8859-1" />
+    <file url="file://$PROJECT_DIR$/src/main/java/scrabblegamepkg/client/ScrabbleGameFrame.java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/src/main/java/scrabblegamepkg/server/Action.java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/src/main/java/scrabblegamepkg/server/Bag.java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/src/main/java/scrabblegamepkg/server/Board.java" charset="UTF-8" />

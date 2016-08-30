@@ -39,7 +39,8 @@ public class Rack {
     }
 
     public void removeTile(char letter) {
-        tiles.remove(tiles.stream().filter(tile -> tile.letter == letter).findFirst().get());
+        char tileLetter = Character.isLowerCase(letter) ? '-' : letter;
+        tiles.remove(tiles.stream().filter(tile -> tile.letter == tileLetter).findFirst().get());
     }
 
     public void removeTiles(ArrayList<Tile> tiles) {

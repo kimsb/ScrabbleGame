@@ -1,5 +1,6 @@
 package scrabblegamepkg.client;
 
+import com.sun.codemodel.internal.JOp;
 import scrabblegamepkg.server.*;
 
 import javax.swing.*;
@@ -226,18 +227,9 @@ public class ScrabbleGameFrame extends JFrame {
     }
 
     private void renderGame(Game game) {
-        if (game.getPlayer().getLastTurn() != null) {
-            switch (game.getPlayer().getLastTurn().getAction()) {
-                case MOVE:
-                    boardPanel.lockTiles();
-                    break;
-                case DISALLOWED:
-                case PASS:
-                case SWAP:
-            }
-        }
         boardPanel.render(game.getBoard().getCharBoard());
         rackPanel.renderRack(game.getPlayer().getRack());
+        boardPanel.lockTiles();
         renderNotes(game);
     }
 
@@ -289,25 +281,43 @@ public class ScrabbleGameFrame extends JFrame {
     }
 
     private void renderTips(TipsCalculator tipsCalculator) {
-        int count = 0;
         String tipsString = "<html><body>";
-        ArrayList<String> tipsGiven = new ArrayList<>();
         if (tipsCalculator.tipsWords.isEmpty()) {
-            tipsString += "Det finnes ingen mulige legg";
+            JOptionPane.showMessageDialog(this, "Det finnes ingen mulige legg");
         } else {
             tipsString += "<b><u>Høyest scorende legg:</u></b>";
-        }
-        for (Map.Entry<Double, Move> entry : tipsCalculator.tipsWords.entrySet()) {
-            Move poss = entry.getValue();
 
-            if (count < 10) {
-                tipsString += ("<br>" + poss.moveScore + ": " + poss.word + poss.getTipsPlacementString());
-                count++;
-                tipsGiven.add(poss.word);
+            int count = 0;
+            for (Map.Entry<Double, Move> entry : tipsCalculator.tipsWords.entrySet()) {
+                if (count < 10) {
+                    Move poss = entry.getValue();
+                    tipsString += ("<br>" + poss.moveScore + ": " + poss.word + poss.getTipsPlacementString());
+                    count++;
+                } else {
+                    break;
+                }
+            }
+            tipsString += "</body></html>";
+
+            if (isAnalyzing()) {
+                Object[] options = {"Avbryt", "Legg beste"};
+                int n = JOptionPane.showOptionDialog(this,
+                        tipsString,
+                        "Message",
+                        JOptionPane.YES_NO_OPTION,
+                        JOptionPane.QUESTION_MESSAGE,
+                        null,     //do not use a custom Icon
+                        options,  //the titles of buttons
+                        options[1]); //default button title
+                if (n == 1) {
+                    Move move = tipsCalculator.tipsWords.firstEntry().getValue();
+                    boardPanel.addWord(move.word, move.vertical ? move.startColumn : move.row,
+                            move.vertical ? move.row : move.startColumn, move.vertical);
+                }
+            } else {
+                JOptionPane.showMessageDialog(this, tipsString);
             }
         }
-        tipsString += "</body></html>";
-        JOptionPane.showMessageDialog(null, tipsString);
     }
 
     private void newGameButtonActionPerformed(java.awt.event.ActionEvent evt) {

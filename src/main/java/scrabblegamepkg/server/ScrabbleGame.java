@@ -25,7 +25,7 @@ public class ScrabbleGame {
     }
 
     private void checkForBingos() {
-        //sjekker om player hadde bingo på hånda
+        //sjekker om player hadde bingo pÃ¥ hÃ¥nda
         //TODO: legge dette inn i turn, og gi beskjeden fra klienten
        /* if (!possibleBingos.isEmpty() || !impossibleBingos.isEmpty()) {
             String bingoMessage = "<html><body>";
@@ -105,14 +105,14 @@ public class ScrabbleGame {
             throw new Exception("Ugyldig legg (ingen anchor)");
         }
         if (rowCount > 1 && columnCount > 1) {
-            throw new Exception("Ugyldig legg (ikke på én rekke)");
+            throw new Exception("Ugyldig legg (ikke pÃ¥ Ã©n rekke)");
         }
-        //TODO: må også sjekke at legget ikke har hull
+        //TODO: mÃ¥ ogsÃ¥ sjekke at legget ikke har hull
         /*if (isHoleBetweenTiles(addedTiles)) {
             throw new Exception("Ugyldig legg (legget har hull)");
         }*/
 
-        //TODO: dette feiler når firste Tile er påbygg av allerede lagte bokstaver, siden row bare er firste tiles row...
+        //TODO: dette feiler nÃ¥r firste Tile er pÃ¥bygg av allerede lagte bokstaver, siden row bare er firste tiles row...
         Tile firstTile = addedTiles.get(0);
         boolean transposed = rowCount > 1;
         int row = transposed ? firstTile.column : firstTile.row;
@@ -237,13 +237,13 @@ public class ScrabbleGame {
         return new TipsCalculator(this).calculateTips(game.getBoard(), game.getPlayer().getRack().toString());
     }
 
-    //TODO: fjerne computer-boolean, men nå har jeg i hvert fall fjernet global variabel
+    //TODO: fjerne computer-boolean, men nÃ¥ har jeg i hvert fall fjernet global variabel
     public void pass(boolean computersTurn) {
         if (computersTurn) {
             game.getComputer().addTurn(new Turn(Action.PASS));
             addedToThisMove.clear();
         } else {
-            //legger evt brikker tilbake på racken
+            //legger evt brikker tilbake pÃ¥ racken
             scrabbleGameFrame.rackPanel.putBack(newlyAddedToBoard);
             game.getPlayer().getRack().alphabetize();
 

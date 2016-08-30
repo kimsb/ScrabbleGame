@@ -123,12 +123,12 @@ public class BoardPanel extends JPanel {
 
     public void addWord(String feltString, int row, int column, boolean vertical) {
         if (vertical) {
-            for (int i = 0; i < 15 && i < feltString.length(); i++) {
+            for (int i = 0; row+i < 15 && i < feltString.length(); i++) {
                 Square square = squareGrid[row+i][column];
                 decideTile(square, feltString.charAt(i));
             }
         } else {
-            for (int j = 0; j < 15 && j < feltString.length(); j++) {
+            for (int j = 0; column+j < 15 && j < feltString.length(); j++) {
                 Square square = squareGrid[row][column+j];
                 decideTile(square, feltString.charAt(j));
             }
