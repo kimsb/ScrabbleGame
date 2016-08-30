@@ -9,25 +9,12 @@ import java.util.TreeMap;
 //TODO: her er det mye å ta tak i!
 // - skal ikke gjøre frontend-ting
 // - endrer mange variabler i scrabblegame direkte...
-public class CPUThinker extends SwingWorker<Void, Void> {
+public class CPUThinker {
 
     ScrabbleGame scrabbleGame;
 
     public CPUThinker(ScrabbleGame scrabbleGame) {
         this.scrabbleGame = scrabbleGame;
-    }
-
-    @Override
-    protected Void doInBackground() {
-        scrabbleGame.scrabbleGameFrame.enableGameButtons(false);
-        computerAI();
-        return null;
-    }
-
-    @Override
-    protected void done() {
-        scrabbleGame.scrabbleGameFrame.enableGameButtons(true);
-        scrabbleGame.game.computersTurn = false;
     }
 
     void computerAI() {
@@ -46,19 +33,12 @@ public class CPUThinker extends SwingWorker<Void, Void> {
             scrabbleGame.previousRackString = scrabbleGame.rackString;
             System.out.println("ComputerAI starts.. cpuRack: " + scrabbleGame.rackString);
             scrabbleGame.newlyAddedToBoard.clear();
-            if (!game.computersTurn) {
-                System.out.println("ikke cpus tur");
-                return;
-            } else if (scrabbleGame.rackString.length() == 0) {
+
+            if (scrabbleGame.rackString.length() == 0) {
                 System.out.println("FERDIG!");
                 return;
             }
-
             scrabbleGame.rackStringCpy = scrabbleGame.rackString;
-
-            //TEST - skal fjernes
-            sjekkAtBoardErOK();
-
 
             //bruker nye metoden for å finne ord
             MoveFinder moveFinder = new MoveFinder();
@@ -152,8 +132,7 @@ public class CPUThinker extends SwingWorker<Void, Void> {
             }
 
             //legg brikker på brettet
-            //TODO: Move burde ha være en bedre representasjon av et trekk -> "disse brikkene på disse feltene"
-            scrabbleGame.scrabbleGameFrame.boardPanel.placeMove(topScoreWord);
+
             removeFromCPURack(topScoreWord);
             game.getBoard().addToCharBoard(topScoreWord);
 

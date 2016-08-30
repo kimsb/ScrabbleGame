@@ -84,4 +84,9 @@ public class Board {
 
         return isAnchor;
     }
+
+    public boolean hasAdjacent(Tile tile) {
+        return (tile.column > 0 && getCharBoard()[tile.row][tile.column-1] != '-')
+                || (tile.column < 14 && getCharBoard()[tile.row][tile.column+1] != '-') ;
+    }
 }

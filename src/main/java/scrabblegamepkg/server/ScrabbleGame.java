@@ -114,7 +114,7 @@ public class ScrabbleGame {
 
         //TODO: dette feiler nÃ¥r firste Tile er pÃ¥bygg av allerede lagte bokstaver, siden row bare er firste tiles row...
         Tile firstTile = addedTiles.get(0);
-        boolean transposed = rowCount > 1;
+        boolean transposed = rowCount > 1 || (addedTiles.size() == 1 && !game.getBoard().hasAdjacent(firstTile));
         int row = transposed ? firstTile.column : firstTile.row;
         int startColumn = transposed ? firstTile.row : firstTile.column;
         String lettersUsed = "";
@@ -176,12 +176,10 @@ public class ScrabbleGame {
 
     void computerMove() {
         game.computersTurn = true;
-        new CPUThinker(this).execute();
+        new CPUThinker(this).computerAI();
     }
 
-    public void swapAction() {
-        System.out.println("Bytter");
-
+    public Game swapAction() {
         ArrayList<Square> toSwap = new ArrayList<>();
         for (int i = 0; i < 15; i++) {
             for (int j = 0; j < 15; j++) {
@@ -212,11 +210,13 @@ public class ScrabbleGame {
                 computerMove();
             }
         }
+        return game;
     }
 
     public Game newGameAction() {
         newlyAddedToBoard.clear();
         addedToThisMove.clear();
+        selectedSquare = null;
 
         Bag bag = new Bag();
 
@@ -238,7 +238,7 @@ public class ScrabbleGame {
     }
 
     //TODO: fjerne computer-boolean, men nÃ¥ har jeg i hvert fall fjernet global variabel
-    public void pass(boolean computersTurn) {
+    public Game pass(boolean computersTurn) {
         if (computersTurn) {
             game.getComputer().addTurn(new Turn(Action.PASS));
             addedToThisMove.clear();
@@ -252,6 +252,7 @@ public class ScrabbleGame {
             addedToThisMove.clear();
             computerMove();
         }
+        return game;
     }
 
     boolean checkWord(String word) {

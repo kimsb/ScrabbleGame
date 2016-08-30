@@ -265,11 +265,12 @@ public class ScrabbleGameFrame extends JFrame {
     }
 
     private void swapButtonActionPerformed(ActionEvent evt) {
-        scrabbleGame.swapAction();
+
+        renderGame(scrabbleGame.swapAction());
     }
 
     private void passButtonActionPerformed(java.awt.event.ActionEvent evt) {
-        scrabbleGame.pass(false);
+        renderGame(scrabbleGame.pass(false));
     }
 
     private void tipsButtonActionPerformed(java.awt.event.ActionEvent evt) {

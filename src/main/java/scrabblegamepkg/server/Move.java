@@ -39,6 +39,14 @@ public class Move {
         int letterFromRack = 0;
 
         int k = 0;
+
+        int l = 0;
+        while (j+l > 0 && charBoard[i][j+(--l)] != '-') {
+            k--;
+        }
+
+        startColumn = j+k;
+
         while (letterFromRack < usedFromRack.length() || (j+k < 15 && charBoard[i][j+k] != '-')) {
             char letter = charBoard[i][j+k];
             if (letter == '-') {
@@ -54,13 +62,6 @@ public class Move {
             }
             word += letter;
             k++;
-        }
-
-        //TODO: dette burde løses (skjer dersom kun én brikke legges, og bare danner ord nedover...)
-        if (word.length() == 1) {
-            word = words.get(0);
-            words.clear();
-            horizontalScore = 0;
         }
 
         return sum + (horizontalScore * horizontalMultiplier) + (isBingo() ? 50 : 0);
